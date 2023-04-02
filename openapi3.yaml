@@ -6,54 +6,117 @@ info:
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
+security:
+  - ApiKeyAuth: []
 
 paths:
-  /anotherResource:
-    get:
-      operationId: getAnotherResource
-      tags:
-        - anotherResource
-      summary: gets the resource
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/anotherResource'
-  /resourceName:
-    get:
-      operationId: getResourceName
-      tags:
-        - resourceName
-      summary: gets the resource
-      responses:
-        200:
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/resource'
+  /export-tasks:
     post:
-      operationId: createResource
+      operationId: createTask
+      summary: Create an export task
+      security:
+        - ApiKeyAuth: []
       tags:
-        - resourceName
-      summary: creates a new record of type resource
+        - Tasks
+      requestBody:
+        description: task details
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/taskCreate'
       responses:
         201:
           description: created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/resource'
-        400:
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/taskCreate'
 components:
   schemas:
+    taskCreate:
+      type: object
+      required:
+        - catalogRecordID
+        - domain
+        - artifactCRS
+        - webhook
+      properties:
+        catalogRecordID:
+          type: string
+          format: uuid
+        domain:
+          type: string
+          enum: ['Raster', '3D', 'DEM']
+        ROI:
+          $ref: '#/components/schemas/FeatureCollection'
+        artifactCRS:
+          type: string
+        description:
+          type: string
+        parameters:
+          type: object
+        webhook:
+          type: array
+          items:
+            type: object
+            required:
+              - events
+              - url
+            properties:
+              events:
+                type: array
+                uniqueItems: true
+                minItems: 1
+                items:
+                  type: string
+                  enum: ['TASK_COMPLETED', 'TASK_FAILED', 'TASK_ABORTED', 'TASK_STARTED']
+              url:
+                type: string
+                format: url
+                example: 'https://webhook.com'
+
+    FeatureCollection:
+      type: object
+      description: GeoJson Feature Collection
+      required:
+        - type
+        - features
+      properties:
+        type:
+          type: string
+          enum: ['FeatureCollection']
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/Feature'
+
+    Feature:
+      type: object
+      description: GeoJson Feature
+      required:
+        - type
+        - properties
+        - geometry
+      properties:
+        type:
+          type: string
+          enum: ['Feature']
+        properties:
+          type: object
+          required:
+            - max
+
+    BBox:
+      type: array
+      items:
+        type: number
+      minItems: 4
+      maxItems: 4
+      description: >-
+        Bounding box corners (lower left, upper right)=[minx,miny,maxx,maxy] in
+        crs units as array. If empty - original layer's bbox is taken.
+
     error:
       type: object
       required:
@@ -61,27 +124,9 @@ components:
       properties:
         message:
           type: string
-    resource:
-      type: object
-      required:
-        - id
-        - name
-        - description
-      properties:
-        id:
-          type: number
-          format: int64
-        name:
-          type: string
-        description:
-          type: string
-    anotherResource:
-      type: object
-      required:
-        - kind
-        - isAlive
-      properties:
-        kind:
-          type: string
-        isAlive:
-          type: boolean
+
+  securitySchemes:
+    ApiKeyAuth:        # arbitrary name for the security scheme
+      type: apiKey
+      in: query      # can be "header", "query" or "cookie"
+      name: token  # name of the header, query parameter or cookie

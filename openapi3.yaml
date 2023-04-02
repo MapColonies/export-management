@@ -27,11 +27,41 @@ paths:
               $ref: '#/components/schemas/taskCreate'
       responses:
         201:
-          description: created
+          description: Created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/taskCreate'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        509:
+          description: Insufficient Storage
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
 components:
   schemas:
     taskCreate:
@@ -104,8 +134,103 @@ components:
           enum: ['Feature']
         properties:
           type: object
-          required:
-            - max
+        geometry:
+          type: object
+          nullable: true
+          oneOf:
+            - $ref: '#/components/schemas/GeometryCollection'
+            - $ref: '#/components/schemas/Geometry'
+
+    GeometryCollection:
+      type: object
+      description: GeoJSon geometry collection
+      required:
+        - type
+        - geometries
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#geometrycollection
+      properties:
+        type:
+          type: string
+          enum:
+            - GeometryCollection
+          description: custom properties
+        geometries:
+          type: array
+          items:
+            $ref: '#/components/schemas/GeometryBase'
+
+    Geometry:
+      description: GeoJSon geometry
+      type: object
+      oneOf:
+        - $ref: '#/components/schemas/Polygon'
+        - $ref: '#/components/schemas/MultiPolygon'
+
+    Polygon:
+      type: object
+      description: GeoJSon geometry
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#id4
+      allOf:
+        - $ref: '#/components/schemas/GeometryBase'
+        - properties:
+            coordinates:
+              type: array
+              items:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Point2D'
+
+    MultiPolygon:
+      type: object
+      description: GeoJSon geometry
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#id6
+      allOf:
+        - $ref: '#/components/schemas/GeometryBase'
+        - properties:
+            coordinates:
+              type: array
+              items:
+                type: array
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Point2D'
+
+    GeometryBase:
+      type: object
+      description: GeoJSon geometry
+      required:
+        - type
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#geometry-objects
+      properties:
+        type:
+          type: string
+          enum:
+            - Polygon
+            - MultiPolygon
+          description: the geometry type
+
+    Point2D:
+      type: array
+      maxItems: 2
+      minItems: 2
+      items:
+        type: number
+        
+    Point:
+      type: object
+      description: GeoJSon geometry
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#id2
+      allOf:
+        - $ref: '#/components/schemas/GeometryBase'
+        - properties:
+            coordinates:
+              $ref: '#/components/schemas/Point2D'
 
     BBox:
       type: array

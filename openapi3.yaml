@@ -100,11 +100,76 @@ components:
                 minItems: 1
                 items:
                   type: string
-                  enum: ['TASK_COMPLETED', 'TASK_FAILED', 'TASK_ABORTED', 'TASK_STARTED']
+                  enum: ['TASK_COMPLETED', 'TASK_FAILED', 'TASK_ABORTED', 'TASK_STARTED', 'TASK_EXPIRED']
               url:
                 type: string
                 format: url
                 example: 'https://webhook.com'
+    
+    task:
+      allOf:
+        - $ref: '#/components/schemas/taskCreate'
+        - type: object
+          required:
+            - id
+            - status
+            - artifacts
+            - create_at
+          properties:
+            id:
+              type: number
+              format: int32
+            estimatedSize:
+              type: number
+              format: long
+              description: the estimated size of the artifacts in bytes
+            status:
+              type: string
+              enum: ['IN_PROGRESS', 'COMPLETED', 'ABORTED', 'PAUSED', 'FAILED', 'PENDING', 'CLEANED', 'ARCHIVED']
+            progress:
+              type: number
+              minimum: 0
+              maximum: 100
+            artifacts:
+              type: array
+              items:
+                $ref: '#/components/schemas/artifact'
+            create_at:
+              type: string
+              format: date
+              description: creation task time
+            expired_at:
+              type: string
+              format: date
+              description: when the task will be expired_at
+            finished_at:
+              type: string
+              format: date
+              description: when the task reached an end state
+
+    artifact:
+      type: object
+      required:
+        - id
+        - name
+        - type
+        - url
+      properties:
+        type:
+          oneOf:
+            - $ref: '#/components/schemas/artifactRasterType'
+            - $ref: '#/components/schemas/artifact3DType'
+            - $ref: '#/components/schemas/artifactDEMType'
+
+    artifact3DType:
+      type: string
+      enum: ['3D_MODEL', 'METADATA', 'THUMBNAILS_SMALL', 'THUMBNAILS_MEDIUM', 'THUMBNAILS_LARGE']
+    artifactRasterType:
+      type: string
+      enum: ['GPKG', 'LEGEND', 'METADATA', 'THUMBNAILS_SMALL', 'THUMBNAILS_MEDIUM', 'THUMBNAILS_LARGE']
+    artifactDEMType:
+      type: string
+      enum: ['MODEL', 'METADATA', 'ROI', 'LEGEND']
 
     FeatureCollection:
       type: object

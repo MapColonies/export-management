@@ -6,16 +6,16 @@ info:
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
-security:
-  - ApiKeyAuth: []
+# security:
+#   - ApiKeyAuth: []
 
 paths:
   /export-tasks:
     post:
       operationId: createTask
       summary: Create an export task
-      security:
-        - ApiKeyAuth: []
+      # security:
+      #   - ApiKeyAuth: []
       tags:
         - Tasks
       requestBody:
@@ -50,6 +50,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
         500:
           description: Internal Server Error
           content:
@@ -77,7 +83,7 @@ components:
           format: uuid
         domain:
           type: string
-          enum: ['Raster', '3D', 'DEM']
+          enum: ['DEM', '3D', 'RASTER']
         ROI:
           $ref: '#/components/schemas/FeatureCollection'
         artifactCRS:
@@ -315,8 +321,8 @@ components:
         message:
           type: string
 
-  securitySchemes:
-    ApiKeyAuth:        # arbitrary name for the security scheme
-      type: apiKey
-      in: query      # can be "header", "query" or "cookie"
-      name: token  # name of the header, query parameter or cookie
+  # securitySchemes:
+  #   ApiKeyAuth:        # arbitrary name for the security scheme
+  #     type: apiKey
+  #     in: query      # can be "header", "query" or "cookie"
+  #     name: token  # name of the header, query parameter or cookie

@@ -5,24 +5,30 @@ import { RequestHandler } from 'express';
 import httpStatus from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
 import { SERVICES } from '../../common/constants';
+import { TaskEvent } from '../enums';
+import { ITask, ITaskCreate, TaskParameters } from '../interfaces';
 
-import { IAnotherResourceModel, AnotherResourceManager } from '../models/anotherResourceManager';
+import { TasksManager } from '../models/tasksManager';
 
-type GetResourceHandler = RequestHandler<undefined, IAnotherResourceModel>;
+//type GetTaskHandler = RequestHandler<undefined, ITasksModel>;
+type CreateTaskHandler<T> = RequestHandler<undefined, undefined, ITaskCreate<T>>;
 
 @injectable()
-export class AnotherResourceController {
+export class TasksController {
   private readonly createdResourceCounter: BoundCounter;
 
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
-    @inject(AnotherResourceManager) private readonly manager: AnotherResourceManager,
+    @inject(TasksManager) private readonly taskManager: TasksManager,
     @inject(SERVICES.METER) private readonly meter: Meter
   ) {
     this.createdResourceCounter = meter.createCounter('created_resource');
   }
 
-  public getResource: GetResourceHandler = (req, res) => {
-    return res.status(httpStatus.OK).json(this.manager.getResource());
+  public createTask: CreateTaskHandler<TaskParameters> = async (req, res) => {
+    console.log('body: ', req.body);
+    this.taskManager.createTask(req.body);
+    return res.sendStatus(httpStatus.CREATED);
   };
+
 }

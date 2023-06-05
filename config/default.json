@@ -24,5 +24,20 @@
         "options": null
       }
     }
+  },
+  "externalClients": {
+    "httpRetry": {
+      "attempts": 5,
+      "delay": "exponential",
+      "shouldResetTimeout": true
+    },
+    "disableHttpClientLogs": true,
+    "exporterTrigger": {
+      "url": "http://localhost:8083"
+    },
+    "jobManager": {
+      "url": "http://localhost:8088",
+      "exportJobType": "rasterTilesExporter"
+    }
   }
 }

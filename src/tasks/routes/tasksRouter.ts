@@ -6,7 +6,8 @@ const tasksRouterFactory: FactoryFunction<Router> = (dependencyContainer) => {
   const router = Router();
   const controller = dependencyContainer.resolve(TasksController);
 
-  router.post('/', controller.createTask);
+  router.post('/', controller.createExportTask);
+  router.post('/webhook', controller.sendWebhook);
 
   return router;
 };

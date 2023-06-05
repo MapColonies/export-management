@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
-  title: service-name
-  description: basic template for map colonies service
+  title: MapColonies Export Service
+  description: Export Service for DEM, Raster, 3D
   version: 1.0.0
   license:
     name: MIT
@@ -12,7 +12,7 @@ info:
 paths:
   /export-tasks:
     post:
-      operationId: createTask
+      operationId: createExportTask
       summary: Create an export task
       # security:
       #   - ApiKeyAuth: []
@@ -31,7 +31,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/taskCreate'
+                $ref: '#/components/schemas/task'
         400:
           description: Bad Request
           content:
@@ -68,6 +68,65 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+
+  /export-tasks/webhook:
+    post:
+      operationId: sendWebhook
+      summary: Send webhook on task event
+      tags:
+        - Tasks
+      requestBody:
+        description: task details
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/webhook'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/task'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        509:
+          description: Insufficient Storage
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+        
 components:
   schemas:
     taskCreate:
@@ -88,11 +147,19 @@ components:
           $ref: '#/components/schemas/FeatureCollection'
         artifactCRS:
           type: string
+          enum: ['4326', '3857']
         description:
           type: string
+        keywords:
+          type: object
+          description: task metadata in key-value pair
+          example: {"foo": "kuku"}
         parameters:
           type: object
+          description: task parameters in key-value pair
+          example: {"foo": "kuku"}
         webhook:
+          description: describe one or more relevant events to receive the data once event has been occurred
           type: array
           items:
             type: object
@@ -106,12 +173,13 @@ components:
                 minItems: 1
                 items:
                   type: string
-                  enum: ['TASK_COMPLETED', 'TASK_FAILED', 'TASK_ABORTED', 'TASK_STARTED', 'TASK_EXPIRED']
+                  enum: ['TASK_COMPLETED', 'TASK_FAILED']
+                  example: 'TASK_COMPLETED'
               url:
                 type: string
                 format: url
                 example: 'https://webhook.com'
-    
+
     task:
       allOf:
         - $ref: '#/components/schemas/taskCreate'
@@ -120,18 +188,22 @@ components:
             - id
             - status
             - artifacts
-            - create_at
+            - created_at
           properties:
             id:
               type: number
               format: int32
             estimatedSize:
               type: number
-              format: long
+              format: int64
               description: the estimated size of the artifacts in bytes
+            estimatedTime:
+              type: number
+              format: int64
+              description: the estimated time of the export task
             status:
               type: string
-              enum: ['IN_PROGRESS', 'COMPLETED', 'ABORTED', 'PAUSED', 'FAILED', 'PENDING', 'CLEANED', 'ARCHIVED']
+              enum: ['IN_PROGRESS', 'COMPLETED', 'ABORTED', 'PAUSED', 'FAILED', 'PENDING', 'EXPIRED', 'ARCHIVED']
             progress:
               type: number
               minimum: 0
@@ -140,18 +212,84 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/artifact'
-            create_at:
+            created_at:
               type: string
-              format: date
+              format: date-time
               description: creation task time
             expired_at:
               type: string
-              format: date
+              format: date-time
               description: when the task will be expired_at
             finished_at:
               type: string
-              format: date
+              format: date-time
               description: when the task reached an end state
+    
+    webhookEvent:
+      type: object
+      required:
+        - event
+        - timestamp
+        - data
+      properties:
+        event:
+          type: string
+          enum: ['TASK_COMPLETED', 'TASK_FAILED']
+        timestamp:
+          type: string
+          format: date-time
+        data:
+          $ref: '#/components/schemas/task'
+
+    webhook:
+      type: object
+      required:
+        - recordCatalogId
+        - status
+        - roi
+        - expirationTime
+        - fileNames
+        - fileSize
+        - jobId
+      properties:
+        status:
+          type: string
+          enum: ['Completed', 'Failed']
+        expirationTime:
+          type: string
+          format: date-time
+        fileSize:
+          type: number
+          format: int64
+          example: 124215121
+          description: size of the artifacts in bytes
+        recordCatalogId:
+          type: string
+        fileNames:
+          type: object
+          properties:
+            dataName:
+              type: string
+            metadataName:
+              type: string
+
+        links:
+          type: object
+          properties:
+            dataURI:
+              type: string
+            metadataURI:
+              type: string
+        roi:
+          $ref: '#/components/schemas/FeatureCollection'
+        jobId:
+          type: string
+        errorReason:
+          type: string
+        description:
+          type: string
+
+
 
     artifact:
       type: object
@@ -160,12 +298,27 @@ components:
         - name
         - type
         - url
+        - size
       properties:
+        id:
+          type: number
+          format: int32
         type:
           oneOf:
             - $ref: '#/components/schemas/artifactRasterType'
             - $ref: '#/components/schemas/artifact3DType'
             - $ref: '#/components/schemas/artifactDEMType'
+        name:
+          type: string
+        size:
+          type: number
+          format: int64
+          example: 124215121
+          description: size of the artifacts in bytes
+        url:
+          type: string
+          format: uri
+          example: 'https://download.com/file'
 
     artifact3DType:
       type: string
@@ -205,12 +358,20 @@ components:
           enum: ['Feature']
         properties:
           type: object
+          $ref: '#/components/schemas/FeatureProperties'
+          discriminator:
+            propertyName: maxResolutionDeg
+
         geometry:
           type: object
           nullable: true
           oneOf:
             - $ref: '#/components/schemas/GeometryCollection'
             - $ref: '#/components/schemas/Geometry'
+
+    FeatureProperties:
+      additionalProperties: {}
+      description: define any additional properties fields for the feature
 
     GeometryCollection:
       type: object
@@ -291,7 +452,7 @@ components:
       minItems: 2
       items:
         type: number
-        
+
     Point:
       type: object
       description: GeoJSon geometry

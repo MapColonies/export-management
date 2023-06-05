@@ -8,7 +8,7 @@ import { SERVICES, SERVICE_NAME } from './common/constants';
 import { tracing } from './common/tracing';
 import { resourceNameRouterFactory, RESOURCE_NAME_ROUTER_SYMBOL } from './resourceName/routes/resourceNameRouter';
 import { InjectionObject, registerDependencies } from './common/dependencyRegistration';
-import { tasksRouterFactory, TASKS_ROUTER_SYMBOL } from './Tasks/routes/TasksRouter';
+import { tasksRouterFactory, TASKS_ROUTER_SYMBOL } from './tasks/routes/tasksRouter';
 
 export interface RegisterOptions {
   override?: InjectionObject<unknown>[];

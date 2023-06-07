@@ -248,8 +248,6 @@ components:
         - status
         - roi
         - expirationTime
-        - fileNames
-        - fileSize
         - jobId
       properties:
         status:
@@ -258,21 +256,17 @@ components:
         expirationTime:
           type: string
           format: date-time
-        fileSize:
-          type: number
-          format: int64
-          example: 124215121
-          description: size of the artifacts in bytes
         recordCatalogId:
           type: string
-        fileNames:
-          type: object
           properties:
             dataName:
               type: string
             metadataName:
               type: string
-
+        artifacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/artifact'
         links:
           type: object
           properties:
@@ -294,17 +288,11 @@ components:
     artifact:
       type: object
       required:
-        - id
         - name
         - type
-        - url
-        - size
       properties:
-        id:
-          type: number
-          format: int32
         type:
-          oneOf:
+          anyOf:
             - $ref: '#/components/schemas/artifactRasterType'
             - $ref: '#/components/schemas/artifact3DType'
             - $ref: '#/components/schemas/artifactDEMType'

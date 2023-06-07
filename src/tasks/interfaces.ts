@@ -1,8 +1,8 @@
 import { GeoJSON } from 'geojson';
 import { FeatureCollection } from '@turf/turf';
 import {  Domain } from '../common/enums';
-import { OperationStatus, TaskEventPartial, TaskStatus } from './enums';
-import { Artifact, CreateExportTaskRequest } from '@map-colonies/export-interfaces';
+import { OperationStatus } from './enums';
+import { Artifact, TaskEvent, Webhook } from '@map-colonies/export-interfaces';
 
 export interface ITaskCreate<T> {
   catalogRecordID: string;
@@ -12,11 +12,11 @@ export interface ITaskCreate<T> {
   description?: string;
   keywords?: Record<string, unknown>;
   parameters?: T;
-  webhook: IWebhook[];
+  webhook: Webhook[];
 }
 
-export interface ITask<T> extends ITaskCreate<T> {
-  id: number;
+export interface ITask<T> extends Partial<ITaskCreate<T>> {
+  exportId: number;
   estimatedSize?: number;
   estimatedTime?: number;
   footprint?: GeoJSON;
@@ -29,13 +29,8 @@ export interface ITask<T> extends ITaskCreate<T> {
   finishedAt?: Date;
 }
 
-export interface IWebhook {
-  event: TaskEventPartial;
-  uri: string;
-}
-
-export interface IWebhookEvent<T> {
-  event: TaskEventPartial;
+export interface WebhookEvent<T> {
+  event: TaskEvent;
   timestamp: Date;
   data: ITask<T>;
 }

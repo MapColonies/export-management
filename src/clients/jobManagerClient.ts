@@ -27,7 +27,7 @@ export class JobManagerClient extends HttpClient {
   }
 
   // TODO: handle return type
-  public async getJobByType(jobId: string): Promise<unknown> {
+  public async getJobById(jobId: string): Promise<unknown> {
     this.logger.info({ msg: `get job by jobId: ${jobId} request - jobType: ${this.exportJobType}` });
     const result = await this.get(`/jobs/${jobId}`);
     return result;

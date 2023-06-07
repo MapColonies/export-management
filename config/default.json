@@ -25,9 +25,10 @@
       }
     }
   },
+  "serviceUrl": "http://localhost:8080/export-tasks/webhook",
   "externalClients": {
     "httpRetry": {
-      "attempts": 5,
+      "attempts": 10,
       "delay": "exponential",
       "shouldResetTimeout": true
     },

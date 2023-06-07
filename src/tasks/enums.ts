@@ -1,5 +1,3 @@
-import { TaskEvent } from "@map-colonies/export-interfaces";
-
 export enum TaskStatus {
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
@@ -11,6 +9,7 @@ export enum TaskStatus {
   ARCHIVED = 'ARCHIVED',
 }
 
-export declare type TaskEventPartial = Extract<TaskEvent, "TASK_STARTED" | "TASK_FAILED" | "TASK_COMPLETED"| "TASK_FAILED" | "TASK_ABORTED">
-
-export declare type OperationStatus = "Completed" | "Failed"; // TBD => remove and use TaskStatus
+export enum OperationStatus {
+  COMPLETED = 'Completed',
+  FAILED = 'Failed'
+} // TODO: remove and use full TaskStatus from export-intefaces package

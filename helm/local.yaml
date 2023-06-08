@@ -3,6 +3,8 @@ global:
   tracing: {}
   metrics: {}
   environment: {}
+  authentication:
+    jwtPublicKeySecretName: map-colonies-jwks
 
 enabled: true
 environment: development
@@ -13,8 +15,8 @@ resetOnConfigChange: true
 imagePullPolicy: Always
 
 cloudProvider:
-  dockerRegistryUrl: my-registry-url.io
-  imagePullSecretName: 'my-registry-secret'
+  dockerRegistryUrl: acrarolibotnonprod.azurecr.io
+  imagePullSecretName: 'acr-registry'
   flavor: openshift
 
 caSecretName: ''
@@ -23,19 +25,19 @@ caKey: 'ca.crt'
 
 image:
   repository: export-management
-  tag: 'latest'
+  tag: 'integration'
 
 rasterCommon:
   serviceUrls:
-    exporterTrigger: "http://job-manager-service-url"
-    jobManager: "http://job-manager-service-url"
+    exporterTrigger: "https://exporter-trigger-no-auth-integration.apps.j1lk3njp.eastus.aroapp.io/"
+    jobManager: "https://job-manager-integration-job-manager-route-integration.apps.j1lk3njp.eastus.aroapp.io/"
   jobManagement:
     exporter:
-      jobType: tilesExport
+      jobType: rasterTilesExporter
   authentication:
     opa:
-      enabled: false
-      customHeaderName: ""
+      enabled: true
+      customHeaderName: "x-api-key"
 
 
 env:
@@ -46,9 +48,10 @@ env:
   logLevel: info
   logPrettyPrintEnabled: false
   responseCompressionEnabled: true
-  disableHttpClientLogs: false
   requestPayloadLimit: 1mb
-  serviceWebhookEndpoint: https://export-management-test-integration.apps.j1lk3njp.eastus.aroapp.io/export-tasks/webhook/
+  disableHttpClientLogs: false
+  #https://exoprt-management-no-auth-integration.apps.j1lk3njp.eastus.aroapp.io/export-tasks/webhook
+  serviceWebhookEndpoint: http://export-management-export-management/export-tasks/webhook
   tracing:
     enabled: false
     url: http://localhost:55681/v1/trace
@@ -90,6 +93,8 @@ envoy:
       requests:
         cpu: 100m
         memory: 128Mi
+
+  
 
 resources:
   enabled: true

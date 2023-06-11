@@ -10,21 +10,16 @@ import { WebhookEvent } from '../interfaces';
 import { ExportJobParameters } from '../../clients/jobManagerClient';
 import { CreateExportTaskExtendedRequest, TasksManager } from '../models/tasksManager';
 
-//type GetTaskHandler = RequestHandler<undefined, ITasksModel>;
 type CreateTaskHandler = RequestHandler<undefined, CreateExportJobResponse | WebhookEvent<ExportJobParameters>, CreateExportTaskExtendedRequest>;
 type SendWebhookHandler = RequestHandler<undefined, undefined, WebhookParams>;
 
 @injectable()
 export class TasksController {
-  private readonly createdResourceCounter: BoundCounter;
-
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
     @inject(TasksManager) private readonly taskManager: TasksManager,
     @inject(SERVICES.METER) private readonly meter: Meter
-  ) {
-    this.createdResourceCounter = meter.createCounter('created_resource');
-  }
+  ) {}
 
   public createExportTask: CreateTaskHandler = async (req, res, next) => {
     try {

@@ -27,17 +27,16 @@ image:
   repository: export-management
   tag: 'integration'
 
-rasterCommon:
-  serviceUrls:
-    exporterTrigger: "http://exporter-trigger-int-exporter-trigger/"
-    jobManager: "http://job-manager-integration-job-manager/"
-  jobManagement:
-    exporter:
-      jobType: rasterTilesExporter
-  authentication:
-    opa:
-      enabled: true
-      customHeaderName: "x-api-key"
+serviceUrls:
+  exporterTrigger: "http://exporter-trigger-int-exporter-trigger/"
+  jobManager: "http://job-manager-integration-job-manager/"
+jobManagement:
+  exporter:
+    jobType: rasterTilesExporter
+authentication:
+  opa:
+    enabled: true
+    customHeaderName: "x-api-key"
 
 
 env:
@@ -72,11 +71,11 @@ opa:
     enabled: true
     value:
       limits:
-        cpu: 100m
-        memory: 128Mi
+        cpu: 250m
+        memory: 150Mi
       requests:
-        cpu: 100m
-        memory: 128Mi
+        cpu: 250m
+        memory: 150Mi
         
 envoy:
   image: envoyproxy/envoy
@@ -88,11 +87,11 @@ envoy:
     enabled: true
     value:
       limits:
-        cpu: 100m
-        memory: 128Mi
+        cpu: 500m
+        memory: 850Mi
       requests:
-        cpu: 100m
-        memory: 128Mi
+        cpu: 500m
+        memory: 850Mi
 
   
 

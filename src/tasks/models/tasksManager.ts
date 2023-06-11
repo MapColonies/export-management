@@ -44,6 +44,7 @@ export class TasksManager {
   }
 
   public async handleWebhookEvent(params: WebhookParams): Promise<void> {
+    console.log('errorReason',params.errorReason);
     const exportJob = await this.jobManagerClient.getJobById(params.jobId);
     const jobParameters = exportJob.parameters;
     const task: ITask<ExportJobParameters> = {

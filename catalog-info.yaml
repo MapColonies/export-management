@@ -2,7 +2,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: export-management
-  description: A boilerplate github repo for a REST API service in NodeJS for MapColonies
+  description: REST API service in NodeJS for MapColonies Export Services
   annotations:
     github.com/project-slug: MapColonies/export-management
   tags:

@@ -37,7 +37,7 @@ static_resources:
                             filename: /keys/mapColonies.jwks
                           forward: false #remove the jwt (if header is used)
                           from_headers:
-                            - name: {{ .Values.rasterCommon.authentication.opa.customHeaderName }}
+                            - name: {{ .Values.authentication.opa.customHeaderName }}
                           from_params:
                             - token
                           jwt_cache_config:

@@ -25,14 +25,13 @@ image:
   repository: export-management
   tag: 'latest'
 
-rasterCommon:
-  serviceUrls:
-    exporterTrigger: "http://job-manager-service-url"
-    jobManager: "http://job-manager-service-url"
-  jobManagement:
+serviceUrls:
+  exporterTrigger: "http://job-manager-service-url"
+  jobManager: "http://job-manager-service-url"
+jobManagement:
     exporter:
       jobType: tilesExport
-  authentication:
+authentication:
     opa:
       enabled: false
       customHeaderName: ""

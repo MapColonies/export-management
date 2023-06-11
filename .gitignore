@@ -1,3 +1,6 @@
+# Helm-Chart
+helm/local.yaml
+
 # Logs
 logs
 *.log

@@ -1,21 +1,21 @@
 openapi: 3.0.1
 info:
-  title: service-name
-  description: basic template for map colonies service
+  title: MapColonies Export Service
+  description: Export Service for DEM, Raster, 3D
   version: 1.0.0
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
-security:
-  - ApiKeyAuth: []
+# security:
+#   - ApiKeyAuth: []
 
 paths:
   /export-tasks:
     post:
-      operationId: createTask
+      operationId: createExportTask
       summary: Create an export task
-      security:
-        - ApiKeyAuth: []
+      # security:
+      #   - ApiKeyAuth: []
       tags:
         - Tasks
       requestBody:
@@ -27,11 +27,105 @@ paths:
               $ref: '#/components/schemas/taskCreate'
       responses:
         201:
-          description: created
+          description: Created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/taskCreate'
+                $ref: '#/components/schemas/task'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        509:
+          description: Insufficient Storage
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+  /export-tasks/webhook:
+    post:
+      operationId: sendWebhook
+      summary: Send webhook on task event
+      tags:
+        - Tasks
+      requestBody:
+        description: task details
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/webhook'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/task'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        509:
+          description: Insufficient Storage
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
 components:
   schemas:
     taskCreate:
@@ -47,16 +141,24 @@ components:
           format: uuid
         domain:
           type: string
-          enum: ['Raster', '3D', 'DEM']
+          enum: ['DEM', '3D', 'RASTER']
         ROI:
           $ref: '#/components/schemas/FeatureCollection'
         artifactCRS:
           type: string
+          enum: ['4326']
         description:
           type: string
+        keywords:
+          type: object
+          description: task metadata in key-value pair
+          example: { 'foo': 'kuku' }
         parameters:
           type: object
+          description: task parameters in key-value pair
+          example: { 'foo': 'kuku' }
         webhook:
+          description: describe one or more relevant events to receive the data once event has been occurred
           type: array
           items:
             type: object
@@ -70,11 +172,150 @@ components:
                 minItems: 1
                 items:
                   type: string
-                  enum: ['TASK_COMPLETED', 'TASK_FAILED', 'TASK_ABORTED', 'TASK_STARTED']
+                  enum: ['TASK_COMPLETED', 'TASK_FAILED']
+                  example: 'TASK_COMPLETED'
               url:
                 type: string
-                format: url
+                #format: url
                 example: 'https://webhook.com'
+
+    task:
+      allOf:
+        - $ref: '#/components/schemas/taskCreate'
+        - type: object
+          required:
+            - id
+            - status
+            - artifacts
+            - created_at
+          properties:
+            id:
+              type: number
+              format: int32
+            estimatedSize:
+              type: number
+              format: int64
+              description: the estimated size of the artifacts in bytes
+            estimatedTime:
+              type: number
+              format: int64
+              description: the estimated time of the export task
+            status:
+              type: string
+              enum: ['IN_PROGRESS', 'COMPLETED', 'ABORTED', 'PAUSED', 'FAILED', 'PENDING', 'EXPIRED', 'ARCHIVED']
+            progress:
+              type: number
+              minimum: 0
+              maximum: 100
+            artifacts:
+              type: array
+              items:
+                $ref: '#/components/schemas/artifact'
+            created_at:
+              type: string
+              format: date-time
+              description: creation task time - UTC format
+            expired_at:
+              type: string
+              format: date-time
+              description: when the task will be expired_at - UTC format
+            finished_at:
+              type: string
+              format: date-time
+              description: when the task reached an end state - UTC format
+
+    # webhookEvent:
+    #   type: object
+    #   required:
+    #     - event
+    #     - timestamp
+    #     - data
+    #   properties:
+    #     event:
+    #       type: string
+    #       enum: ['TASK_COMPLETED', 'TASK_FAILED']
+    #     timestamp:
+    #       type: string
+    #       format: date-time
+    #     data:
+    #       $ref: '#/components/schemas/task'
+
+    webhook:
+      type: object
+      required:
+        - recordCatalogId
+        - status
+        - roi
+        - expirationTime
+        - jobId
+      properties:
+        status:
+          type: string
+          enum: ['Completed', 'Failed']
+        expirationTime:
+          type: string
+          format: date-time
+          description: UTC format
+        recordCatalogId:
+          type: string
+          properties:
+            dataName:
+              type: string
+            metadataName:
+              type: string
+        artifacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/artifact'
+        links:
+          type: object
+          properties:
+            dataURI:
+              type: string
+            metadataURI:
+              type: string
+        roi:
+          $ref: '#/components/schemas/FeatureCollection'
+        jobId:
+          type: string
+        errorReason:
+          type: string
+        description:
+          type: string
+
+    artifact:
+      type: object
+      description: GeoJson Feature Collection
+      required:
+        - name
+        - type
+      properties:
+        type:
+          anyOf:
+            - $ref: '#/components/schemas/artifactRasterType'
+            - $ref: '#/components/schemas/artifact3DType'
+            - $ref: '#/components/schemas/artifactDEMType'
+        name:
+          type: string
+        size:
+          type: number
+          format: int64
+          example: 124215121
+          description: size of the artifacts in bytes
+        url:
+          type: string
+          format: uri
+          example: 'https://download.com/file'
+
+    artifact3DType:
+      type: string
+      enum: ['3D_MODEL', 'METADATA', 'THUMBNAILS_SMALL', 'THUMBNAILS_MEDIUM', 'THUMBNAILS_LARGE']
+    artifactRasterType:
+      type: string
+      enum: ['GPKG', 'LEGEND', 'METADATA', 'THUMBNAILS_SMALL', 'THUMBNAILS_MEDIUM', 'THUMBNAILS_LARGE']
+    artifactDEMType:
+      type: string
+      enum: ['MODEL', 'METADATA', 'ROI', 'LEGEND']
 
     FeatureCollection:
       type: object
@@ -104,18 +345,111 @@ components:
           enum: ['Feature']
         properties:
           type: object
-          required:
-            - max
+          $ref: '#/components/schemas/FeatureProperties'
+          discriminator:
+            propertyName: maxResolutionDeg
 
-    BBox:
+        geometry:
+          type: object
+          nullable: true
+          oneOf:
+            - $ref: '#/components/schemas/GeometryCollection'
+            - $ref: '#/components/schemas/Geometry'
+
+    FeatureProperties:
+      additionalProperties: {}
+      description: define any additional properties fields for the feature
+
+    GeometryCollection:
+      type: object
+      description: GeoJSon geometry collection
+      required:
+        - type
+        - geometries
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#geometrycollection
+      properties:
+        type:
+          type: string
+          enum:
+            - GeometryCollection
+          description: custom properties
+        geometries:
+          type: array
+          items:
+            $ref: '#/components/schemas/GeometryBase'
+
+    Geometry:
+      description: GeoJSon geometry
+      type: object
+      oneOf:
+        - $ref: '#/components/schemas/Polygon'
+        - $ref: '#/components/schemas/MultiPolygon'
+
+    Polygon:
+      type: object
+      description: GeoJSon geometry
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#id4
+      allOf:
+        - $ref: '#/components/schemas/GeometryBase'
+        - properties:
+            coordinates:
+              type: array
+              items:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Point2D'
+
+    MultiPolygon:
+      type: object
+      description: GeoJSon geometry
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#id6
+      allOf:
+        - $ref: '#/components/schemas/GeometryBase'
+        - properties:
+            coordinates:
+              type: array
+              items:
+                type: array
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Point2D'
+
+    GeometryBase:
+      type: object
+      description: GeoJSon geometry
+      required:
+        - type
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#geometry-objects
+      properties:
+        type:
+          type: string
+          enum:
+            - Polygon
+            - MultiPolygon
+          description: the geometry type
+
+    Point2D:
       type: array
+      maxItems: 2
+      minItems: 2
       items:
         type: number
-      minItems: 4
-      maxItems: 4
-      description: >-
-        Bounding box corners (lower left, upper right)=[minx,miny,maxx,maxy] in
-        crs units as array. If empty - original layer's bbox is taken.
+
+    Point:
+      type: object
+      description: GeoJSon geometry
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#id2
+      allOf:
+        - $ref: '#/components/schemas/GeometryBase'
+        - properties:
+            coordinates:
+              $ref: '#/components/schemas/Point2D'
 
     error:
       type: object
@@ -125,8 +459,8 @@ components:
         message:
           type: string
 
-  securitySchemes:
-    ApiKeyAuth:        # arbitrary name for the security scheme
-      type: apiKey
-      in: query      # can be "header", "query" or "cookie"
-      name: token  # name of the header, query parameter or cookie
+  # securitySchemes:
+  #   ApiKeyAuth:        # arbitrary name for the security scheme
+  #     type: apiKey
+  #     in: query      # can be "header", "query" or "cookie"
+  #     name: token  # name of the header, query parameter or cookie

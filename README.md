@@ -1,8 +1,8 @@
-# Map Colonies typescript service template
+# Map Colonies Export Manegement Service
 
 ----------------------------------
 
-This is a basic repo template for building new MapColonies web services in Typescript.
+This is a nodejs REST API management service for MapColonies Export Services
 
 ### Template Features:
 

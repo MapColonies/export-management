@@ -1,10 +1,11 @@
 {{- $releaseName := .Release.Name -}}
-{{- $chartName := include "ts-server-boilerplate.name" . -}}
-{{- $cloudProviderFlavor := include "ts-server-boilerplate.cloudProviderFlavor" . -}}
-{{- $cloudProviderDockerRegistryUrl := include "ts-server-boilerplate.cloudProviderDockerRegistryUrl" . -}}
-{{- $cloudProviderImagePullSecretName := include "ts-server-boilerplate.cloudProviderImagePullSecretName" . -}}
-{{- $imageTag := include "ts-server-boilerplate.tag" . -}}
+{{- $chartName := include "export-management.name" . -}}
+{{- $cloudProviderFlavor := include "export-management.cloudProviderFlavor" . -}}
+{{- $cloudProviderDockerRegistryUrl := include "export-management.cloudProviderDockerRegistryUrl" . -}}
+{{- $cloudProviderImagePullSecretName := include "export-management.cloudProviderImagePullSecretName" . -}}
+{{- $imageTag := include "export-management.tag" . -}}
 {{- if .Values.enabled -}}
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -12,9 +13,9 @@ metadata:
   labels:
     app: {{ $chartName }}
     component: {{ $chartName }}
-    environment: {{ include "ts-server-boilerplate.environment" . }}
+    environment: {{ include "export-management.environment" . }}
     release: {{ $releaseName }}
-    {{- include "ts-server-boilerplate.labels" . | nindent 4 }}
+    {{- include "export-management.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -22,14 +23,14 @@ spec:
       app: {{ $chartName }}
       release: {{ $releaseName }}
       run: {{ $releaseName }}-{{ $chartName }}
-      {{- include "ts-server-boilerplate.selectorLabels" . | nindent 6 }}
+      {{- include "export-management.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
         app: {{ $chartName }}
         release: {{ $releaseName }}
         run: {{ $releaseName }}-{{ $chartName }}
-        {{- include "ts-server-boilerplate.selectorLabels" . | nindent 8 }}
+        {{- include "export-management.selectorLabels" . | nindent 8 }}
       {{- if .Values.resetOnConfigChange }}
       annotations:
         checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
@@ -44,6 +45,7 @@ spec:
           {{- with .Values.image }}
           image: {{ $cloudProviderDockerRegistryUrl }}{{ .repository }}:{{ $imageTag }}
           {{- end }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
           volumeMounts:
             {{- if .Values.caSecretName }}
             - mountPath: {{ printf "%s/%s" .Values.caPath .Values.caKey | quote }}
@@ -57,7 +59,7 @@ spec:
             - name: REQUESTS_CA_BUNDLE
               value: {{ printf "%s/%s" .Values.caPath .Values.caKey | quote }}
             - name: NODE_EXTRA_CA_CERTS
-              value: {{ printf "[%s/%s]" .Values.caPath .Values.caKey | quote }}
+              value: {{ printf "%s/%s" .Values.caPath .Values.caKey | quote }}
             {{- end }}
           envFrom:
             - configMapRef:
@@ -75,7 +77,75 @@ spec:
           resources:
             {{- toYaml .Values.resources.value | nindent 12 }}
           {{- end }}
+        {{- if .Values.authentication.opa.enabled }}
+        - name: envoy
+          image: "{{ .Values.envoy.image }}:{{ .Values.envoy.imageTag }}"
+          volumeMounts:
+          - readOnly: true
+            mountPath: /config
+            name: proxy-config
+          - name: jwt-public-keys
+            readOnly: true
+            mountPath: /keys/mapColonies.jwks
+            subPath: mapColonies.jwks
+          args:
+          - "envoy"
+          - "--config-path"
+          - "/config/envoy.yaml"
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          {{- if .Values.envoy.resources.enabled }}
+          resources:
+            {{- toYaml .Values.envoy.resources.value | nindent 12 }}
+          {{- end }}
+        - name: opa
+          image: "{{ .Values.opa.image }}:{{ .Values.opa.imageTag }}"
+          volumeMounts:
+          - readOnly: true
+            mountPath: /policy
+            name: opa-policy
+          args:
+          - "run"
+          - "--server"
+          - "--addr=0.0.0.0:8181"
+          - "--diagnostic-addr=0.0.0.0:8282"
+          - "--set=plugins.envoy_ext_authz_grpc.add=:{{ .Values.opa.imageTag }}"
+          - "--set=plugins.envoy_ext_authz_grpc.path=envoy/authz/allow"
+          {{- if .Values.opa.enableLogging }}
+          - "--set=decision_logs.console=true"
+          {{- end }}
+          - "/policy/policy.rego"
+          {{- if .Values.opa.resources.enabled }}
+          resources:
+            {{- toYaml .Values.opa.resources.value | nindent 12 }}
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /health?plugins
+              port: 8282
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health?plugins
+              port: 8282
+            initialDelaySeconds: 5
+            periodSeconds: 30
+        {{- end }}
       volumes:
+        {{- if .Values.authentication.opa.enabled }}
+        - name: opa-policy
+          secret:
+            secretName: {{ .Release.Name }}-{{ $chartName }}-opa
+        - name: proxy-config
+          configMap:
+            name: {{ .Release.Name }}-{{ $chartName }}-envoy
+        - name: jwt-public-keys
+          secret:
+            secretName: {{ .Values.global.authentication.jwtPublicKeySecretName }}
+        {{- end }}
         {{- if .Values.caSecretName }}
         - name: root-ca
           secret:

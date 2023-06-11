@@ -42,7 +42,6 @@ export class ExportManagerRaster implements IExportManager {
   public async createExportTask(req: CreateExportTaskExtendedRequest): Promise<CreateExportJobResponse | WebhookEvent<ExportJobParameters>> {
     try {
       this.logger.info({ msg: `Create export task request`, req: req });
-      console.log(req.artifactCRS)
       const requestedEPSG = `EPSG:${req.artifactCRS}`;
       const createPackageParams: CreatePackageParams = {
         roi: req.ROI,

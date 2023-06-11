@@ -1,30 +1,20 @@
 import { Logger } from '@map-colonies/js-logger';
-import { Artifact, CreateExportTaskRequest, TaskEvent, TaskParameters, TaskStatus } from '@map-colonies/export-interfaces';
+import { Artifact, TaskEvent } from '@map-colonies/export-interfaces';
 import { inject, injectable } from 'tsyringe';
+import config from 'config';
 import { Domain, EPSGDATA } from '@map-colonies/types';
 import { FeatureCollection } from '@turf/turf';
-import { BadRequestError } from '@map-colonies/error-types';
+import { generateUniqueId } from '../common/utils';
 import { SERVICES } from '../common/constants';
-import { ExporterTriggerClient } from '../clients/exporterTriggerClient';
+import { CreateExportJobTriggerResponse, ExporterTriggerClient } from '../clients/exporterTriggerClient';
 import { CreateExportTaskExtendedRequest, CreatePackageParams } from '../tasks/models/tasksManager';
 import { OperationStatus } from '../tasks/enums';
-import { JobManagerClient } from '../clients/jobManagerClient';
-import { Webhook } from './interfaces';
+import { ExportJobParameters, JobManagerClient } from '../clients/jobManagerClient';
 import { ITask, WebhookEvent } from '../tasks/interfaces';
 import { IExportManager } from '../exportManager/interfaces';
 
-export interface ILinkDefinition {
-  dataURI: string;
-  metadataURI: string;
-}
-
-export interface IFileNameDefinition {
-  dataName: string;
-  metadataName: string;
-}
-
 export interface WebhookParams {
-  expirationTime: Date;
+  expirationTime: string;
   recordCatalogId: string;
   jobId: string;
   description?: string;
@@ -35,66 +25,75 @@ export interface WebhookParams {
 }
 
 export interface CreateExportJobResponse {
-  exportId: number;
+  id: number;
 }
 
 @injectable()
 export class ExportManagerRaster implements IExportManager {
+  private readonly serviceWebhookEndpoint: string;
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
     private readonly exporterTriggerClient: ExporterTriggerClient,
-    private readonly jobManagerClient: JobManagerClient,
-    private readonly serviceUrl: string
-  ) {}
+    private readonly jobManagerClient: JobManagerClient
+  ) {
+    this.serviceWebhookEndpoint = config.get<string>('serviceWebhookEndpoint');
+  }
 
-  public async createExportTask(req: CreateExportTaskExtendedRequest): Promise<CreateExportJobResponse | WebhookEvent<TaskParameters>> {
+  public async createExportTask(req: CreateExportTaskExtendedRequest): Promise<CreateExportJobResponse | WebhookEvent<ExportJobParameters>> {
     try {
-      const epsg = 'EPSG';
-      const requestedEPSG = `${epsg}:${req.artifactCRS}`;
       this.logger.info({ msg: `Create export task request`, req: req });
+      console.log(req.artifactCRS)
+      const requestedEPSG = `EPSG:${req.artifactCRS}`;
       const createPackageParams: CreatePackageParams = {
         roi: req.ROI,
         dbId: req.catalogRecordID,
         crs: requestedEPSG,
         description: req.description,
-        callbackURLs: ['http://localhost:8080/export-tasks/webhook'],
+        callbackURLs: [this.serviceWebhookEndpoint],
       };
       const res = await this.exporterTriggerClient.createExportTask(createPackageParams);
-      const exportJob = await this.jobManagerClient.getJobById((res as { jobId: string }).jobId as string);
+      const exportJob = await this.jobManagerClient.getJobById(res.jobId);
 
       if ((res as WebhookParams).status === OperationStatus.COMPLETED) {
-        const jobParameters = (exportJob as { parameters: Record<string, unknown> }).parameters;
-        const task: ITask<TaskParameters> = {
-          exportId: (jobParameters as { exportId: number }).exportId, // TBD
+        const task: ITask<ExportJobParameters> = {
+          id: exportJob.parameters.id,
           catalogRecordID: (res as WebhookParams).recordCatalogId,
-          domain: Domain.RASTER, // TBD
+          domain: Domain.RASTER,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
           ROI: (res as WebhookParams).roi,
-          artifactCRS: EPSGDATA[4326].code, // TBD
+          artifactCRS: EPSGDATA[4326].code,
           description: req.description,
           keywords: req.keywords,
           status: (res as WebhookParams).status,
           artifacts: (res as WebhookParams).artifacts,
-          createdAt: (jobParameters as { created: Date }).created, // TODO: handle string date from db to date type
-          finishedAt: (jobParameters as { updated: Date }).updated, // TODO: handle string date from db to date type
-          expiredAt: (res as WebhookParams).expirationTime,
+          createdAt: new Date(exportJob.created),
+          finishedAt: new Date(exportJob.updated),
+          expiredAt: new Date((res as WebhookParams).expirationTime),
         };
-        const webhookEvent: WebhookEvent<TaskParameters> = {
+
+        const webhookEvent: WebhookEvent<ExportJobParameters> = {
           data: task,
           event: (res as WebhookParams).status === OperationStatus.COMPLETED ? TaskEvent.TASK_COMPLETED : TaskEvent.TASK_FAILED,
           timestamp: new Date(),
         };
         return webhookEvent;
       } else {
-        console.log('CREATE NEW TASK TYPE');
-        console.log('result : ', res);
-        const jobParameters = (exportJob as { parameters: Record<string, unknown> }).parameters;
-        const exportId = new Date().getUTCMilliseconds();
-        const updatedParams = { ...jobParameters, exportId: exportId, keywords: req.keywords, webhook: req.webhook };
-        await this.jobManagerClient.updateJobParameters((res as { jobId: string }).jobId, updatedParams);
+        let createExportJobResponse: CreateExportJobResponse;
 
-        const createExportJobResponse: CreateExportJobResponse = {
-          exportId: exportId,
-        };   
+        if ((res as CreateExportJobTriggerResponse).isDuplicated) {
+          createExportJobResponse = {
+            id: exportJob.parameters.id,
+          };
+          return createExportJobResponse;
+        }
+
+        const exportId = generateUniqueId();
+        const updatedParams = { ...exportJob.parameters, id: exportId, keywords: req.keywords, webhook: req.webhook };
+
+        await this.jobManagerClient.updateJobParameters((res as { jobId: string }).jobId, updatedParams);
+        createExportJobResponse = {
+          id: exportId,
+        };
         return createExportJobResponse;
       }
     } catch (error) {

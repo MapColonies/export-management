@@ -4,7 +4,15 @@ import { Logger } from '@map-colonies/js-logger';
 import { SERVICES } from '../common/constants';
 import { IConfig } from '../common/interfaces';
 import { CreatePackageParams } from '../tasks/models/tasksManager';
-import { CreateExportJobResponse, WebhookParams } from '../exportManager/exportManagerRaster';
+import { WebhookParams } from '../exportManager/exportManagerRaster';
+import { OperationStatus } from '../tasks/enums';
+
+export interface CreateExportJobTriggerResponse {
+  jobId: string;
+  taskIds: string[];
+  status: OperationStatus;
+  isDuplicated: boolean;
+}
 
 @singleton()
 export class ExporterTriggerClient extends HttpClient {
@@ -18,10 +26,8 @@ export class ExporterTriggerClient extends HttpClient {
     );
   }
 
-  // TODO change unknown to return type
-  public async createExportTask(params: CreatePackageParams): Promise<CreateExportJobResponse | WebhookParams> {
-    // this.logger.info({ data, msg: `Sending callback request to URL: "${callbackUrl}"` });
-    const result = await this.post<CreateExportJobResponse | WebhookParams>('/create/roi', params);
+  public async createExportTask(params: CreatePackageParams): Promise<CreateExportJobTriggerResponse | WebhookParams> {
+    const result = await this.post<CreateExportJobTriggerResponse | WebhookParams>('/create/roi', params);
     return result;
   }
 }

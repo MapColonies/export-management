@@ -1,4 +1,3 @@
-import { CreateExportTaskRequest, CreateExportTaskResponse } from '@map-colonies/export-interfaces';
 import { Logger } from '@map-colonies/js-logger';
 import { Meter } from '@opentelemetry/api';
 import { BoundCounter } from '@opentelemetry/api-metrics';
@@ -7,11 +6,12 @@ import httpStatus from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
 import { SERVICES } from '../../common/constants';
 import { CreateExportJobResponse, WebhookParams } from '../../exportManager/exportManagerRaster';
-import { TaskParameters, WebhookEvent } from '../interfaces';
+import { WebhookEvent } from '../interfaces';
+import { ExportJobParameters } from '../../clients/jobManagerClient';
 import { CreateExportTaskExtendedRequest, TasksManager } from '../models/tasksManager';
 
 //type GetTaskHandler = RequestHandler<undefined, ITasksModel>;
-type CreateTaskHandler = RequestHandler<undefined, CreateExportJobResponse | WebhookEvent<TaskParameters>, CreateExportTaskExtendedRequest>;
+type CreateTaskHandler = RequestHandler<undefined, CreateExportJobResponse | WebhookEvent<ExportJobParameters>, CreateExportTaskExtendedRequest>;
 type SendWebhookHandler = RequestHandler<undefined, undefined, WebhookParams>;
 
 @injectable()
@@ -34,10 +34,10 @@ export class TasksController {
       next(error);
     }
   };
-  
+
   public sendWebhook: SendWebhookHandler = async (req, res, next) => {
     try {
-      await this.taskManager.sendWebhook(req.body);
+      await this.taskManager.handleWebhookEvent(req.body);
       return res.sendStatus(httpStatus.OK);
     } catch (error) {
       next(error);

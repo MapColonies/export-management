@@ -1,12 +1,13 @@
 import { GeoJSON } from 'geojson';
 import { FeatureCollection } from '@turf/turf';
-import {  Domain } from '../common/enums';
-import { OperationStatus } from './enums';
+import { Domain } from '@map-colonies/types';
 import { Artifact, TaskEvent, Webhook } from '@map-colonies/export-interfaces';
+import { OperationStatus } from './enums';
 
 export interface ITaskCreate<T> {
   catalogRecordID: string;
   domain: Domain;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   ROI?: FeatureCollection;
   artifactCRS: string;
   description?: string;
@@ -16,7 +17,7 @@ export interface ITaskCreate<T> {
 }
 
 export interface ITask<T> extends Partial<ITaskCreate<T>> {
-  exportId: number;
+  id: number;
   estimatedSize?: number;
   estimatedTime?: number;
   footprint?: GeoJSON;
@@ -34,6 +35,5 @@ export interface WebhookEvent<T> {
   timestamp: Date;
   data: ITask<T>;
 }
-
 
 export declare type TaskParameters = Record<string, unknown>;

@@ -4,7 +4,7 @@ import { Logger } from '@map-colonies/js-logger';
 import { SERVICES } from '../common/constants';
 import { IConfig } from '../common/interfaces';
 import { WebhookEvent } from '../tasks/interfaces';
-import { TaskParameters } from '@map-colonies/export-interfaces';
+import { ExportJobParameters } from './jobManagerClient';
 
 @singleton()
 export class WebhookClient extends HttpClient {
@@ -18,9 +18,8 @@ export class WebhookClient extends HttpClient {
     );
   }
 
-  public async send(url: string, data: WebhookEvent<TaskParameters>): Promise<void> {
-    console.log('#$@#$@#$@#$@$@#$@#$#@$@#$#@, ', url)
-    this.logger.info({ data, msg: `Sending webhook request to URL: "${url}"` });
+  public async send(url: string, data: WebhookEvent<ExportJobParameters>): Promise<void> {
+    this.logger.info({ data, msg: `Sending webhook data"`, url });
     await this.post(url, data);
   }
 }

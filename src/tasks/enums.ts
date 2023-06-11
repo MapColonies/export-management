@@ -11,5 +11,5 @@ export enum TaskStatus {
 
 export enum OperationStatus {
   COMPLETED = 'Completed',
-  FAILED = 'Failed'
-} // TODO: remove and use full TaskStatus from export-intefaces package
+  FAILED = 'Failed',
+} // TODO: remove and use full TaskStatus from export-intefaces package in future

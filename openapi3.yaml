@@ -126,7 +126,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
 
-        
 components:
   schemas:
     taskCreate:
@@ -147,17 +146,17 @@ components:
           $ref: '#/components/schemas/FeatureCollection'
         artifactCRS:
           type: string
-          enum: ['4326', '3857']
+          enum: ['4326']
         description:
           type: string
         keywords:
           type: object
           description: task metadata in key-value pair
-          example: {"foo": "kuku"}
+          example: { 'foo': 'kuku' }
         parameters:
           type: object
           description: task parameters in key-value pair
-          example: {"foo": "kuku"}
+          example: { 'foo': 'kuku' }
         webhook:
           description: describe one or more relevant events to receive the data once event has been occurred
           type: array
@@ -177,7 +176,7 @@ components:
                   example: 'TASK_COMPLETED'
               url:
                 type: string
-                format: url
+                #format: url
                 example: 'https://webhook.com'
 
     task:
@@ -224,7 +223,7 @@ components:
               type: string
               format: date-time
               description: when the task reached an end state
-    
+
     webhookEvent:
       type: object
       required:
@@ -282,8 +281,6 @@ components:
           type: string
         description:
           type: string
-
-
 
     artifact:
       type: object

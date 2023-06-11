@@ -214,15 +214,15 @@ components:
             created_at:
               type: string
               format: date-time
-              description: creation task time
+              description: creation task time - UTC format
             expired_at:
               type: string
               format: date-time
-              description: when the task will be expired_at
+              description: when the task will be expired_at - UTC format
             finished_at:
               type: string
               format: date-time
-              description: when the task reached an end state
+              description: when the task reached an end state - UTC format
 
     # webhookEvent:
     #   type: object
@@ -255,6 +255,7 @@ components:
         expirationTime:
           type: string
           format: date-time
+          description: UTC format
         recordCatalogId:
           type: string
           properties:

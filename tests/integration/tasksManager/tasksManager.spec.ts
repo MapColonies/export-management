@@ -23,7 +23,7 @@ describe('resourceName', function () {
       const response = await requestSender.getResource();
 
       expect(response.status).toBe(httpStatusCodes.OK);
-      expect(response).toSatisfyApiSpec();
+      expect(response).toSatisfyApiSpec(); // TODO: use when tests are done
       // eslint-disable-next-line @typescript-eslint/no-magic-numbers
       expect(1 + 1).toBe(2);
     });

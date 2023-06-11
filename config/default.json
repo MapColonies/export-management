@@ -24,5 +24,21 @@
         "options": null
       }
     }
+  },
+  "serviceWebhookEndpoint": "http://localhost:8080/export-tasks/webhook",
+  "externalClients": {
+    "httpRetry": {
+      "attempts": 10,
+      "delay": "exponential",
+      "shouldResetTimeout": true
+    },
+    "disableHttpClientLogs": true,
+    "exporterTrigger": {
+      "url": "http://localhost:8083"
+    },
+    "jobManager": {
+      "url": "http://localhost:8088",
+      "exportJobType": "rasterTilesExporter"
+    }
   }
 }

@@ -10,8 +10,7 @@ import httpLogger from '@map-colonies/express-access-log-middleware';
 import { defaultMetricsMiddleware, getTraceContexHeaderMiddleware } from '@map-colonies/telemetry';
 import { SERVICES } from './common/constants';
 import { IConfig } from './common/interfaces';
-import { RESOURCE_NAME_ROUTER_SYMBOL } from './resourceName/routes/resourceNameRouter';
-import { ANOTHER_RESOURECE_ROUTER_SYMBOL } from './anotherResource/routes/anotherResourceRouter';
+import { TASKS_ROUTER_SYMBOL } from './tasks/routes/tasksRouter';
 
 @injectable()
 export class ServerBuilder {
@@ -20,8 +19,7 @@ export class ServerBuilder {
   public constructor(
     @inject(SERVICES.CONFIG) private readonly config: IConfig,
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
-    @inject(RESOURCE_NAME_ROUTER_SYMBOL) private readonly resourceNameRouter: Router,
-    @inject(ANOTHER_RESOURECE_ROUTER_SYMBOL) private readonly anotherResourceRouter: Router
+    @inject(TASKS_ROUTER_SYMBOL) private readonly taskRouter: Router
   ) {
     this.serverInstance = express();
   }
@@ -44,14 +42,13 @@ export class ServerBuilder {
   }
 
   private buildRoutes(): void {
-    this.serverInstance.use('/resourceName', this.resourceNameRouter);
-    this.serverInstance.use('/anotherResource', this.anotherResourceRouter);
+    this.serverInstance.use('/export-tasks', this.taskRouter);
     this.buildDocsRoutes();
   }
 
   private registerPreRoutesMiddleware(): void {
     this.serverInstance.use('/metrics', defaultMetricsMiddleware());
-    this.serverInstance.use(httpLogger({ logger: this.logger, ignorePaths: ['/metrics'] }));
+    this.serverInstance.use(httpLogger({ logger: this.logger, ignorePaths: ['/metrics', '/docs'] }));
 
     if (this.config.get<boolean>('server.response.compression.enabled')) {
       this.serverInstance.use(compression(this.config.get<compression.CompressionFilter>('server.response.compression.options')));
@@ -62,7 +59,9 @@ export class ServerBuilder {
 
     const ignorePathRegex = new RegExp(`^${this.config.get<string>('openapiConfig.basePath')}/.*`, 'i');
     const apiSpecPath = this.config.get<string>('openapiConfig.filePath');
-    this.serverInstance.use(OpenApiMiddleware({ apiSpec: apiSpecPath, validateRequests: true, ignorePaths: ignorePathRegex }));
+    this.serverInstance.use(
+      OpenApiMiddleware({ apiSpec: apiSpecPath, validateRequests: { allowUnknownQueryParameters: true }, ignorePaths: ignorePathRegex })
+    );
   }
 
   private registerPostRoutesMiddleware(): void {

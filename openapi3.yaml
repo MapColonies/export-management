@@ -224,21 +224,21 @@ components:
               format: date-time
               description: when the task reached an end state
 
-    webhookEvent:
-      type: object
-      required:
-        - event
-        - timestamp
-        - data
-      properties:
-        event:
-          type: string
-          enum: ['TASK_COMPLETED', 'TASK_FAILED']
-        timestamp:
-          type: string
-          format: date-time
-        data:
-          $ref: '#/components/schemas/task'
+    # webhookEvent:
+    #   type: object
+    #   required:
+    #     - event
+    #     - timestamp
+    #     - data
+    #   properties:
+    #     event:
+    #       type: string
+    #       enum: ['TASK_COMPLETED', 'TASK_FAILED']
+    #     timestamp:
+    #       type: string
+    #       format: date-time
+    #     data:
+    #       $ref: '#/components/schemas/task'
 
     webhook:
       type: object
@@ -448,16 +448,6 @@ components:
         - properties:
             coordinates:
               $ref: '#/components/schemas/Point2D'
-
-    BBox:
-      type: array
-      items:
-        type: number
-      minItems: 4
-      maxItems: 4
-      description: >-
-        Bounding box corners (lower left, upper right)=[minx,miny,maxx,maxy] in
-        crs units as array. If empty - original layer's bbox is taken.
 
     error:
       type: object

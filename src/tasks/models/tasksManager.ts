@@ -71,20 +71,6 @@ export class TasksManager {
 
     const webhookUrls = this.getWebhookUrls(webhook, task.status);
     await this.sendWebhookEvent(webhookUrls, webhookEvent);
-
-    // const webhookPromises: Promise<void>[] = [];
-    // for (const url of webhookUrls) {
-    //   webhookPromises.push(this.webhookClient.send(url as string, webhookEvent));
-    // }
-
-    // const promisesResponse = await Promise.allSettled(webhookPromises);
-
-    // promisesResponse.forEach((response, index) => {
-    //   if (response.status === 'rejected') {
-    //     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    //     this.logger.error({ reason: response.reason, url: webhookUrls[index], id: task.id, msg: `Failed to send webhook event` });
-    //   }
-    // });
   }
 
   private getExportManagerInstance(domain: Domain): IExportManager {

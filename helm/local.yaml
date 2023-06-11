@@ -29,8 +29,8 @@ image:
 
 rasterCommon:
   serviceUrls:
-    exporterTrigger: "https://exporter-trigger-no-auth-integration.apps.j1lk3njp.eastus.aroapp.io/"
-    jobManager: "https://job-manager-integration-job-manager-route-integration.apps.j1lk3njp.eastus.aroapp.io/"
+    exporterTrigger: "http://exporter-trigger-int-exporter-trigger/"
+    jobManager: "http://job-manager-integration-job-manager/"
   jobManagement:
     exporter:
       jobType: rasterTilesExporter

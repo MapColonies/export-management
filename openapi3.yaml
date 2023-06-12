@@ -188,7 +188,7 @@ components:
             - id
             - status
             - artifacts
-            - created_at
+            - createdAt
           properties:
             id:
               type: number
@@ -220,15 +220,15 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/artifact'
-            created_at:
+            createdAt:
               type: string
               format: date-time
               description: creation task time - UTC format
-            expired_at:
+            expiredAt:
               type: string
               format: date-time
-              description: when the task will be expired_at - UTC format
-            finished_at:
+              description: when the task will be expired at - UTC format
+            finishedAt:
               type: string
               format: date-time
               description: when the task reached an end state - UTC format

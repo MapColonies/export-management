@@ -1,5 +1,5 @@
 import { Logger } from '@map-colonies/js-logger';
-import { Artifact, TaskEvent } from '@map-colonies/export-interfaces';
+import { Artifact } from '@map-colonies/export-interfaces';
 import { inject, injectable } from 'tsyringe';
 import config from 'config';
 import { Domain, EPSGDATA } from '@map-colonies/types';
@@ -10,7 +10,7 @@ import { CreateExportJobTriggerResponse, ExporterTriggerClient } from '../client
 import { CreateExportTaskExtendedRequest, CreatePackageParams } from '../tasks/models/tasksManager';
 import { OperationStatus } from '../tasks/enums';
 import { ExportJobParameters, JobManagerClient } from '../clients/jobManagerClient';
-import { ITask, WebhookEvent } from '../tasks/interfaces';
+import { ITask } from '../tasks/interfaces';
 import { IExportManager } from '../exportManager/interfaces';
 
 export interface WebhookParams {
@@ -70,14 +70,9 @@ export class ExportManagerRaster implements IExportManager {
           expiredAt: new Date((res as WebhookParams).expirationTime),
         };
 
-        // const webhookEvent: WebhookEvent<ExportJobParameters> = {
-        //   data: task,
-        //   event: (res as WebhookParams).status === OperationStatus.COMPLETED ? TaskEvent.TASK_COMPLETED : TaskEvent.TASK_FAILED,
-        //   timestamp: new Date(),
-        // };
         return task;
       } else {
-        let createExportJobResponse: ITask<ExportJobParameters>;    
+        let createExportJobResponse: ITask<ExportJobParameters>;
         if ((res as CreateExportJobTriggerResponse).isDuplicated) {
           createExportJobResponse = {
             id: exportJob.parameters.id,
@@ -86,7 +81,7 @@ export class ExportManagerRaster implements IExportManager {
             createdAt: new Date(exportJob.created),
             status: (res as WebhookParams).status,
             domain: Domain.RASTER,
-            webhook: req.webhook
+            webhook: req.webhook,
           };
           return createExportJobResponse;
         }
@@ -102,7 +97,7 @@ export class ExportManagerRaster implements IExportManager {
           createdAt: new Date(exportJob.created),
           status: (res as WebhookParams).status,
           domain: Domain.RASTER,
-          webhook: req.webhook
+          webhook: req.webhook,
         };
         return createExportJobResponse;
       }

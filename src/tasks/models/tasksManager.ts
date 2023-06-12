@@ -6,7 +6,7 @@ import { FeatureCollection } from '@turf/turf';
 import { BadRequestError } from '@map-colonies/error-types';
 import { ExporterTriggerClient } from '../../clients/exporterTriggerClient';
 import { SERVICES } from '../../common/constants';
-import { CreateExportJobResponse, ExportManagerRaster, WebhookParams } from '../../exportManager/exportManagerRaster';
+import { ExportManagerRaster, WebhookParams } from '../../exportManager/exportManagerRaster';
 import { Webhook } from '../../exportManager/interfaces';
 import { IExportManager } from '../../exportManager/interfaces';
 import { ITask, WebhookEvent } from '../interfaces';

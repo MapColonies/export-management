@@ -187,7 +187,6 @@ components:
           required:
             - id
             - status
-            - artifacts
             - createdAt
           properties:
             id:

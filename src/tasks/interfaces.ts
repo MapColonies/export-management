@@ -24,7 +24,7 @@ export interface ITask<T> extends Partial<ITaskCreate<T>> {
   totalSize?: number;
   status: OperationStatus; // TBD => use TaskStatus in future version
   progress?: number;
-  artifacts: Artifact[];
+  artifacts?: Artifact[];
   createdAt: Date;
   expiredAt?: Date;
   finishedAt?: Date;

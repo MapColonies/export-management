@@ -39,7 +39,7 @@ export class ExportManagerRaster implements IExportManager {
     this.serviceWebhookEndpoint = config.get<string>('serviceWebhookEndpoint');
   }
 
-  public async createExportTask(req: CreateExportTaskExtendedRequest): Promise<CreateExportJobResponse | WebhookEvent<ExportJobParameters>> {
+  public async createExportTask(req: CreateExportTaskExtendedRequest): Promise<ITask<ExportJobParameters>> {
     try {
       this.logger.info({ msg: `Create export task request`, req: req });
       const requestedEPSG = `EPSG:${req.artifactCRS}`;
@@ -70,18 +70,23 @@ export class ExportManagerRaster implements IExportManager {
           expiredAt: new Date((res as WebhookParams).expirationTime),
         };
 
-        const webhookEvent: WebhookEvent<ExportJobParameters> = {
-          data: task,
-          event: (res as WebhookParams).status === OperationStatus.COMPLETED ? TaskEvent.TASK_COMPLETED : TaskEvent.TASK_FAILED,
-          timestamp: new Date(),
-        };
-        return webhookEvent;
+        // const webhookEvent: WebhookEvent<ExportJobParameters> = {
+        //   data: task,
+        //   event: (res as WebhookParams).status === OperationStatus.COMPLETED ? TaskEvent.TASK_COMPLETED : TaskEvent.TASK_FAILED,
+        //   timestamp: new Date(),
+        // };
+        return task;
       } else {
-        let createExportJobResponse: CreateExportJobResponse;
-
+        let createExportJobResponse: ITask<ExportJobParameters>;    
         if ((res as CreateExportJobTriggerResponse).isDuplicated) {
           createExportJobResponse = {
             id: exportJob.parameters.id,
+            catalogRecordID: req.catalogRecordID,
+            artifactCRS: EPSGDATA[4326].code,
+            createdAt: new Date(exportJob.created),
+            status: (res as WebhookParams).status,
+            domain: Domain.RASTER,
+            webhook: req.webhook
           };
           return createExportJobResponse;
         }
@@ -92,6 +97,12 @@ export class ExportManagerRaster implements IExportManager {
         await this.jobManagerClient.updateJobParameters((res as { jobId: string }).jobId, updatedParams);
         createExportJobResponse = {
           id: exportId,
+          catalogRecordID: req.catalogRecordID,
+          artifactCRS: EPSGDATA[4326].code,
+          createdAt: new Date(exportJob.created),
+          status: (res as WebhookParams).status,
+          domain: Domain.RASTER,
+          webhook: req.webhook
         };
         return createExportJobResponse;
       }

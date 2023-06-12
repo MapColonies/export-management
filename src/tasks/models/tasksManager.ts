@@ -36,7 +36,7 @@ export class TasksManager {
     private readonly webhookClient: WebhookClient
   ) {}
 
-  public async createExportTask(req: CreateExportTaskExtendedRequest): Promise<CreateExportJobResponse | WebhookEvent<ExportJobParameters>> {
+  public async createExportTask(req: CreateExportTaskExtendedRequest): Promise<ITask<Expo>> {
     const domain = req.domain;
     const exportManagerInstance = this.getExportManagerInstance(domain);
     const jobCreated = await exportManagerInstance.createExportTask(req);

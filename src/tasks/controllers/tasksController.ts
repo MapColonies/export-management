@@ -6,10 +6,10 @@ import { injectable, inject } from 'tsyringe';
 import { SERVICES } from '../../common/constants';
 import { WebhookParams } from '../../exportManager/exportManagerRaster';
 import { ExportJobParameters } from '../../clients/jobManagerClient';
-import { ITask } from '../interfaces';
+import { ITaskResponse } from '../interfaces';
 import { CreateExportTaskExtendedRequest, TasksManager } from '../models/tasksManager';
 
-type CreateTaskHandler = RequestHandler<undefined, ITask<ExportJobParameters>, CreateExportTaskExtendedRequest>;
+type CreateTaskHandler = RequestHandler<undefined, ITaskResponse<ExportJobParameters>, CreateExportTaskExtendedRequest>;
 type SendWebhookHandler = RequestHandler<undefined, undefined, WebhookParams>;
 
 @injectable()

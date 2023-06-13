@@ -1,5 +1,5 @@
 import { Logger } from '@map-colonies/js-logger';
-import { Artifact, TaskEvent } from '@map-colonies/export-interfaces';
+import { Artifact } from '@map-colonies/export-interfaces';
 import { inject, injectable } from 'tsyringe';
 import config from 'config';
 import { Domain, EPSGDATA } from '@map-colonies/types';
@@ -10,7 +10,7 @@ import { CreateExportJobTriggerResponse, ExporterTriggerClient } from '../client
 import { CreateExportTaskExtendedRequest, CreatePackageParams } from '../tasks/models/tasksManager';
 import { OperationStatus } from '../tasks/enums';
 import { ExportJobParameters, JobManagerClient } from '../clients/jobManagerClient';
-import { ITask, WebhookEvent } from '../tasks/interfaces';
+import { ITaskResponse } from '../tasks/interfaces';
 import { IExportManager } from '../exportManager/interfaces';
 
 export interface WebhookParams {
@@ -39,7 +39,7 @@ export class ExportManagerRaster implements IExportManager {
     this.serviceWebhookEndpoint = config.get<string>('serviceWebhookEndpoint');
   }
 
-  public async createExportTask(req: CreateExportTaskExtendedRequest): Promise<ITask<ExportJobParameters>> {
+  public async createExportTask(req: CreateExportTaskExtendedRequest): Promise<ITaskResponse<ExportJobParameters>> {
     try {
       this.logger.info({ msg: `Create export task request`, req: req });
       const requestedEPSG = `EPSG:${req.artifactCRS}`;
@@ -54,7 +54,7 @@ export class ExportManagerRaster implements IExportManager {
       const exportJob = await this.jobManagerClient.getJobById(res.jobId);
 
       if ((res as WebhookParams).status === OperationStatus.COMPLETED) {
-        const task: ITask<ExportJobParameters> = {
+        const task: ITaskResponse<ExportJobParameters> = {
           id: exportJob.parameters.id,
           catalogRecordID: (res as WebhookParams).recordCatalogId,
           domain: Domain.RASTER,
@@ -68,16 +68,12 @@ export class ExportManagerRaster implements IExportManager {
           createdAt: new Date(exportJob.created),
           finishedAt: new Date(exportJob.updated),
           expiredAt: new Date((res as WebhookParams).expirationTime),
+          webhook: req.webhook,
         };
 
-        // const webhookEvent: WebhookEvent<ExportJobParameters> = {
-        //   data: task,
-        //   event: (res as WebhookParams).status === OperationStatus.COMPLETED ? TaskEvent.TASK_COMPLETED : TaskEvent.TASK_FAILED,
-        //   timestamp: new Date(),
-        // };
         return task;
       } else {
-        let createExportJobResponse: ITask<ExportJobParameters>;    
+        let createExportJobResponse: ITaskResponse<ExportJobParameters>;
         if ((res as CreateExportJobTriggerResponse).isDuplicated) {
           createExportJobResponse = {
             id: exportJob.parameters.id,
@@ -86,7 +82,7 @@ export class ExportManagerRaster implements IExportManager {
             createdAt: new Date(exportJob.created),
             status: (res as WebhookParams).status,
             domain: Domain.RASTER,
-            webhook: req.webhook
+            webhook: req.webhook,
           };
           return createExportJobResponse;
         }
@@ -102,7 +98,7 @@ export class ExportManagerRaster implements IExportManager {
           createdAt: new Date(exportJob.created),
           status: (res as WebhookParams).status,
           domain: Domain.RASTER,
-          webhook: req.webhook
+          webhook: req.webhook,
         };
         return createExportJobResponse;
       }

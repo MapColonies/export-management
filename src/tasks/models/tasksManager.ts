@@ -6,10 +6,10 @@ import { FeatureCollection } from '@turf/turf';
 import { BadRequestError } from '@map-colonies/error-types';
 import { ExporterTriggerClient } from '../../clients/exporterTriggerClient';
 import { SERVICES } from '../../common/constants';
-import { CreateExportJobResponse, ExportManagerRaster, WebhookParams } from '../../exportManager/exportManagerRaster';
+import { ExportManagerRaster, WebhookParams } from '../../exportManager/exportManagerRaster';
 import { Webhook } from '../../exportManager/interfaces';
 import { IExportManager } from '../../exportManager/interfaces';
-import { ITask, WebhookEvent } from '../interfaces';
+import { ITaskResponse, WebhookEvent } from '../interfaces';
 import { ExportJobParameters, JobManagerClient } from '../../clients/jobManagerClient';
 import { OperationStatus } from '../enums';
 import { WebhookClient } from '../../clients/webhookClient';
@@ -36,7 +36,7 @@ export class TasksManager {
     private readonly webhookClient: WebhookClient
   ) {}
 
-  public async createExportTask(req: CreateExportTaskExtendedRequest): Promise<ITask<Expo>> {
+  public async createExportTask(req: CreateExportTaskExtendedRequest): Promise<ITaskResponse<ExportJobParameters>> {
     const domain = req.domain;
     const exportManagerInstance = this.getExportManagerInstance(domain);
     const jobCreated = await exportManagerInstance.createExportTask(req);
@@ -46,7 +46,7 @@ export class TasksManager {
   public async handleWebhookEvent(params: WebhookParams): Promise<void> {
     const exportJob = await this.jobManagerClient.getJobById(params.jobId);
     const jobParameters = exportJob.parameters;
-    const task: ITask<ExportJobParameters> = {
+    const task: ITaskResponse<ExportJobParameters> = {
       id: jobParameters.id,
       catalogRecordID: params.recordCatalogId,
       domain: Domain.RASTER,
@@ -57,6 +57,7 @@ export class TasksManager {
       keywords: jobParameters.keywords,
       status: params.status,
       artifacts: params.artifacts,
+      webhook: exportJob.parameters.webhook,
       createdAt: new Date(exportJob.created),
       finishedAt: new Date(exportJob.updated),
       expiredAt: new Date(params.expirationTime),

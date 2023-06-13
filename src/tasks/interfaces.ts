@@ -16,7 +16,7 @@ export interface ITaskCreate<T> {
   webhook: Webhook[];
 }
 
-export interface ITask<T> extends Partial<ITaskCreate<T>> {
+export interface ITaskResponse<T> extends ITaskCreate<T> {
   id: number;
   estimatedSize?: number;
   estimatedTime?: number;
@@ -24,7 +24,7 @@ export interface ITask<T> extends Partial<ITaskCreate<T>> {
   totalSize?: number;
   status: OperationStatus; // TBD => use TaskStatus in future version
   progress?: number;
-  artifacts: Artifact[];
+  artifacts?: Artifact[];
   createdAt: Date;
   expiredAt?: Date;
   finishedAt?: Date;
@@ -33,7 +33,7 @@ export interface ITask<T> extends Partial<ITaskCreate<T>> {
 export interface WebhookEvent<T> {
   event: TaskEvent;
   timestamp: Date;
-  data: ITask<T>;
+  data: ITaskResponse<T>;
 }
 
 export declare type TaskParameters = Record<string, unknown>;

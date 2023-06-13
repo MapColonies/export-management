@@ -4,12 +4,12 @@ import { RequestHandler } from 'express';
 import httpStatus from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
 import { SERVICES } from '../../common/constants';
-import { CreateExportJobResponse, WebhookParams } from '../../exportManager/exportManagerRaster';
-import { WebhookEvent } from '../interfaces';
+import { WebhookParams } from '../../exportManager/exportManagerRaster';
 import { ExportJobParameters } from '../../clients/jobManagerClient';
+import { ITaskResponse } from '../interfaces';
 import { CreateExportTaskExtendedRequest, TasksManager } from '../models/tasksManager';
 
-type CreateTaskHandler = RequestHandler<undefined, CreateExportJobResponse | WebhookEvent<ExportJobParameters>, CreateExportTaskExtendedRequest>;
+type CreateTaskHandler = RequestHandler<undefined, ITaskResponse<ExportJobParameters>, CreateExportTaskExtendedRequest>;
 type SendWebhookHandler = RequestHandler<undefined, undefined, WebhookParams>;
 
 @injectable()

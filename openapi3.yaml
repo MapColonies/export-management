@@ -211,6 +211,8 @@ components:
                 - PENDING
                 - EXPIRED
                 - ARCHIVED
+            errorReason:
+              type: string
             progress:
               type: number
               minimum: 0

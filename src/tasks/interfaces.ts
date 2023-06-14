@@ -28,6 +28,7 @@ export interface ITaskResponse<T> extends ITaskCreate<T> {
   createdAt: Date;
   expiredAt?: Date;
   finishedAt?: Date;
+  errorReason?: string;
 }
 
 export interface WebhookEvent<T> {

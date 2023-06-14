@@ -61,8 +61,8 @@ export class TasksManager {
       createdAt: new Date(exportJob.created),
       finishedAt: new Date(exportJob.updated),
       expiredAt: new Date(params.expirationTime),
+      errorReason: params.errorReason,
     };
-
     const webhook = jobParameters.webhook;
     const webhookEvent: WebhookEvent<ExportJobParameters> = {
       data: task,

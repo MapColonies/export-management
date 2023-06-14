@@ -24,10 +24,6 @@ export interface WebhookParams {
   errorReason?: string;
 }
 
-export interface CreateExportJobResponse {
-  id: number;
-}
-
 @injectable()
 export class ExportManagerRaster implements IExportManager {
   private readonly serviceWebhookEndpoint: string;

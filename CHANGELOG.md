@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.3](https://github.com/MapColonies/export-management/compare/v1.1.2...v1.1.3) (2023-06-14)
+
+
+### Bug Fixes
+
+* added reason for failed task in webhook data ([0c127f0](https://github.com/MapColonies/export-management/commit/0c127f0ab35f3d120348f7f531787b62409fd1ff))
+* added reason for failed task in webhook data ([#3](https://github.com/MapColonies/export-management/issues/3)) ([51ab361](https://github.com/MapColonies/export-management/commit/51ab361121cd5503212fce25d313e9f252fcaede))
+
 ### [1.1.2](https://github.com/MapColonies/export-management/compare/v1.1.1...v1.1.2) (2023-06-13)
 
 

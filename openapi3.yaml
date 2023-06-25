@@ -360,30 +360,11 @@ components:
         geometry:
           type: object
           nullable: true
-          oneOf:
-            - $ref: '#/components/schemas/GeometryCollection'
-            - $ref: '#/components/schemas/Geometry'
+          $ref: '#/components/schemas/Geometry'
     FeatureProperties:
       additionalProperties: {}
       description: define any additional properties fields for the feature
-    GeometryCollection:
-      type: object
-      description: GeoJSon geometry collection
-      required:
-        - type
-        - geometries
-      externalDocs:
-        url: http://geojson.org/geojson-spec.html#geometrycollection
-      properties:
-        type:
-          type: string
-          enum:
-            - GeometryCollection
-          description: custom properties
-        geometries:
-          type: array
-          items:
-            $ref: '#/components/schemas/GeometryBase'
+
     Geometry:
       description: GeoJSon geometry
       type: object

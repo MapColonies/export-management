@@ -180,6 +180,7 @@ components:
               url:
                 type: string
                 example: https://webhook.com
+      additionalProperties: false
     task:
       allOf:
         - $ref: '#/components/schemas/taskCreate'

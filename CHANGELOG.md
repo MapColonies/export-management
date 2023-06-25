@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.4](https://github.com/MapColonies/export-management/compare/v1.1.3...v1.1.4) (2023-06-25)
+
+
+### Bug Fixes
+
+* additional properties disabled ([#4](https://github.com/MapColonies/export-management/issues/4)) ([7819e20](https://github.com/MapColonies/export-management/commit/7819e207877efc6e5ee57af34e40cec6a46eed2f))
+* revmoed geometry collection as feature type ([#5](https://github.com/MapColonies/export-management/issues/5)) ([9a57d4c](https://github.com/MapColonies/export-management/commit/9a57d4c3226c3a19dc0b26e47200a1fcbda011e1))
+
 ### [1.1.3](https://github.com/MapColonies/export-management/compare/v1.1.2...v1.1.3) (2023-06-14)
 
 

@@ -29,7 +29,7 @@ CREATE TABLE "Task"
   "status" "operation_status_enum" NOT NULL DEFAULT 'Pending'::"operation_status_enum",
   "description" character varying(2000) NOT NULL DEFAULT ''::character varying,
   "keywords" jsonb,
-  "reason" text COLLATE NOT NULL DEFAULT ''::text,
+  "reason" text NOT NULL DEFAULT ''::text,
   "percentage" smallint,
   "createdAt" timestamp with time zone,
   "expiredAt" timestamp with time zone,

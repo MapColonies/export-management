@@ -5,8 +5,6 @@ import { Logger } from '@map-colonies/js-logger';
 import { DBConnectionError } from '../common/errors';
 import { SERVICES } from '../common/constants';
 import { IConfig, IDbConfig } from '../common/interfaces';
-import { JobRepository } from './repositories/jobRepository';
-import { TaskRepository } from './repositories/taskRepository';
 
 @singleton()
 export class ConnectionManager {
@@ -34,13 +32,13 @@ export class ConnectionManager {
     return this.connection !== undefined;
   }
 
-  public getJobRepository(): JobRepository {
-    return this.getRepository(JobRepository);
-  }
+  // public getJobRepository(): JobRepository {
+  //   throw new NotImplementedError("test");
+  // }
 
-  public getTaskRepository(): TaskRepository {
-    return this.getRepository(TaskRepository);
-  }
+  // public getTaskRepository(): TaskRepository {
+  //   throw new NotImplementedError("test");
+  // }
 
   public async createQueryRunner(): Promise<QueryRunner> {
     if (!this.isConnected()) {

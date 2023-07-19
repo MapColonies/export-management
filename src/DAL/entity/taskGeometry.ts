@@ -5,7 +5,7 @@ import { TaskEntity } from './task';
 
 type EpsgPartial = Extract<EpsgCode, '4326' | '3857'>;
 
-@Entity('task')
+@Entity('task_geometry')
 export class TaskGeometryEntity {
   @PrimaryGeneratedColumn()
   public id: string;
@@ -14,55 +14,22 @@ export class TaskGeometryEntity {
   @JoinColumn({ name: 'export_task_id' })
   public task: TaskEntity;
 
-  // @ManyToOne(() => JobEntity, (job) => job.tasks, { nullable: false })
-  // @JoinColumn({ name: 'jobId' })
-  // public job: JobEntity;
+  @Column({name: 'wkt_geometry', type: 'text',nullable: true})
+  public wktGeometry: string;
 
-  @Column({ name: 'catalog_record_id', nullable: false, type: 'uuid' })
-  public catalogRecordId: string;
+  @Column({name: 'wkb_geometry', type: 'geometry', spatialFeatureType: 'Geometry', srid: 4326,nullable: true})
+  public wkbGeometry: string;
 
-  @Column('varchar', {name: 'artifact_crs', nullable: false })
-  public artifactCRS: EpsgPartial;
-
-  @Column('varchar', {name: 'domain', nullable: false })
-  public domain: Domain;
-
-  @Column({ type: 'enum', enum: TaskStatus, default: TaskStatus.PENDING, nullable: false })
-  public status: TaskStatus;
-
-  @Column('varchar', { length: 2000, nullable: true })
-  public description: string;
+  @Column({name: 'footprint_geojson', type: 'text', nullable: false})
+  public footprint: object;
 
   @Column('jsonb', { nullable: true })
-  public keywords: Record<string, unknown>;
-
-  @Column('varchar', { nullable: true })
-  public reason: string;
-
-  @Column('smallint', { nullable: true })
-  public percentage: number;
-
-  @CreateDateColumn({
-    name: 'created_at',
-    type: 'timestamp with time zone'
-  })
-  public createdAt: Date;
-
-  @UpdateDateColumn({
-    name: 'expired_at',
-    type: 'timestamp with time zone'
-  })
-  public expiredAt: Date;
-
-  @UpdateDateColumn({
-    name: 'finished_at',
-    type: 'timestamp with time zone'
-  })
-  public finishedAt: Date;
+  public metadata: object;
+  
 
   public constructor();
-  public constructor(init: Partial<TaskEntity>);
-  public constructor(...args: [] | [Partial<TaskEntity>]) {
+  public constructor(init: Partial<TaskGeometryEntity>);
+  public constructor(...args: [] | [Partial<TaskGeometryEntity>]) {
     if (args.length === 1) {
       Object.assign(this, args[0]);
     }

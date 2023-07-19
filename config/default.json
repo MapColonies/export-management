@@ -12,7 +12,7 @@
     }
   },
   "server": {
-    "port": "8080",
+    "port": "8087",
     "request": {
       "payload": {
         "limit": "1mb"
@@ -25,7 +25,32 @@
       }
     }
   },
-  "serviceWebhookEndpoint": "http://localhost:8080/export-tasks/webhook",
+  "typeOrm": {
+    "type": "postgres",
+    "host": "localhost",
+    "port": 5432,
+    "username": "postgres",
+    "password": "",
+    "enableSslAuth": false,
+    "sslPaths": {
+      "ca": "",
+      "key": "",
+      "cert": ""
+    },
+    "database": "raster",
+    "schema": "ExportManager",
+    "synchronize": true,
+    "logging": false,
+    "entities": ["**/DAL/entity/**/*.js"],
+    "migrations": [],
+    "subscribers": ["**/DAL/subscriber/**/*.js"],
+    "cli": {
+      "entitiesDir": "src/DAL/entity",
+      "migrationsDir": "src/DAL/migration",
+      "subscribersDir": "src/DAL/subscriber"
+    }
+  },
+  "serviceWebhookEndpoint": "http://localhost:8087/export-tasks/webhook",
   "externalClients": {
     "httpRetry": {
       "attempts": 10,

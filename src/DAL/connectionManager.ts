@@ -1,51 +1,41 @@
-import { readFileSync } from 'fs';
-import { createConnection, Connection, ObjectType, QueryRunner, ConnectionOptions } from 'typeorm';
-import { inject, singleton } from 'tsyringe';
 import { Logger } from '@map-colonies/js-logger';
-import { DBConnectionError } from '../common/errors';
+import { inject, injectable } from 'tsyringe';
+import { readFileSync } from 'fs';
 import { SERVICES } from '../common/constants';
 import { IConfig, IDbConfig } from '../common/interfaces';
+import { ConnectionOptions, DataSource } from 'typeorm';
+import { TaskEntity } from './entity/task';
+import { ArtifactEntity } from './entity/artifact';
+import { WebhookEntity } from './entity/webhook';
+import { ArtifactTypeEntity } from './entity/artifactType';
+import { TaskGeometryEntity } from './entity/taskGeometry';
+import { DBConnectionError } from '../common/errors';
 
-@singleton()
+@injectable()
 export class ConnectionManager {
-  private connection?: Connection;
-  private connectionStatusPromise?: Promise<Connection>;
-
+  private dataSource: DataSource;
   public constructor(@inject(SERVICES.LOGGER) private readonly logger: Logger, @inject(SERVICES.CONFIG) private readonly config: IConfig) {}
 
-  public async init(): Promise<void> {
+  public async getDataSource(): Promise<DataSource> {
+    if (this.dataSource.isInitialized) {
+      return this.dataSource;
+    }
+
     const connectionConfig = this.config.get<IDbConfig>('typeOrm');
-    this.logger.info(`connection to database ${connectionConfig.database as string} on ${connectionConfig.host as string}`);
     try {
-      if (this.connectionStatusPromise === undefined) {
-        this.connectionStatusPromise = createConnection(this.createConnectionOptions(connectionConfig));
-      }
-      this.connection = await this.connectionStatusPromise;
+      this.dataSource = new DataSource(this.createConnectionOptions(connectionConfig));
+
+      await this.dataSource.initialize();
+      this.logger.info({
+        msg: 'Successfully connected to db',
+        metadata: { connectionConfig },
+      });
+
+      return this.dataSource;
     } catch (err) {
-      const errString = JSON.stringify(err, Object.getOwnPropertyNames(err));
-      this.logger.error(`failed to connect to database: ${errString}`);
+      this.logger.error({ msg: err, metadata: { err, connectionConfig } });
       throw new DBConnectionError();
     }
-  }
-
-  public isConnected(): boolean {
-    return this.connection !== undefined;
-  }
-
-  // public getJobRepository(): JobRepository {
-  //   throw new NotImplementedError("test");
-  // }
-
-  // public getTaskRepository(): TaskRepository {
-  //   throw new NotImplementedError("test");
-  // }
-
-  public async createQueryRunner(): Promise<QueryRunner> {
-    if (!this.isConnected()) {
-      await this.init();
-    }
-    const connection = this.connection as Connection;
-    return connection.createQueryRunner();
   }
 
   private createConnectionOptions(dbConfig: IDbConfig): ConnectionOptions {
@@ -55,16 +45,5 @@ export class ConnectionManager {
       connectionOptions.ssl = { key: readFileSync(sslPaths.key), cert: readFileSync(sslPaths.cert), ca: readFileSync(sslPaths.ca) };
     }
     return connectionOptions;
-  }
-
-  private getRepository<T>(repository: ObjectType<T>): T {
-    if (!this.isConnected()) {
-      const msg = 'failed to send request to database: no open connection';
-      this.logger.error(msg);
-      throw new DBConnectionError();
-    } else {
-      const connection = this.connection as Connection;
-      return connection.getCustomRepository(repository);
-    }
   }
 }

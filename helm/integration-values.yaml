@@ -25,7 +25,7 @@ caKey: 'ca.crt'
 
 image:
   repository: export-management
-  tag: 'integration'
+  tag: 'v1.1.4'
 
 serviceUrls:
   exporterTrigger: "http://exporter-trigger-int-exporter-trigger/"
@@ -84,7 +84,7 @@ envoy:
   maxRequestBytes: 8192
   requestedDomain: rasterExport
   resources:
-    enabled: true
+    enabled: false
     value:
       limits:
         cpu: 500m

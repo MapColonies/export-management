@@ -3,6 +3,8 @@ global:
   tracing: {}
   metrics: {}
   environment: {}
+  authentication:
+    jwtPublicKeySecretName: map-colonies-jwks
 
 enabled: true
 environment: development
@@ -13,8 +15,8 @@ resetOnConfigChange: true
 imagePullPolicy: Always
 
 cloudProvider:
-  dockerRegistryUrl: my-registry-url.io
-  imagePullSecretName: 'my-registry-secret'
+  dockerRegistryUrl: acrarolibotnonprod.azurecr.io
+  imagePullSecretName: 'acr-registry'
   flavor: openshift
 
 caSecretName: ''
@@ -23,18 +25,18 @@ caKey: 'ca.crt'
 
 image:
   repository: export-management
-  tag: 'latest'
+  tag: 'v1.1.4'
 
 serviceUrls:
-  exporterTrigger: "http://job-manager-service-url"
-  jobManager: "http://job-manager-service-url"
+  exporterTrigger: "http://exporter-trigger-raster-qa-exporter-trigger/"
+  jobManager: "http://job-manager-raster-qa-job-manager/"
 jobManagement:
-    exporter:
-      jobType: tilesExport
+  exporter:
+    jobType: rasterTilesExporter
 authentication:
-    opa:
-      enabled: false
-      customHeaderName: ""
+  opa:
+    enabled: true
+    customHeaderName: "x-api-key"
 
 
 env:
@@ -45,9 +47,10 @@ env:
   logLevel: info
   logPrettyPrintEnabled: false
   responseCompressionEnabled: true
-  disableHttpClientLogs: false
   requestPayloadLimit: 1mb
-  serviceWebhookEndpoint: https://export-management-test-integration.apps.j1lk3njp.eastus.aroapp.io/export-tasks/webhook/
+  disableHttpClientLogs: false
+  #https://exoprt-management-no-auth-integration.apps.j1lk3njp.eastus.aroapp.io/export-tasks/webhook
+  serviceWebhookEndpoint: http://export-management-export-management/export-tasks/webhook
   tracing:
     enabled: false
     url: http://localhost:55681/v1/trace
@@ -65,14 +68,14 @@ opa:
   port: 9191
   enableLogging: false
   resources:
-    enabled: true
+    enabled: false
     value:
       limits:
-        cpu: 100m
-        memory: 128Mi
+        cpu: 250m
+        memory: 150Mi
       requests:
-        cpu: 100m
-        memory: 128Mi
+        cpu: 250m
+        memory: 150Mi
         
 envoy:
   image: envoyproxy/envoy
@@ -81,23 +84,25 @@ envoy:
   maxRequestBytes: 8192
   requestedDomain: rasterExport
   resources:
-    enabled: true
+    enabled: false
     value:
       limits:
-        cpu: 100m
-        memory: 128Mi
+        cpu: 500m
+        memory: 850Mi
       requests:
-        cpu: 100m
-        memory: 128Mi
+        cpu: 500m
+        memory: 850Mi
+
+  
 
 resources:
-  enabled: trueca
+  enabled: false
   value:
     limits:
       cpu: 100m
       memory: 128Mi
     requests:
-      cpu: 25m
+      cpu: 100m
       memory: 128Mi
 
 route:

@@ -1,7 +1,7 @@
 import { GeoJSON } from 'geojson';
 import { FeatureCollection } from '@turf/turf';
 import { Domain } from '@map-colonies/types';
-import { Artifact, TaskEvent, Webhook } from '@map-colonies/export-interfaces';
+import { Artifact, TaskEvent, TaskStatus, Webhook } from '@map-colonies/export-interfaces';
 import { OperationStatus } from './enums';
 
 export interface ITaskCreate<T> {

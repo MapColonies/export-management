@@ -1,5 +1,5 @@
 import { Logger } from '@map-colonies/js-logger';
-import { Artifact } from '@map-colonies/export-interfaces';
+import { Artifact, TaskStatus } from '@map-colonies/export-interfaces';
 import { inject, injectable } from 'tsyringe';
 import config from 'config';
 import { Domain, EPSGDATA } from '@map-colonies/types';
@@ -12,6 +12,10 @@ import { OperationStatus } from '../tasks/enums';
 import { ExportJobParameters, JobManagerClient } from '../clients/jobManagerClient';
 import { ITaskResponse } from '../tasks/interfaces';
 import { IExportManager } from '../exportManager/interfaces';
+import { TaskRepository } from '../DAL/repositories/taskRepository';
+import { ConnectionManager } from '../DAL/connectionManager';
+import { TaskModel } from '../DAL/models/task';
+import { TaskEntity } from '../DAL/entity/task';
 
 export interface WebhookParams {
   expirationTime: string;
@@ -26,78 +30,39 @@ export interface WebhookParams {
 
 @injectable()
 export class ExportManagerRaster implements IExportManager {
-  private readonly serviceWebhookEndpoint: string;
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
-    private readonly exporterTriggerClient: ExporterTriggerClient,
-    private readonly jobManagerClient: JobManagerClient
-  ) {
-    this.serviceWebhookEndpoint = config.get<string>('serviceWebhookEndpoint');
-  }
+    private readonly taskRepository: TaskRepository,
+  ) {}
 
-  public async createExportTask(req: CreateExportTaskExtendedRequest): Promise<ITaskResponse<ExportJobParameters>> {
+  public async createExportTask(req: CreateExportTaskExtendedRequest): Promise<void> {
     try {
       this.logger.info({ msg: `Create export task request`, req: req });
       const requestedEPSG = `EPSG:${req.artifactCRS}`;
-      const createPackageParams: CreatePackageParams = {
-        roi: req.ROI,
-        dbId: req.catalogRecordID,
-        crs: requestedEPSG,
+      const taskModel: TaskModel = {
+        artifactCRS: requestedEPSG,
+        catalogRecordID: req.catalogRecordID,
+        domain: req.domain,
         description: req.description,
-        callbackURLs: [this.serviceWebhookEndpoint],
-      };
-      const res = await this.exporterTriggerClient.createExportTask(createPackageParams);
-      const exportJob = await this.jobManagerClient.getJobById(res.jobId);
-
-      if ((res as WebhookParams).status === OperationStatus.COMPLETED) {
-        const task: ITaskResponse<ExportJobParameters> = {
-          id: exportJob.parameters.id,
-          catalogRecordID: (res as WebhookParams).recordCatalogId,
-          domain: Domain.RASTER,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          ROI: (res as WebhookParams).roi,
-          artifactCRS: EPSGDATA[4326].code,
-          description: req.description,
-          keywords: req.keywords,
-          status: (res as WebhookParams).status,
-          artifacts: (res as WebhookParams).artifacts,
-          createdAt: new Date(exportJob.created),
-          finishedAt: new Date(exportJob.updated),
-          expiredAt: new Date((res as WebhookParams).expirationTime),
-          webhook: req.webhook,
-        };
-
-        return task;
-      } else {
-        let createExportJobResponse: ITaskResponse<ExportJobParameters>;
-        if ((res as CreateExportJobTriggerResponse).isDuplicated) {
-          createExportJobResponse = {
-            id: exportJob.parameters.id,
-            catalogRecordID: req.catalogRecordID,
-            artifactCRS: EPSGDATA[4326].code,
-            createdAt: new Date(exportJob.created),
-            status: (res as WebhookParams).status,
-            domain: Domain.RASTER,
-            webhook: req.webhook,
-          };
-          return createExportJobResponse;
-        }
-
-        const exportId = generateUniqueId();
-        const updatedParams = { ...exportJob.parameters, id: exportId, keywords: req.keywords, webhook: req.webhook };
-
-        await this.jobManagerClient.updateJobParameters((res as { jobId: string }).jobId, updatedParams);
-        createExportJobResponse = {
-          id: exportId,
-          catalogRecordID: req.catalogRecordID,
-          artifactCRS: EPSGDATA[4326].code,
-          createdAt: new Date(exportJob.created),
-          status: (res as WebhookParams).status,
-          domain: Domain.RASTER,
-          webhook: req.webhook,
-        };
-        return createExportJobResponse;
+        keywords: req.keywords,
+        webhook: req.webhook,
+        parameters: req.parameters,
+        ROI: req.ROI,
+        clientName: 'Shlomi',
+        createdAt: new Date(),
+        expiredAt: new Date(),
+        finishedAt: new Date(),
+        status: TaskStatus.IN_PROGRESS,
+        percentage: 55,
+        jobId: '46da4997-f041-481d-9751-ba9436a3d704',
+        reason: 'reason',
       }
+
+      this.taskRepository.getRepository(TaskEntity, TaskRepository);
+
+      await this.taskRepository.createTask(taskModel)
+
+      
     } catch (error) {
       const errMessage = `Failed to create export task: ${(error as Error).message}`;
       this.logger.error({ err: error, req: req, msg: errMessage });

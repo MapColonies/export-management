@@ -17,7 +17,7 @@ export class ConnectionManager {
   public constructor(@inject(SERVICES.LOGGER) private readonly logger: Logger, @inject(SERVICES.CONFIG) private readonly config: IConfig) {}
 
   public async getDataSource(): Promise<DataSource> {
-    if (this.dataSource.isInitialized) {
+    if (this.dataSource) {
       return this.dataSource;
     }
 

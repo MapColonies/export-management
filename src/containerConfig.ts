@@ -8,6 +8,7 @@ import { SERVICES, SERVICE_NAME } from './common/constants';
 import { tracing } from './common/tracing';
 import { InjectionObject, registerDependencies } from './common/dependencyRegistration';
 import { tasksRouterFactory, TASKS_ROUTER_SYMBOL } from './tasks/routes/tasksRouter';
+import { ConnectionManager } from './DAL/connectionManager';
 
 export interface RegisterOptions {
   override?: InjectionObject<unknown>[];
@@ -17,7 +18,8 @@ export interface RegisterOptions {
 export const registerExternalValues = (options?: RegisterOptions): DependencyContainer => {
   const loggerConfig = config.get<LoggerOptions>('telemetry.logger');
   const logger = jsLogger({ ...loggerConfig, prettyPrint: loggerConfig.prettyPrint, mixin: getOtelMixin() });
-
+  const dbConnectionManager = new ConnectionManager(logger, config);
+  const dataSource = dbConnectionManager.getDataSource();
   const metrics = new Metrics();
   metrics.start();
 
@@ -40,6 +42,8 @@ export const registerExternalValues = (options?: RegisterOptions): DependencyCon
         },
       },
     },
+    
+    { token: 'dataSource', provider: { useValue: dataSource}}
   ];
 
   return registerDependencies(dependencies, options?.override, options?.useChild);

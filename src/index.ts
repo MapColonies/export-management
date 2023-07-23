@@ -17,8 +17,6 @@ const app = getApp();
 
 
 const logger = container.resolve<Logger>(SERVICES.LOGGER);
-const connection = new ConnectionManager(logger, config);
-connection.init();
 const stubHealthcheck = async (): Promise<void> => Promise.resolve();
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const server = createTerminus(createServer(app), { healthChecks: { '/liveness': stubHealthcheck, onSignal: container.resolve('onSignal') } });

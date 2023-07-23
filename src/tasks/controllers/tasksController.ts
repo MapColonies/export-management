@@ -23,7 +23,7 @@ export class TasksController {
   public createExportTask: CreateTaskHandler = async (req, res, next) => {
     try {
       const jobCreated = await this.taskManager.createExportTask(req.body);
-      return res.status(httpStatus.CREATED).json(jobCreated);
+      return res.status(httpStatus.CREATED).json();
     } catch (error) {
       next(error);
     }

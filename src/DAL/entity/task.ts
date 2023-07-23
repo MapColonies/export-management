@@ -12,6 +12,7 @@ import {
   OneToMany,
   ManyToMany,
   JoinTable,
+  BaseEntity,
 } from 'typeorm';
 import { TaskStatus } from '@map-colonies/export-interfaces';
 import { TaskGeometryEntity } from './taskGeometry';
@@ -20,8 +21,9 @@ import { WebhookEntity } from './webhook';
 
 type EpsgPartial = Extract<EpsgCode, '4326' | '3857'>;
 
+
 @Entity('task')
-export class TaskEntity {
+export class TaskEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   public id: number;
 
@@ -106,11 +108,11 @@ export class TaskEntity {
   })
   public finishedAt: Date;
 
-  public constructor();
-  public constructor(init: Partial<TaskEntity>);
-  public constructor(...args: [] | [Partial<TaskEntity>]) {
-    if (args.length === 1) {
-      Object.assign(this, args[0]);
-    }
-  }
+  // public constructor();
+  // public constructor(init: Partial<TaskEntity>);
+  // public constructor(...args: [] | [Partial<TaskEntity>]) {
+  //   if (args.length === 1) {
+  //     Object.assign(this, args[0]);
+  //   }
+  // }
 }

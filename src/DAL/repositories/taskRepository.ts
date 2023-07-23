@@ -1,36 +1,37 @@
-import * as dataManager from "../connection-manager";
-import { ProductEntity } from "../entity/product-entity";
-import * as productConverter from "../convertors/productModelConvertor";
-import {
-  CreateProductRequestBody,
-  Polygon,
-  Product,
-  UpdateProductRequestBody,
-} from "../../products/product-schema";
-import { logger } from "../../common/logger/logger-wrapper";
-import { DataSource, Repository, SelectQueryBuilder } from "typeorm";
-import { ProductFilter } from "../../products/product-filter-schema";
-import {
-  ProductGeoShapeFilterOperators,
-  ProductOperator,
-} from "../../products/product-enums";
-import * as wkx from "wkx";
-import { ResourceNotFoundError } from "../../common/errors/error-types";
-import { TaskEntity } from "../entity/task";
+import { TaskEntity } from '../entity/task';
+import { container, singleton } from 'tsyringe';
+import { TaskModelConvertor } from '../convertors/taskModelConverter';
+import { DataSource, EntityTarget, ObjectLiteral, Repository, SelectQueryBuilder } from 'typeorm';
+import { ITaskCreate } from '../../tasks/interfaces';
+import { TaskParameters } from '@map-colonies/export-interfaces';
+import { TaskModel } from '../models/task';
+import { BaseRepository } from './baseRepository';
+import { ConnectionManager } from '../connectionManager';
 
-export class TaskRepository extends Repository<TaskRepository> {
-  constructor(private dataSource: DataSource) {
-    super(TaskEntity, dataSource.createEntityManager());
+@singleton()
+export class TaskRepository extends BaseRepository(TaskEntity) {
+  private readonly taskConvertor: TaskModelConvertor;
+  private readonly connection: ConnectionManager;
+
+  constructor() {
+    super(container.resolve('dataSource'));
   }
-  public async createProduct(
-    reqBody: CreateProductRequestBody
-  ): Promise<string> {
-    const entity = productConverter.createModelToEntity(reqBody);
-    const res = await this.createQueryBuilder()
-      .insert()
-      .values(entity)
-      .returning("id")
-      .execute();
-    return res.identifiers[0]["id"];
+
+  public async createTask(model: TaskModel): Promise<string> {
+    const entity = this.taskConvertor.createModelToEntity(model);
+    const res = await this.createQueryBuilder().insert().values(entity).returning('id').execute();
+    return res.identifiers[0]['id'];
   }
+
+  public test(): void {
+    console.log('test');
+  }
+  
+  // public async getRepository2 (): Promise<TaskRepository> {
+
+  //   return taskRepository;
+  // };
+  // public async getRepository<T>(entity: EntityTarget<ObjectLiteral>): Promise<Repository<ObjectLiteral>> {
+  //   return this.dataSource.getRepository(entity);
+  // }
 }

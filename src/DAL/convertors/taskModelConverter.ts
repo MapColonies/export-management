@@ -2,20 +2,28 @@ import { singleton } from 'tsyringe';
 import { TaskEntity } from '../entity/task';
 import { CreateExportTaskRequest, TaskParameters } from '@map-colonies/export-interfaces';
 import { ITaskCreate } from '../../tasks/interfaces';
+import { TaskModel } from '../models/task';
 
 @singleton()
 export class TaskModelConvertor {
   public constructor() {}
 
-  public createRequestModelToEntity(createTaskRequest: ITaskCreate<TaskParameters>): TaskEntity {
-    const entity = new TaskEntity();
-    console.log('before', entity);
-    // const tasks = model.tasks?.map((taskModel) => this.taskConvertor.createModelToEntity(taskModel));
-    Object.assign(entity, {...createTaskRequest});
+  // public createModelToEntity(createTaskRequest: ITaskCreate<TaskParameters>): TaskEntity {
+  //   const entity = new TaskEntity();
+  //   console.log('before', entity);
+  //   // const tasks = model.tasks?.map((taskModel) => this.taskConvertor.createModelToEntity(taskModel));
+  //   Object.assign(entity, {...createTaskRequest});
 
-    console.log('after', entity);
+  //   console.log('after', entity);
+  //   return entity;
+  // }
+
+  public createModelToEntity(model: TaskModel) {
+    const entity = new TaskEntity();
+    Object.assign(entity, model);
     return entity;
-  }
+    }
+  };
 
 //   public updateModelToEntity(model: IUpdateJobRequest): JobEntity {
 //     const entity = new JobEntity();
@@ -30,4 +38,4 @@ export class TaskModelConvertor {
 //     delete model.updateTime;
 //     return model as IGetJobResponse;
 //   }
-}
+

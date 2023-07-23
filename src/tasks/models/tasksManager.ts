@@ -13,6 +13,7 @@ import { ITaskResponse, WebhookEvent } from '../interfaces';
 import { ExportJobParameters, JobManagerClient } from '../../clients/jobManagerClient';
 import { OperationStatus } from '../enums';
 import { WebhookClient } from '../../clients/webhookClient';
+import { TaskRepository } from '../../DAL/repositories/taskRepository';
 
 export interface CreateExportTaskExtendedRequest extends CreateExportTaskRequest<TaskParameters> {
   domain: Domain;
@@ -31,12 +32,12 @@ export interface CreatePackageParams {
 export class TasksManager {
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
-    private readonly exportManagerRaster: ExporterTriggerClient,
     private readonly jobManagerClient: JobManagerClient,
+    private readonly taskRepository: TaskRepository,
     private readonly webhookClient: WebhookClient
   ) {}
 
-  public async createExportTask(req: CreateExportTaskExtendedRequest): Promise<ITaskResponse<ExportJobParameters>> {
+  public async createExportTask(req: CreateExportTaskExtendedRequest): Promise<void> {
     const domain = req.domain;
     const exportManagerInstance = this.getExportManagerInstance(domain);
     const jobCreated = await exportManagerInstance.createExportTask(req);
@@ -74,13 +75,20 @@ export class TasksManager {
     await this.sendWebhookEvent(webhookUrls, webhookEvent);
   }
 
+  public async createTask(req: CreateExportTaskExtendedRequest): Promise<void> {
+    const domain = req.domain;
+    const exportManagerInstance = this.getExportManagerInstance(domain);
+    const res = await exportManagerInstance.createExportTask(req);
+    console.log(res);
+  }
+
   private getExportManagerInstance(domain: Domain): IExportManager {
     let exportManagerInstance: IExportManager;
     const unsupportedDomainMessage = `Unsupported domain requested: "${domain}" - currently only "${Domain.RASTER}" domain is supported`;
 
     switch (domain) {
       case Domain.RASTER:
-        exportManagerInstance = new ExportManagerRaster(this.logger, this.exportManagerRaster, this.jobManagerClient);
+        exportManagerInstance = new ExportManagerRaster(this.logger,  this.taskRepository);
         break;
       case Domain.DEM:
         throw new BadRequestError(unsupportedDomainMessage);

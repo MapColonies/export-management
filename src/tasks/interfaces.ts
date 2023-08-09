@@ -3,13 +3,14 @@ import { FeatureCollection } from '@turf/turf';
 import { Domain } from '@map-colonies/types';
 import { Artifact, TaskEvent, TaskStatus, Webhook } from '@map-colonies/export-interfaces';
 import { OperationStatus } from './enums';
+import { EpsgPartial } from '../DAL/entity/artifact';
 
 export interface ITaskCreate<T> {
   catalogRecordID: string;
   domain: Domain;
   // eslint-disable-next-line @typescript-eslint/naming-convention
   ROI?: FeatureCollection;
-  artifactCRS: string;
+  artifactCRS: EpsgPartial;
   description?: string;
   keywords?: Record<string, unknown>;
   parameters?: T;

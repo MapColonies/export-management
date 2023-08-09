@@ -6,10 +6,14 @@ import { injectable, inject } from 'tsyringe';
 import { SERVICES } from '../../common/constants';
 import { WebhookParams } from '../../exportManager/exportManagerRaster';
 import { ExportJobParameters } from '../../clients/jobManagerClient';
-import { ITaskResponse } from '../interfaces';
+import { ITaskResponse, TaskParameters } from '../interfaces';
 import { CreateExportTaskExtendedRequest, TasksManager } from '../models/tasksManager';
+import { CreateExportTaskResponse } from '@map-colonies/export-interfaces';
+import { TaskModel } from '../../DAL/models/task';
 
 type CreateTaskHandler = RequestHandler<undefined, ITaskResponse<ExportJobParameters>, CreateExportTaskExtendedRequest>;
+type GetTaskByIdHandler = RequestHandler<{taskId: number}, TaskModel | undefined , undefined, undefined>;
+type GetTasks = RequestHandler<undefined, TaskModel[] , undefined, {limit: number}>;
 type SendWebhookHandler = RequestHandler<undefined, undefined, WebhookParams>;
 
 @injectable()
@@ -22,19 +26,37 @@ export class TasksController {
 
   public createExportTask: CreateTaskHandler = async (req, res, next) => {
     try {
-      const jobCreated = await this.taskManager.createExportTask(req.body);
-      return res.status(httpStatus.CREATED).json();
+      await this.taskManager.createExportTask(req.body);
+      return res.status(httpStatus.CREATED).send();
     } catch (error) {
       next(error);
     }
   };
 
-  public sendWebhook: SendWebhookHandler = async (req, res, next) => {
+  public getTaskById: GetTaskByIdHandler = async (req, res, next) => {
     try {
-      await this.taskManager.handleWebhookEvent(req.body);
-      return res.sendStatus(httpStatus.OK);
+      const result = await this.taskManager.getTaskById(req.params.taskId);
+      return res.status(httpStatus.OK).json(result);
     } catch (error) {
       next(error);
     }
   };
+
+  public getTasks: GetTasks = async (req, res, next) => {
+    try {
+      const result = await this.taskManager.getTasks(req.query.limit);
+      return res.status(httpStatus.OK).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // public sendWebhook: SendWebhookHandler = async (req, res, next) => {
+  //   try {
+  //     await this.taskManager.handleWebhookEvent(req.body);
+  //     return res.sendStatus(httpStatus.OK);
+  //   } catch (error) {
+  //     next(error);
+  //   }
+  // };
 }

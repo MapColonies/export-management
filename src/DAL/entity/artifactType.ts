@@ -13,12 +13,4 @@ export class ArtifactTypeEntity {
   @OneToMany(() => ArtifactEntity, (artifact) => artifact.artifactType, { nullable: false , cascade: true})
   @JoinColumn()
   public artifacts: ArtifactEntity[];
-
-  public constructor();
-  public constructor(init: Partial<ArtifactTypeEntity>);
-  public constructor(...args: [] | [Partial<ArtifactTypeEntity>]) {
-    if (args.length === 1) {
-      Object.assign(this, args[0]);
-    }
-  }
 }

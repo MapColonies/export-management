@@ -10,13 +10,16 @@ import { WebhookEntity } from './entity/webhook';
 import { ArtifactTypeEntity } from './entity/artifactType';
 import { TaskGeometryEntity } from './entity/taskGeometry';
 import { DBConnectionError } from '../common/errors';
+import { HealthCheck } from '@godaddy/terminus';
+import { promiseTimeout } from '../common/utils';
 
 @injectable()
 export class ConnectionManager {
   private dataSource: DataSource;
+
   public constructor(@inject(SERVICES.LOGGER) private readonly logger: Logger, @inject(SERVICES.CONFIG) private readonly config: IConfig) {}
 
-  public async getDataSource(): Promise<DataSource> {
+  public async initDataSource(): Promise<DataSource> {
     if (this.dataSource) {
       return this.dataSource;
     }
@@ -30,7 +33,6 @@ export class ConnectionManager {
         msg: 'Successfully connected to db',
         metadata: { connectionConfig },
       });
-
       return this.dataSource;
     } catch (err) {
       this.logger.error({ msg: err, metadata: { err, connectionConfig } });
@@ -47,3 +49,12 @@ export class ConnectionManager {
     return connectionOptions;
   }
 }
+export const getDbHealthCheckFunction = (connection: DataSource): HealthCheck => {
+  const dbTimeout = 5000;
+  return async (): Promise<void> => {
+    const check = connection.query('SELECT 1').then(() => {
+      return;
+    });
+    return promiseTimeout<void>(dbTimeout, check);
+  };
+};

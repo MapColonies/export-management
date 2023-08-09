@@ -1,29 +1,28 @@
 import { singleton } from 'tsyringe';
 import { TaskEntity } from '../entity/task';
-import { CreateExportTaskRequest, TaskParameters } from '@map-colonies/export-interfaces';
+import { CreateExportTaskRequest, TaskEvent, TaskParameters } from '@map-colonies/export-interfaces';
 import { ITaskCreate } from '../../tasks/interfaces';
 import { TaskModel } from '../models/task';
+import { CreateExportTaskExtendedRequest } from '../../tasks/models/tasksManager';
 
 @singleton()
 export class TaskModelConvertor {
   public constructor() {}
 
-  // public createModelToEntity(createTaskRequest: ITaskCreate<TaskParameters>): TaskEntity {
-  //   const entity = new TaskEntity();
-  //   console.log('before', entity);
-  //   // const tasks = model.tasks?.map((taskModel) => this.taskConvertor.createModelToEntity(taskModel));
-  //   Object.assign(entity, {...createTaskRequest});
+  public createModelToEntity(model: CreateExportTaskExtendedRequest): TaskModel {
+    return TaskEntity.create({
+      jobId: "de0dab85-6bc5-4b9f-9a64-9e61627d82d9",
+      catalogRecordID: model.catalogRecordID,
+      clientName: 'clientName',
+      artifactCRS: model.artifactCRS,
+      domain: model.domain,
+      description: model.description,
+      keywords: model.keywords,
+      webhook: model.webhook,
+    });
+  }
+}
 
-  //   console.log('after', entity);
-  //   return entity;
-  // }
-
-  public createModelToEntity(model: TaskModel) {
-    const entity = new TaskEntity();
-    Object.assign(entity, model);
-    return entity;
-    }
-  };
 
 //   public updateModelToEntity(model: IUpdateJobRequest): JobEntity {
 //     const entity = new JobEntity();
@@ -38,4 +37,3 @@ export class TaskModelConvertor {
 //     delete model.updateTime;
 //     return model as IGetJobResponse;
 //   }
-

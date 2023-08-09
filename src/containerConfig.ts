@@ -3,23 +3,25 @@ import { getOtelMixin } from '@map-colonies/telemetry';
 import { trace, metrics as OtelMetrics } from '@opentelemetry/api';
 import { DependencyContainer } from 'tsyringe/dist/typings/types';
 import jsLogger, { LoggerOptions } from '@map-colonies/js-logger';
+import { DataSource } from 'typeorm';
 import { Metrics } from '@map-colonies/telemetry';
 import { SERVICES, SERVICE_NAME } from './common/constants';
+import { TASK_ENTITY_CUSTOM_REPOSITORY_SYMBOL, entityRepositoryFactory } from './DAL/repositories/taskRepository';
 import { tracing } from './common/tracing';
 import { InjectionObject, registerDependencies } from './common/dependencyRegistration';
 import { tasksRouterFactory, TASKS_ROUTER_SYMBOL } from './tasks/routes/tasksRouter';
-import { ConnectionManager } from './DAL/connectionManager';
+import { ConnectionManager, getDbHealthCheckFunction } from './DAL/connectionManager';
 
 export interface RegisterOptions {
   override?: InjectionObject<unknown>[];
   useChild?: boolean;
 }
 
-export const registerExternalValues = (options?: RegisterOptions): DependencyContainer => {
+export const registerExternalValues = async (options?: RegisterOptions): Promise<DependencyContainer> => {
   const loggerConfig = config.get<LoggerOptions>('telemetry.logger');
   const logger = jsLogger({ ...loggerConfig, prettyPrint: loggerConfig.prettyPrint, mixin: getOtelMixin() });
   const dbConnectionManager = new ConnectionManager(logger, config);
-  const dataSource = dbConnectionManager.getDataSource();
+  const dataSource = await dbConnectionManager.initDataSource();
   const metrics = new Metrics();
   metrics.start();
 
@@ -42,8 +44,13 @@ export const registerExternalValues = (options?: RegisterOptions): DependencyCon
         },
       },
     },
+    {
+      token: SERVICES.HEALTH_CHECK,
+      provider: { useFactory: (container): unknown => getDbHealthCheckFunction(container.resolve<DataSource>(DataSource)) },
+    },
+    { token: DataSource, provider: { useValue: dataSource } },
+    { token: TASK_ENTITY_CUSTOM_REPOSITORY_SYMBOL, provider: { useFactory: entityRepositoryFactory } },
     
-    { token: 'dataSource', provider: { useValue: dataSource}}
   ];
 
   return registerDependencies(dependencies, options?.override, options?.useChild);

@@ -1,37 +1,67 @@
 import { TaskEntity } from '../entity/task';
-import { container, singleton } from 'tsyringe';
-import { TaskModelConvertor } from '../convertors/taskModelConverter';
-import { DataSource, EntityTarget, ObjectLiteral, Repository, SelectQueryBuilder } from 'typeorm';
-import { ITaskCreate } from '../../tasks/interfaces';
-import { TaskParameters } from '@map-colonies/export-interfaces';
+import { FactoryFunction } from 'tsyringe';
+import { DataSource, In, QueryRunner } from 'typeorm';
 import { TaskModel } from '../models/task';
-import { BaseRepository } from './baseRepository';
-import { ConnectionManager } from '../connectionManager';
+import { TaskModelConvertor } from '../convertors/taskModelConverter';
+import { TaskEvent, Webhook } from '@map-colonies/export-interfaces';
+import { CreateExportTaskExtendedRequest } from '../../tasks/models/tasksManager';
 
-@singleton()
-export class TaskRepository extends BaseRepository(TaskEntity) {
-  private readonly taskConvertor: TaskModelConvertor;
-  private readonly connection: ConnectionManager;
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 
-  constructor() {
-    super(container.resolve('dataSource'));
-  }
+const createTaskRepository = (dataSource: DataSource, taskConvertor: TaskModelConvertor) => {
+  return dataSource.getRepository(TaskEntity).extend({
+    async createEntity(model: TaskModel): Promise<void> {
+      const taskEntity = taskConvertor.createModelToEntity(model);
+      console.log("TASKENTITY:", taskEntity);
+      await this.save(taskEntity);
+    },
 
-  public async createTask(model: TaskModel): Promise<string> {
-    const entity = this.taskConvertor.createModelToEntity(model);
-    const res = await this.createQueryBuilder().insert().values(entity).returning('id').execute();
-    return res.identifiers[0]['id'];
-  }
+    async findOneEntity(id: number): Promise<TaskEntity | undefined> {
+      console.log(id)
+      const taskEntity = await this.findOne({ where: { id } });
+      if (taskEntity === null) {
+        return undefined;
+      }
+      return taskEntity;
+    },
 
-  public test(): void {
-    console.log('test');
-  }
-  
-  // public async getRepository2 (): Promise<TaskRepository> {
+    async findEntitiesByLimit(limit: number): Promise<TaskEntity[]> {
+      const taskEntities = await this.find({take: limit});
+      return taskEntities;
+    },
 
-  //   return taskRepository;
-  // };
-  // public async getRepository<T>(entity: EntityTarget<ObjectLiteral>): Promise<Repository<ObjectLiteral>> {
-  //   return this.dataSource.getRepository(entity);
-  // }
-}
+    async findManyEntitiesByIds(entities: TaskEntity[]): Promise<TaskEntity[] | undefined> {
+      // due to both entityId and fileId being unique uuids this operation is valid
+      const entityEntities = await this.findBy({ id: In(entities.map((e) => e.id)) });
+      if (entityEntities.length === 0) {
+        return undefined;
+      }
+      return entityEntities;
+    },
+
+    async updateTaskGeometry(): Promise<void> {
+      const queryRunner = dataSource.createQueryRunner();
+      await queryRunner.query(`
+      CREATE FUNCTION task_geometry_update_geometry() RETURNS trigger
+      SET search_path FROM CURRENT
+        LANGUAGE plpgsql
+        AS $$
+      BEGIN
+      IF NEW.wkt_geometry IS NULL THEN
+          RETURN NEW;
+      END IF;
+      NEW.wkb_geometry := ST_GeomFromText(NEW.wkt_geometry,4326);
+      RETURN NEW;
+      END;
+      $$`);
+    },
+  });
+};
+
+export type TaskRepository = ReturnType<typeof createTaskRepository>;
+
+export const entityRepositoryFactory: FactoryFunction<TaskRepository> = (depContainer) => {
+  return createTaskRepository(depContainer.resolve<DataSource>(DataSource), depContainer.resolve(TaskModelConvertor));
+};
+
+export const TASK_ENTITY_CUSTOM_REPOSITORY_SYMBOL = Symbol('TASK_ENTITY_CUSTOM_REPOSITORY_SYMBOL');

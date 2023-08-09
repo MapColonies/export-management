@@ -5,7 +5,7 @@ import { TaskGeometryEntity } from './taskGeometry';
 import { ArtifactTypeEntity } from './artifactType';
 import { TaskEntity } from './task';
 
-type EpsgPartial = Extract<EpsgCode, '4326' | '3857'>;
+export type EpsgPartial = Extract<EpsgCode, '4326' | '3857'>;
 
 @Entity('artifact')
 export class ArtifactEntity {

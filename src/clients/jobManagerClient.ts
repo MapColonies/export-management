@@ -8,7 +8,7 @@ import { SERVICES } from '../common/constants';
 // eslint-disable-next-line import/exports-last
 export interface ExportJobParameters {
   id: number;
-  keywords: Record<string, unknown>;
+  keywords?: Record<string, unknown>;
   webhook: Webhook[];
 }
 

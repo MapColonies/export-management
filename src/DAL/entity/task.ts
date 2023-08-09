@@ -16,10 +16,8 @@ import {
 } from 'typeorm';
 import { TaskStatus } from '@map-colonies/export-interfaces';
 import { TaskGeometryEntity } from './taskGeometry';
-import { ArtifactEntity } from './artifact';
+import { ArtifactEntity, EpsgPartial } from './artifact';
 import { WebhookEntity } from './webhook';
-
-type EpsgPartial = Extract<EpsgCode, '4326' | '3857'>;
 
 
 @Entity('task')
@@ -31,8 +29,18 @@ export class TaskEntity extends BaseEntity {
   @Column({ name: 'job_id', nullable: false, type: 'uuid' })
   public jobId: string;
 
-  @OneToMany(() => TaskGeometryEntity, (taskGeometry) => taskGeometry.task, { nullable: false, cascade: true })
-  @JoinColumn()
+  @ManyToMany(() => TaskGeometryEntity, {cascade: true})
+  @JoinTable({
+    name: 'task_geometry_to_task',
+    joinColumn: {
+      name: 'task_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'task_geometry_id',
+      referencedColumnName: 'id',
+    },
+  })
   public taskGeometries: TaskGeometryEntity[];
 
   @ManyToMany(() => ArtifactEntity)
@@ -49,7 +57,7 @@ export class TaskEntity extends BaseEntity {
   })
   artifacts: ArtifactEntity[];
 
-  @ManyToMany(() => WebhookEntity)
+  @ManyToMany(() => WebhookEntity, {cascade: true})
   @JoinTable({
     name: 'webhook_to_task',
     joinColumn: {
@@ -61,10 +69,10 @@ export class TaskEntity extends BaseEntity {
       referencedColumnName: 'id',
     },
   })
-  webhooks: WebhookEntity[];
+  webhook: WebhookEntity[];
 
   @Column({ name: 'catalog_record_id', nullable: false, type: 'uuid' })
-  public catalogRecordId: string;
+  public catalogRecordID: string;
 
   @Column('varchar', { name: 'client_name', nullable: false })
   public clientName: string;
@@ -81,8 +89,14 @@ export class TaskEntity extends BaseEntity {
   @Column('varchar', { length: 2000, nullable: true })
   public description: string;
 
+  @Column('numeric', { nullable: true, default: 0 })
+  public estimatedDataSize: number;
+
+  @Column('numeric', { nullable: true, default: 0 })
+  public estimatedTime: number;
+
   @Column('jsonb', { nullable: true })
-  public keywords: object;
+  public keywords: Record<string, unknown>;
 
   @Column('varchar', { nullable: true })
   public reason: string;
@@ -96,23 +110,17 @@ export class TaskEntity extends BaseEntity {
   })
   public createdAt: Date;
 
-  @UpdateDateColumn({
+  @Column({
     name: 'expired_at',
-    type: 'timestamp with time zone',
+    type: 'timestamptz',
+    nullable: true,
   })
   public expiredAt: Date;
 
-  @UpdateDateColumn({
+  @Column({
     name: 'finished_at',
-    type: 'timestamp with time zone',
+    type: 'timestamptz',
+    nullable: true,
   })
   public finishedAt: Date;
-
-  // public constructor();
-  // public constructor(init: Partial<TaskEntity>);
-  // public constructor(...args: [] | [Partial<TaskEntity>]) {
-  //   if (args.length === 1) {
-  //     Object.assign(this, args[0]);
-  //   }
-  // }
 }

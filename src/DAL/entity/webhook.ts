@@ -10,19 +10,11 @@ export class WebhookEntity {
   @Column('varchar', { nullable: false })
   public url: string;
 
-  @Column({type: 'enum', enum: TaskEvent, nullable: false })
-  public event: TaskEvent;
+  @Column({type: 'enum', enum: TaskEvent, array: true, nullable: false })
+  public events: TaskEvent[];
 
   @ManyToMany(
     () => TaskEntity
   )
-  tasks: TaskEntity[]
-
-  public constructor();
-  public constructor(init: Partial<WebhookEntity>);
-  public constructor(...args: [] | [Partial<WebhookEntity>]) {
-    if (args.length === 1) {
-      Object.assign(this, args[0]);
-    }
-  }
+  tasks: TaskEntity[];
 }

@@ -91,7 +91,7 @@ envoy:
         memory: 128Mi
 
 resources:
-  enabled: trueca
+  enabled: true
   value:
     limits:
       cpu: 100m

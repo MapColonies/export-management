@@ -39,7 +39,7 @@
     },
     "database": "raster",
     "schema": "ExportManager",
-    "synchronize": true,
+    "synchronize": false,
     "logging": false,
     "entities": ["**/DAL/entity/**/*.js"],
     "migrations": [],

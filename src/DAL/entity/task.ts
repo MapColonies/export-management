@@ -1,24 +1,9 @@
-import { Domain, EPSGDATA, EpsgCode } from '@map-colonies/types';
-import {
-  Entity,
-  Column,
-  PrimaryColumn,
-  UpdateDateColumn,
-  Generated,
-  CreateDateColumn,
-  ManyToOne,
-  JoinColumn,
-  PrimaryGeneratedColumn,
-  OneToMany,
-  ManyToMany,
-  JoinTable,
-  BaseEntity,
-} from 'typeorm';
+import { Domain, EpsgCode } from '@map-colonies/types';
+import { Entity, Column, UpdateDateColumn, CreateDateColumn, PrimaryGeneratedColumn, ManyToMany, JoinTable, BaseEntity } from 'typeorm';
 import { TaskStatus } from '@map-colonies/export-interfaces';
 import { TaskGeometryEntity } from './taskGeometry';
-import { ArtifactEntity, EpsgPartial } from './artifact';
+import { ArtifactEntity } from './artifact';
 import { WebhookEntity } from './webhook';
-
 
 @Entity('task')
 export class TaskEntity extends BaseEntity {
@@ -29,7 +14,7 @@ export class TaskEntity extends BaseEntity {
   @Column({ name: 'job_id', nullable: false, type: 'uuid' })
   public jobId: string;
 
-  @ManyToMany(() => TaskGeometryEntity, {cascade: true})
+  @ManyToMany(() => TaskGeometryEntity, { cascade: true })
   @JoinTable({
     name: 'task_geometry_to_task',
     joinColumn: {
@@ -55,9 +40,9 @@ export class TaskEntity extends BaseEntity {
       referencedColumnName: 'id',
     },
   })
-  artifacts: ArtifactEntity[];
+  public artifacts: ArtifactEntity[];
 
-  @ManyToMany(() => WebhookEntity, {cascade: true})
+  @ManyToMany(() => WebhookEntity, { cascade: true })
   @JoinTable({
     name: 'webhook_to_task',
     joinColumn: {
@@ -69,16 +54,16 @@ export class TaskEntity extends BaseEntity {
       referencedColumnName: 'id',
     },
   })
-  webhook: WebhookEntity[];
+  public webhook: WebhookEntity[];
 
   @Column({ name: 'catalog_record_id', nullable: false, type: 'uuid' })
   public catalogRecordID: string;
 
-  @Column('varchar', { name: 'client_name', nullable: false })
-  public clientName: string;
+  @Column('varchar', { name: 'customer_name', nullable: false })
+  public customerName: string;
 
   @Column('varchar', { name: 'artifact_crs', nullable: false })
-  public artifactCRS: EpsgPartial;
+  public artifactCRS: EpsgCode;
 
   @Column('varchar', { name: 'domain', nullable: false })
   public domain: Domain;
@@ -89,10 +74,10 @@ export class TaskEntity extends BaseEntity {
   @Column('varchar', { length: 2000, nullable: true })
   public description: string;
 
-  @Column('numeric', { nullable: true, default: 0 })
+  @Column('numeric', { name: 'estimated_data_size', nullable: true, default: 0 })
   public estimatedDataSize: number;
 
-  @Column('numeric', { nullable: true, default: 0 })
+  @Column('numeric', { name: 'estimated_time', nullable: true, default: 0 })
   public estimatedTime: number;
 
   @Column('jsonb', { nullable: true })
@@ -101,7 +86,7 @@ export class TaskEntity extends BaseEntity {
   @Column('varchar', { nullable: true })
   public reason: string;
 
-  @Column('smallint', { nullable: true })
+  @Column('smallint', { nullable: true, default: 0 })
   public percentage: number;
 
   @CreateDateColumn({
@@ -109,6 +94,12 @@ export class TaskEntity extends BaseEntity {
     type: 'timestamp with time zone',
   })
   public createdAt: Date;
+
+  @UpdateDateColumn({
+    name: 'updated_at',
+    type: 'timestamp with time zone',
+  })
+  public updatedAt: Date;
 
   @Column({
     name: 'expired_at',

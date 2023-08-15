@@ -3,18 +3,14 @@ import { Meter } from '@opentelemetry/api';
 import { RequestHandler } from 'express';
 import httpStatus from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
+import { CreateExportTaskRequest, TaskParameters } from '@map-colonies/export-interfaces';
 import { SERVICES } from '../../common/constants';
-import { WebhookParams } from '../../exportManager/exportManagerRaster';
-import { ExportJobParameters } from '../../clients/jobManagerClient';
-import { ITaskResponse, TaskParameters } from '../interfaces';
-import { CreateExportTaskExtendedRequest, TasksManager } from '../models/tasksManager';
-import { CreateExportTaskResponse } from '@map-colonies/export-interfaces';
-import { TaskModel } from '../../DAL/models/task';
+import { TasksManager } from '../models/tasksManager';
+import { ITaskEntity } from '../../DAL/models/task';
 
-type CreateTaskHandler = RequestHandler<undefined, ITaskResponse<ExportJobParameters>, CreateExportTaskExtendedRequest>;
-type GetTaskByIdHandler = RequestHandler<{taskId: number}, TaskModel | undefined , undefined, undefined>;
-type GetTasks = RequestHandler<undefined, TaskModel[] , undefined, {limit: number}>;
-type SendWebhookHandler = RequestHandler<undefined, undefined, WebhookParams>;
+type CreateTaskHandler = RequestHandler<undefined, ITaskEntity, CreateExportTaskRequest<TaskParameters>>;
+type GetTaskByIdHandler = RequestHandler<{ taskId: number }, ITaskEntity | undefined, undefined, undefined>;
+type getLatestTasksByLimitHandler = RequestHandler<undefined, ITaskEntity[], undefined, { limit: number }>;
 
 @injectable()
 export class TasksController {
@@ -26,8 +22,8 @@ export class TasksController {
 
   public createExportTask: CreateTaskHandler = async (req, res, next) => {
     try {
-      await this.taskManager.createExportTask(req.body);
-      return res.status(httpStatus.CREATED).send();
+      const entity = await this.taskManager.createExportTask(req.body);
+      return res.status(httpStatus.CREATED).json(entity);
     } catch (error) {
       next(error);
     }
@@ -42,21 +38,12 @@ export class TasksController {
     }
   };
 
-  public getTasks: GetTasks = async (req, res, next) => {
+  public getTasks: getLatestTasksByLimitHandler = async (req, res, next) => {
     try {
-      const result = await this.taskManager.getTasks(req.query.limit);
+      const result = await this.taskManager.getLatestTasksByLimit(req.query.limit);
       return res.status(httpStatus.OK).json(result);
     } catch (error) {
       next(error);
     }
   };
-
-  // public sendWebhook: SendWebhookHandler = async (req, res, next) => {
-  //   try {
-  //     await this.taskManager.handleWebhookEvent(req.body);
-  //     return res.sendStatus(httpStatus.OK);
-  //   } catch (error) {
-  //     next(error);
-  //   }
-  // };
 }

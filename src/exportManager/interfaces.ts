@@ -1,12 +1,10 @@
-import { TaskEvent, TaskParameters } from '@map-colonies/export-interfaces';
-import { ExportJobParameters } from '../clients/jobManagerClient';
-import { ITaskResponse } from '../tasks/interfaces';
-import { CreateExportTaskExtendedRequest } from '../tasks/models/tasksManager';
+import { CreateExportTaskRequest, CreateExportTaskResponse, GetEstimationsRequest, GetEstimationsResponse, TaskEvent, TaskParameters } from '@map-colonies/export-interfaces';
 
 export interface Webhook {
   events: TaskEvent[];
   url: string;
 }
 export interface IExportManager {
-  createExportTask: (data: CreateExportTaskExtendedRequest) => Promise<void>;
+  getEstimations: (params?: GetEstimationsRequest) => Promise<GetEstimationsResponse>;
+  createExportTask: (data: CreateExportTaskRequest<TaskParameters>) => Promise<CreateExportTaskResponse>;
 }

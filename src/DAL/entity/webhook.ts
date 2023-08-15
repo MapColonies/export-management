@@ -6,15 +6,13 @@ import { TaskEntity } from './task';
 export class WebhookEntity {
   @PrimaryGeneratedColumn()
   public id: number;
-  
+
   @Column('varchar', { nullable: false })
   public url: string;
 
-  @Column({type: 'enum', enum: TaskEvent, array: true, nullable: false })
+  @Column({ type: 'enum', enum: TaskEvent, array: true, nullable: false })
   public events: TaskEvent[];
 
-  @ManyToMany(
-    () => TaskEntity
-  )
-  tasks: TaskEntity[];
+  @ManyToMany(() => TaskEntity)
+  public tasks: TaskEntity[];
 }

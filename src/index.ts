@@ -4,11 +4,12 @@ import 'reflect-metadata';
 import { createServer } from 'http';
 import { createTerminus } from '@godaddy/terminus';
 import { Logger } from '@map-colonies/js-logger';
-import { DependencyContainer, container } from 'tsyringe';
+import { DependencyContainer } from 'tsyringe';
 import config from 'config';
 import { DEFAULT_SERVER_PORT, SERVICES } from './common/constants';
 
 import { getApp } from './app';
+
 let depContainer: DependencyContainer | undefined;
 
 const port: number = config.get<number>('server.port') || DEFAULT_SERVER_PORT;

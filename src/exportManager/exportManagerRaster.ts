@@ -1,23 +1,11 @@
 import { Logger } from '@map-colonies/js-logger';
-import { Artifact, GetEstimationsResponse, TaskGeometry, TaskStatus } from '@map-colonies/export-interfaces';
-import { container, inject, injectable } from 'tsyringe';
-import config from 'config';
-import { Domain, EPSGDATA } from '@map-colonies/types';
-import { FeatureCollection, Geometries } from '@turf/turf';
-import { generateUniqueId } from '../common/utils';
+import { Artifact, CreateExportTaskRequest, CreateExportTaskResponse, GetEstimationsResponse, TaskGeometry, TaskParameters } from '@map-colonies/export-interfaces';
+import { inject, injectable } from 'tsyringe';
+import { FeatureCollection } from '@turf/turf';
 import { SERVICES } from '../common/constants';
-import { CreateExportJobTriggerResponse, ExporterTriggerClient } from '../clients/exporterTriggerClient';
-import { CreateExportTaskExtendedRequest, CreatePackageParams } from '../tasks/models/tasksManager';
 import { OperationStatus } from '../tasks/enums';
-import { ExportJobParameters, JobManagerClient } from '../clients/jobManagerClient';
-import { ITaskResponse } from '../tasks/interfaces';
 import { IExportManager } from '../exportManager/interfaces';
-import { TASK_ENTITY_CUSTOM_REPOSITORY_SYMBOL, TaskRepository } from '../DAL/repositories/taskRepository';
-import { ConnectionManager } from '../DAL/connectionManager';
-import { TaskModel } from '../DAL/models/task';
-import { TaskEntity } from '../DAL/entity/task';
 import { geo1, geo2 } from './geoMocks';
-import { TaskModelConvertor } from '../DAL/convertors/taskModelConverter';
 
 export interface WebhookParams {
   expirationTime: string;
@@ -32,25 +20,40 @@ export interface WebhookParams {
 
 @injectable()
 export class ExportManagerRaster implements IExportManager {
-  private readonly taskConvertor: TaskModelConvertor
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
-    @inject(TASK_ENTITY_CUSTOM_REPOSITORY_SYMBOL) private readonly taskRepository: TaskRepository,
-  ) {
-    this.taskConvertor = container.resolve(TaskModelConvertor);
-  }
+  ) {}
 
-  public async createExportTask(req: CreateExportTaskExtendedRequest): Promise<void> {
+  public async createExportTask(req: CreateExportTaskRequest<TaskParameters>): Promise<CreateExportTaskResponse> {
     try {
-      this.logger.info({ msg: `Create export task request`, req: req });
+      this.logger.info({ msg: `Creating export task`, req: req });
       // TODO: Call Raster SDK here to get geometries & jobId
-      const taskGeometries: TaskGeometry[] = [geo1, geo2];
-      const entity = {...req, taskGeometries};
-      console.log(entity);
-      await this.taskRepository.createEntity(entity);
+      const geometries: TaskGeometry[] = [geo1, geo2];
+      const jobId = 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9';
+      return await {
+        jobId,
+        geometries,
+      };
     } catch (error) {
       const errMessage = `Failed to create export task: ${(error as Error).message}`;
       this.logger.error({ err: error, req: req, msg: errMessage });
+      throw error;
+    }
+  }
+
+  public async getEstimations(): Promise<GetEstimationsResponse> {
+    try {
+      this.logger.info({ msg: `get export task estimations`});
+      // TODO: Call Raster SDK here to get geometries & jobId
+      const estimatedFileSize = 205200;
+      const estimatedTime = 1352;
+      return await {
+        estimatedFileSize,
+        estimatedTime,
+      };
+    } catch (error) {
+      const errMessage = `Failed to get export estimations: ${(error as Error).message}`;
+      this.logger.error({ err: error, msg: errMessage });
       throw error;
     }
   }

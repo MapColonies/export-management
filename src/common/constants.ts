@@ -13,6 +13,6 @@ export const SERVICES: Record<string, symbol> = {
   TRACER: Symbol('Tracer'),
   METER: Symbol('Meter'),
   HEALTH_CHECK: Symbol('HealthCheck'),
-  ON_SIGNAL: Symbol('OnSignal')
+  ON_SIGNAL: Symbol('OnSignal'),
 };
 /* eslint-enable @typescript-eslint/naming-convention */

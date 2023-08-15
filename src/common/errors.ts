@@ -1,4 +1,4 @@
-import { UnprocessableEntityError, InternalServerError } from "@map-colonies/error-types";
+import { UnprocessableEntityError, InternalServerError } from '@map-colonies/error-types';
 
 export class DBConnectionError extends InternalServerError {
   public constructor() {

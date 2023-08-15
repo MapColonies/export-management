@@ -1,16 +1,11 @@
+import { readFileSync } from 'fs';
 import { Logger } from '@map-colonies/js-logger';
 import { inject, injectable } from 'tsyringe';
-import { readFileSync } from 'fs';
+import { ConnectionOptions, DataSource } from 'typeorm';
+import { HealthCheck } from '@godaddy/terminus';
 import { SERVICES } from '../common/constants';
 import { IConfig, IDbConfig } from '../common/interfaces';
-import { ConnectionOptions, DataSource } from 'typeorm';
-import { TaskEntity } from './entity/task';
-import { ArtifactEntity } from './entity/artifact';
-import { WebhookEntity } from './entity/webhook';
-import { ArtifactTypeEntity } from './entity/artifactType';
-import { TaskGeometryEntity } from './entity/taskGeometry';
 import { DBConnectionError } from '../common/errors';
-import { HealthCheck } from '@godaddy/terminus';
 import { promiseTimeout } from '../common/utils';
 
 @injectable()

@@ -1,18 +1,19 @@
 import { FactoryFunction } from 'tsyringe';
-import { DataSource } from 'typeorm';
+import { DataSource, FindOneOptions, FindOptionsWhere } from 'typeorm';
 import { TaskEntity } from '../entity/task';
 import { ITaskEntity } from '../models/task';
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export type FindOneEntityParams = { id: number } | { jobId: string };
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const createTaskRepository = (dataSource: DataSource) => {
   return dataSource.getRepository(TaskEntity).extend({
     async createEntity(entity: ITaskEntity): Promise<TaskEntity> {
       return await this.save(entity);
     },
 
-    async findOneEntity(id: number): Promise<TaskEntity | undefined> {
-      const taskEntity = await this.findOne({ where: { id } });
+    async findOneEntity(param: FindOneEntityParams): Promise<TaskEntity | undefined> {
+      const taskEntity = await this.findOne({ where: param });
       if (taskEntity === null) {
         return undefined;
       }
@@ -20,7 +21,7 @@ const createTaskRepository = (dataSource: DataSource) => {
     },
 
     async getLatestEntitiesByLimit(limit: number): Promise<TaskEntity[]> {
-      const taskEntities = await this.find({ take: limit, order: {id: 'DESC'} });
+      const taskEntities = await this.find({ take: limit, order: { id: 'DESC' } });
       return taskEntities;
     },
 

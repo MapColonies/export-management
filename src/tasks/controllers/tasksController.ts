@@ -7,6 +7,7 @@ import { CreateExportTaskRequest, TaskParameters } from '@map-colonies/export-in
 import { SERVICES } from '../../common/constants';
 import { TasksManager } from '../models/tasksManager';
 import { ITaskEntity } from '../../DAL/models/task';
+import { NotFoundError } from '@map-colonies/error-types';
 
 type CreateTaskHandler = RequestHandler<undefined, ITaskEntity, CreateExportTaskRequest<TaskParameters>>;
 type GetTaskByIdHandler = RequestHandler<{ taskId: number }, ITaskEntity | undefined, undefined, undefined>;
@@ -31,7 +32,11 @@ export class TasksController {
 
   public getTaskById: GetTaskByIdHandler = async (req, res, next) => {
     try {
-      const result = await this.taskManager.getTaskById(req.params.taskId);
+      const params = { id: req.params.taskId };
+      const result = await this.taskManager.findOneEntity(params);
+      if (!result) {
+        throw new NotFoundError(`Task id: ${params.id} is not found`);
+      }
       return res.status(httpStatus.OK).json(result);
     } catch (error) {
       next(error);

@@ -39,6 +39,7 @@
     }
   },
   "dependencies": {
+    "@faker-js/faker": "^8.0.2",
     "@godaddy/terminus": "^4.11.2",
     "@map-colonies/error-express-handler": "^2.1.0",
     "@map-colonies/error-types": "^1.1.5",

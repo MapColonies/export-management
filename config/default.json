@@ -38,17 +38,11 @@
       "cert": ""
     },
     "database": "raster",
-    "schema": "ExportManager",
+    "schema": "export_manager",
     "synchronize": false,
     "logging": false,
     "entities": ["**/DAL/entity/**/*.js"],
-    "migrations": [],
-    "subscribers": ["**/DAL/subscriber/**/*.js"],
-    "cli": {
-      "entitiesDir": "src/DAL/entity",
-      "migrationsDir": "src/DAL/migration",
-      "subscribersDir": "src/DAL/subscriber"
-    }
+    "migrations": ["**/DAL/migrations/*.ts"]
   },
   "serviceWebhookEndpoint": "http://localhost:8087/export-tasks/webhook",
   "externalClients": {

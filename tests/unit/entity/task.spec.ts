@@ -3,10 +3,12 @@ import { faker } from '@faker-js/faker';
 import { TasksManager } from '../../../src/tasks/models/tasksManager';
 import { TaskRepository } from '../../../src/DAL/repositories/taskRepository';
 import { createFakeEntity } from '../helpers/helpers';
-import { Domain } from '@map-colonies/types';
+import { Domain, EPSGDATA } from '@map-colonies/types';
 import { geo1 } from '../../../src/exportManager/geoMocks';
-import { CreateExportTaskResponse, GetEstimationsResponse } from '@map-colonies/export-interfaces';
+import { CreateExportTaskResponse, GetEstimationsResponse, TaskEvent } from '@map-colonies/export-interfaces';
 import { ExportManagerRaster } from '../../../src/exportManager/exportManagerRaster';
+import { NotFound } from 'express-openapi-validator/dist/openapi.validator';
+import { NotFoundError } from '@map-colonies/error-types';
 
 let taskManager: TasksManager;
 let taskRepository: TaskRepository;
@@ -79,7 +81,7 @@ describe('taskManager', () => {
         estimatedDataSize: estimationsResponse.estimatedFileSize,
         estimatedTime: estimationsResponse.estimatedTime,
         // TODO: handle customer name once implemented
-        customerName: "Cutomer_Name",
+        customerName: 'Cutomer_Name',
       });
     });
 
@@ -91,7 +93,6 @@ describe('taskManager', () => {
       const getEstimationsSpy = jest.spyOn(ExportManagerRaster.prototype, 'getEstimations');
       const response = { geometries: [geo1], jobId: 'de0dab85-6bc5-4b9f-9a64-9e61627d82c2' };
 
-      
       createExportTaskResponseSpy.mockResolvedValue(response);
       getEstimationsSpy.mockResolvedValue({ estimatedTime: undefined, estimatedFileSize: undefined });
       findOneEntity.mockResolvedValue(entity);
@@ -110,21 +111,25 @@ describe('taskManager', () => {
 
       findOneEntity.mockResolvedValue(entity);
 
-      const findPromise = taskManager.findOneEntity({id: 1});
+      const findPromise = taskManager.findOneEntity({ id: 1 });
 
       await expect(findPromise).resolves.not.toThrow();
-      await expect(findPromise).resolves.toHaveReturnedWith({test: "test"});
+      await expect(findPromise).resolves.toStrictEqual({
+        artifactCRS: EPSGDATA[4326].code,
+        catalogRecordID: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
+        domain: Domain.RASTER,
+        webhook: [{ events: [TaskEvent.TASK_COMPLETED], url: 'http://localhost:8080/' }],
+      });
     });
 
-    it('rejects and if task id is not exists', async () => {
+    it('resolves with not found error if task id is not exists', async () => {
       const entity = createFakeEntity();
 
       findOneEntity.mockResolvedValue(undefined);
 
-      const findPromise = taskManager.findOneEntity({id: 1});
+      const findPromise = taskManager.findOneEntity({ id: 1 });
 
-      await expect(findPromise).resolves.not.toThrow();
-      await expect(findPromise).resolves.toReturnWith(undefined);
+      await expect(findPromise).resolves.toBeUndefined();
     });
   });
 });

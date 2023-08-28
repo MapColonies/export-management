@@ -1,1 +1,14 @@
-{}
+{
+  "typeOrm": {
+    "type": "postgres",
+    "schema": "export_manager",
+    "database": "postgres",
+    "host": "localhost",
+    "port": 5432,
+    "username": "postgres",
+    "password": "",
+    "enableSslAuth": false,
+    "entities": ["**/DAL/entity/**/*.js"],
+    "migrations": ["**/DAL/migrations/*.ts"]
+  }
+}

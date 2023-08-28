@@ -48,7 +48,6 @@ export class TasksManager {
       });
 
       const res = await this.taskRepository.createEntity(newEntity);
-      console.log("res:", res)
       return res;
     } catch (error) {
       const errMessage = `Failed to create export task: ${(error as Error).message}`;

@@ -2,7 +2,7 @@ import { DataSource } from 'typeorm';
 
 import { IDbConfig } from './src/common/interfaces';
 import config from 'config';
-import { createConnectionOptions } from './src/DAL/createConnection';
+import { createConnectionOptions } from './src/DAL/utils/createConnection';
 
 const connectionOptions = config.get<IDbConfig>('typeOrm');
 

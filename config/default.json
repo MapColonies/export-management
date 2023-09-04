@@ -41,7 +41,6 @@
     "schema": "export_manager",
     "synchronize": false,
     "logging": false,
-    "entities": ["**/DAL/entity/**/*.js"],
     "migrations": ["**/DAL/migrations/*.ts"]
   },
   "serviceWebhookEndpoint": "http://localhost:8087/export-tasks/webhook",

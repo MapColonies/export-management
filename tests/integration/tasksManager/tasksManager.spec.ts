@@ -1,21 +1,25 @@
 // /// <reference types="jest-extended" />
 
 import jsLogger from '@map-colonies/js-logger';
+import { DependencyContainer, container } from 'tsyringe';
+import { Domain } from '@map-colonies/types';
 import { trace } from '@opentelemetry/api';
+import { CreateExportTaskRequest, TaskEvent, TaskParameters } from '@map-colonies/export-interfaces';
+import { DataSource, Repository } from 'typeorm';
 import httpStatusCodes from 'http-status-codes';
 import { getApp } from '../../../src/app';
 import { SERVICES } from '../../../src/common/constants';
 import { TasksRequestSender } from './helpers/requestSender';
-import { CreateExportTaskRequest, TaskEvent, TaskParameters } from '@map-colonies/export-interfaces';
-import { Domain } from '@map-colonies/types';
-import { DependencyContainer } from 'tsyringe';
-import { DataSource } from 'typeorm';
+import { TasksManager } from '../../../src/tasks/models/tasksManager';
+import { TaskRepository } from '../../../src/DAL/repositories/taskRepository';
+import { TaskEntity } from '../../../src/DAL/entity';
+import { getFakeTask } from '../../utils/task';
 
 describe('tasks', function () {
   let requestSender: TasksRequestSender;
-  let depContainer: DependencyContainer;
+  let tasksRepository: Repository<TaskEntity>;
+  const task = getFakeTask();
   beforeAll(async function () {
-    console.log("SDAFASDFASFSD")
     const [app, container] = await getApp({
       override: [
         { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
@@ -24,35 +28,58 @@ describe('tasks', function () {
       ],
       useChild: true,
     });
-    console.log("APPPPPPPPPPPPP", app)
     requestSender = new TasksRequestSender(app);
-    depContainer = container;
-  });
+    tasksRepository = container.resolve(DataSource).getRepository(TaskEntity);
+    await container.resolve(DataSource).getRepository(TaskEntity).save(task);
+  }, 70000);
 
   afterEach(async function () {
-    await depContainer.resolve(DataSource).destroy();
+    await container.resolve(DataSource).destroy();
   });
+  
+  describe(("GET /export-tasks"), function () {
+    describe('Happy Path', function () {
+      it('should return 201 status code and the resource', async function () {
+        const findOneSpy = jest.spyOn(tasksRepository, 'findOne');
+        const saveSpy = jest.spyOn(tasksRepository, 'save');
 
-  describe('Happy Path', function () {
-    it.only('should return 200 status code and the resource', async function () {
-      const req: CreateExportTaskRequest<TaskParameters> = {
-       catalogRecordID: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
-       artifactCRS: '4326',
-       domain: Domain.RASTER,
-       webhook: [{url: 'http://localhost:8080', events: [TaskEvent.TASK_COMPLETED]}]
-      }
-      const response = await requestSender.createExportTask(req);
+        const req: CreateExportTaskRequest<TaskParameters> = {
+         catalogRecordID: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
+         artifactCRS: '4326',
+         domain: Domain.RASTER,
+         webhook: [{url: 'http://localhost:8080', events: [TaskEvent.TASK_COMPLETED]}]
+        }
 
-      expect(response.status).toBe(httpStatusCodes.CREATED);
-      //expect(response).toSatisfyApiSpec(); // TODO: use when tests are done
-      // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-      expect(1 + 1).toBe(2);
+        findOneSpy.mockResolvedValue(null);
+        const response = await requestSender.createExportTask(req);
+  
+        expect(response.status).toBe(httpStatusCodes.CREATED);
+        expect(saveSpy).toHaveBeenCalledTimes(1);
+        //expect(response).toSatisfyApiSpec(); // TODO: use when tests are done
+      });
+
+      it('should return 201 status code and the cached resource', async function () {
+        const saveSpy = jest.spyOn(tasksRepository, 'save');
+        const req: CreateExportTaskRequest<TaskParameters> = {
+         catalogRecordID: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
+         artifactCRS: '4326',
+         domain: Domain.RASTER,
+         webhook: [{url: 'http://localhost:8080', events: [TaskEvent.TASK_COMPLETED]}]
+        }
+
+        const response = await requestSender.createExportTask(req);
+        expect(saveSpy).not.toHaveBeenCalled();
+  
+        expect(response.status).toBe(httpStatusCodes.CREATED);
+        //expect(response).toSatisfyApiSpec(); // TODO: use when tests are done
+      });
     });
-  });
-  describe('Bad Path', function () {
-    // All requests with status code of 400
-  });
-  describe('Sad Path', function () {
-    // All requests with status code 4XX-5XX
-  });
+    describe('Bad Path', function () {
+      // All requests with status code of 400
+    });
+    describe('Sad Path', function () {
+      // All requests with status code 4XX-5XX
+    });
+  })
+
 });

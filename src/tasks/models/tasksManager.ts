@@ -38,7 +38,7 @@ export class TasksManager {
       // TODO: Get customer name
       const customerName = 'Cutomer_Name';
 
-      let newEntity = new TaskEntity();
+      const newEntity = new TaskEntity();
       Object.assign(newEntity, req, {
         taskGeometries: exportTaskResponse.geometries,
         jobId: exportTaskResponse.jobId,

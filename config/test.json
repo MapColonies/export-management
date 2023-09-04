@@ -7,8 +7,6 @@
     "port": 5432,
     "username": "postgres",
     "password": "",
-    "enableSslAuth": false,
-    "entities": ["**/DAL/entity/**/*.js"],
-    "migrations": ["**/DAL/migrations/*.ts"]
+    "enableSslAuth": false
   }
 }

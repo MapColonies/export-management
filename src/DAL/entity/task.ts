@@ -6,7 +6,7 @@ import { ArtifactEntity } from './artifact';
 import { WebhookEntity } from './webhook';
 
 @Entity('task')
-export class TaskEntity extends BaseEntity {
+export class TaskEntity {
   @PrimaryGeneratedColumn()
   public id: number;
 

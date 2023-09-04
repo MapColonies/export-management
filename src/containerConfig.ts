@@ -10,7 +10,7 @@ import { TASK_ENTITY_CUSTOM_REPOSITORY_SYMBOL, entityRepositoryFactory } from '.
 import { tracing } from './common/tracing';
 import { InjectionObject, registerDependencies } from './common/dependencyRegistration';
 import { tasksRouterFactory, TASKS_ROUTER_SYMBOL } from './tasks/routes/tasksRouter';
-import { initConnection } from './DAL/createConnection';
+import { initConnection } from './DAL/utils/createConnection';
 import { container, instanceCachingFactory } from 'tsyringe';
 import { IDbConfig } from './common/interfaces';
 import { HealthCheck } from '@godaddy/terminus';

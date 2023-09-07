@@ -70,8 +70,8 @@ Returns the cloud provider name from global if exists or from the chart's values
 {{- define "export-management.cloudProviderFlavor" -}}
 {{- if .Values.global.cloudProvider.flavor }}
     {{- .Values.global.cloudProvider.flavor -}}
-{{- else if .Values.cloudProvider -}}
-    {{- .Values.cloudProvider.flavor | default "minikube" -}}
+{{- else if .Values.global.cloudProvider -}}
+    {{- .Values.global.cloudProvider.flavor | default "minikube" -}}
 {{- else -}}
     {{ "minikube" }}
 {{- end -}}
@@ -83,8 +83,8 @@ Returns the cloud provider docker registry url from global if exists or from the
 {{- define "export-management.cloudProviderDockerRegistryUrl" -}}
 {{- if .Values.global.cloudProvider.dockerRegistryUrl }}
     {{- printf "%s/" .Values.global.cloudProvider.dockerRegistryUrl -}}
-{{- else if .Values.cloudProvider.dockerRegistryUrl -}}
-    {{- printf "%s/" .Values.cloudProvider.dockerRegistryUrl -}}
+{{- else if .Values.global.cloudProvider.dockerRegistryUrl -}}
+    {{- printf "%s/" .Values.global.cloudProvider.dockerRegistryUrl -}}
 {{- else -}}
 {{- end -}}
 {{- end -}}
@@ -95,8 +95,8 @@ Returns the cloud provider image pull secret name from global if exists or from 
 {{- define "export-management.cloudProviderImagePullSecretName" -}}
 {{- if .Values.global.cloudProvider.imagePullSecretName }}
     {{- .Values.global.cloudProvider.imagePullSecretName -}}
-{{- else if .Values.cloudProvider.imagePullSecretName -}}
-    {{- .Values.cloudProvider.imagePullSecretName -}}
+{{- else if .Values.global.cloudProvider.imagePullSecretName -}}
+    {{- .Values.global.cloudProvider.imagePullSecretName -}}
 {{- end -}}
 {{- end -}}
 
@@ -106,7 +106,7 @@ Returns the tracing url from global if exists or from the chart's values
 {{- define "export-management.tracingUrl" -}}
 {{- if .Values.global.tracing.url }}
     {{- .Values.global.tracing.url -}}
-{{- else if .Values.cloudProvider -}}
+{{- else if .Values.global.cloudProvider -}}
     {{- .Values.env.tracing.url -}}
 {{- end -}}
 {{- end -}}

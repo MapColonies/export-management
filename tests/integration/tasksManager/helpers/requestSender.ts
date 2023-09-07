@@ -9,11 +9,11 @@ export class TasksRequestSender {
   }
 
   public async getLatestTasksByLimit(limit: number): Promise<supertest.Response> {
-    return supertest.agent(this.app).get('/export-tasks').query({limit})
+    return supertest.agent(this.app).get('/export-tasks').query({limit});
   }
 
   public async findOneEntity(taskId: number): Promise<supertest.Response> {
-    return supertest.agent(this.app).get(`/export-tasks/${taskId}`).set('Content-Type', 'application/json');
+    return supertest.agent(this.app).get(`/export-tasks/${taskId}`);
   }
   
 }

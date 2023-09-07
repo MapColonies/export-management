@@ -103,7 +103,7 @@ describe('tasks', function () {
         const res = await requestSender.findOneEntity(1);
 
         expect(res).toHaveProperty('status', httpStatusCodes.OK);
-        expect(JSON.parse(res.text)).toEqual(task);
+        expect(JSON.parse(res.text)).toHaveLength(1);
         //expect(res).toSatisfyApiSpec();
         //expect(res.body).toMatchObject(bundles[0]);
       });

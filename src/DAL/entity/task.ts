@@ -1,14 +1,15 @@
 import { Domain, EpsgCode } from '@map-colonies/types';
 import { Entity, Column, UpdateDateColumn, CreateDateColumn, PrimaryGeneratedColumn, ManyToMany, JoinTable, BaseEntity } from 'typeorm';
 import { TaskStatus } from '@map-colonies/export-interfaces';
+import { ITaskEntity } from '../models/task';
 import { TaskGeometryEntity } from './taskGeometry';
 import { ArtifactEntity } from './artifact';
 import { WebhookEntity } from './webhook';
 
 @Entity('task')
-export class TaskEntity {
+export class TaskEntity extends BaseEntity implements ITaskEntity {
   @PrimaryGeneratedColumn()
-  public id: number;
+  public id?: number;
 
   // add column explicitly here for type ORM bug - https://github.com/typeorm/typeorm/issues/586
   @Column({ name: 'job_id', nullable: false, type: 'uuid' })

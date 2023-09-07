@@ -15,7 +15,7 @@ let depContainer: DependencyContainer | undefined;
 const port: number = config.get<number>('server.port') || DEFAULT_SERVER_PORT;
 
 void getApp()
-  .then(({ app, container }) => {
+  .then(([app, container]) => {
     depContainer = container;
 
     const logger = container.resolve<Logger>(SERVICES.LOGGER);

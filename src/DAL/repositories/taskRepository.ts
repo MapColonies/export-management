@@ -1,27 +1,28 @@
-import { FactoryFunction } from 'tsyringe';
-import { DataSource, FindOneOptions, FindOptionsWhere } from 'typeorm';
+import { FactoryFunction, container } from 'tsyringe';
+import { DataSource } from 'typeorm';
 import { TaskEntity } from '../entity/task';
 import { ITaskEntity } from '../models/task';
 
-export type FindOneEntityParams = { id: number } | { jobId: string };
-
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const createTaskRepository = (dataSource: DataSource) => {
+  // @ts-ignore
+  console.log('3################',dataSource.avi)
   return dataSource.getRepository(TaskEntity).extend({
-    async createEntity(entity: ITaskEntity): Promise<TaskEntity> {
-      return await this.save(entity);
+    async createEntity(entity: ITaskEntity): Promise<ITaskEntity> {
+      const res = await this.save(entity);
+      return res;
     },
 
-    async findOneEntity(param: FindOneEntityParams): Promise<TaskEntity | undefined> {
-      const taskEntity = await this.findOne({ where: param });
+    async findOneEntity(param: FindOneEntityParams): Promise<ITaskEntity | undefined> {
+      const taskEntity = await this.findOne({ where: param, relations: ['artifacts', 'webhook', 'taskGeometries'] });
       if (taskEntity === null) {
         return undefined;
       }
       return taskEntity;
     },
 
-    async getLatestEntitiesByLimit(limit: number): Promise<TaskEntity[]> {
-      const taskEntities = await this.find({ take: limit, order: { id: 'DESC' } });
+    async getLatestEntitiesByLimit(limit: number): Promise<ITaskEntity[]> {
+      const taskEntities = await this.find({ take: limit, order: { id: 'DESC' }, relations: ['artifacts', 'webhook', 'taskGeometries'] });
       return taskEntities;
     },
 
@@ -46,9 +47,10 @@ const createTaskRepository = (dataSource: DataSource) => {
 };
 
 export type TaskRepository = ReturnType<typeof createTaskRepository>;
+export type FindOneEntityParams = { id: number } | { jobId: string };
 
-export const entityRepositoryFactory: FactoryFunction<TaskRepository> = (depContainer) => {
+export const taskRepositoryFactory: FactoryFunction<TaskRepository> = (depContainer) => {
   return createTaskRepository(depContainer.resolve<DataSource>(DataSource));
 };
 
-export const TASK_ENTITY_CUSTOM_REPOSITORY_SYMBOL = Symbol('TASK_ENTITY_CUSTOM_REPOSITORY_SYMBOL');
+export const TASK_REPOSITORY_SYMBOL = Symbol('TASK_REPOSITORY');

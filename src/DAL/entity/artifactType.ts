@@ -1,15 +1,18 @@
 import { Entity, Column, JoinColumn, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Artifact3DType, ArtifactDEMType, ArtifactRasterType } from '@map-colonies/types';
+import { IArtifactType } from '../models/artifactType';
 import { ArtifactEntity } from './artifact';
 
+export declare type AtrifactType = ArtifactDEMType | ArtifactRasterType | Artifact3DType;
 @Entity('artifact_type')
-export class ArtifactTypeEntity {
+export class ArtifactTypeEntity implements IArtifactType {
   @PrimaryGeneratedColumn()
   public id: number;
 
   @Column('varchar', { nullable: false })
-  public type: string;
+  public type: AtrifactType;
 
-  @OneToMany(() => ArtifactEntity, (artifact) => artifact.type, { nullable: false, cascade: true })
+  @OneToMany(() => ArtifactEntity, (artifact) => artifact.type, { cascade: true })
   @JoinColumn()
-  public artifacts: ArtifactEntity[];
+  public artifacts?: ArtifactEntity[];
 }

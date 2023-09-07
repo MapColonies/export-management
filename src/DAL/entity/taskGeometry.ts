@@ -1,11 +1,12 @@
 import { Entity, Column, PrimaryGeneratedColumn, MultiPolygon, Polygon, ManyToMany } from 'typeorm';
 import { GeometryMetadata } from '@map-colonies/export-interfaces';
+import { ITaskGeometries } from '../models/taskGeometry';
 import { TaskEntity } from './task';
 
 @Entity('task_geometry')
-export class TaskGeometryEntity {
+export class TaskGeometryEntity implements ITaskGeometries {
   @PrimaryGeneratedColumn()
-  public id: string;
+  public id: number;
 
   @ManyToMany(() => TaskEntity)
   public tasks: TaskEntity[];

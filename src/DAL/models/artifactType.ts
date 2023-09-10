@@ -1,4 +1,4 @@
-import { AtrifactType } from '@map-colonies/export-interfaces';
+import { AtrifactType } from '../entity/artifactType';
 import { IArtifact } from './artifact';
 
 export interface IArtifactType {

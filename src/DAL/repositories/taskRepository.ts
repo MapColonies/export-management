@@ -44,15 +44,14 @@ const createTaskRepository = (dataSource: DataSource) => {
   });
 };
 
-
 // eslint-disable-next-line import/exports-last
 export interface FindTaskByJobId {
   jobId: string;
-};
+}
 // eslint-disable-next-line import/exports-last
 export interface FindTaskById {
-  id: number
-};
+  id: number;
+}
 
 export type TaskRepository = ReturnType<typeof createTaskRepository>;
 export type FindTaskParams = FindTaskById | FindTaskByJobId;

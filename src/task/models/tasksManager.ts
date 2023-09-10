@@ -1,14 +1,11 @@
 import { Logger } from '@map-colonies/js-logger';
-import { CreateExportTaskRequest, CreateExportTaskResponse, TaskEvent, TaskParameters } from '@map-colonies/export-interfaces';
-import { inject, injectable, container } from 'tsyringe';
+import { CreateExportTaskRequest, IExportManager, TaskParameters } from '@map-colonies/export-interfaces';
+import { inject, injectable } from 'tsyringe';
 import { Domain } from '@map-colonies/types';
-import { FeatureCollection } from '@turf/turf';
 import { BadRequestError, NotFoundError } from '@map-colonies/error-types';
 import { SERVICES } from '../../common/constants';
 import { ExportManagerRaster } from '../../exportManager/exportManagerRaster';
-import { Webhook } from '../../exportManager/interfaces';
-import { IExportManager } from '../../exportManager/interfaces';
-import { FindOneEntityParams, TASK_REPOSITORY_SYMBOL, TaskRepository } from '../../DAL/repositories/taskRepository';
+import { TASK_REPOSITORY_SYMBOL, TaskRepository } from '../../DAL/repositories/taskRepository';
 import { TaskEntity } from '../../DAL/entity/task';
 import { ITaskEntity } from '../../DAL/models/task';
 
@@ -19,26 +16,25 @@ export class TasksManager {
     @inject(TASK_REPOSITORY_SYMBOL) private readonly taskRepository: TaskRepository
   ) {}
 
-  public async createExportTask(req: CreateExportTaskRequest<TaskParameters>): Promise<ITaskEntity> {
+  public async createTask(req: CreateExportTaskRequest<TaskParameters>): Promise<ITaskEntity> {
     try {
       this.logger.info({ msg: `Creating export task`, req: req });
-      
+
       const domain = req.domain;
       const exportManagerInstance = this.getExportManagerInstance(domain);
       // TODO: Call Domain SDK
       const exportTaskResponse = await exportManagerInstance.createExportTask(req);
       const jobId = exportTaskResponse.jobId;
-      const entity = await this.findOneEntity({ jobId });
+      const entity = await this.taskRepository.getTaskById({ jobId });
       // return the entity if its already exists
       if (entity) {
-        this.logger.debug(entity, `Found an entity with the same job ib: ${jobId}`)
+        this.logger.debug(entity, `Found an entity with the same job ib: ${jobId}`);
         return entity;
       }
       // TODO Call Domain SDK to get estimations
       const exstimations = await exportManagerInstance.getEstimations();
       // TODO: Get customer name
       const customerName = 'Cutomer_Name';
-
       const newEntity = new TaskEntity();
       Object.assign(newEntity, req, {
         taskGeometries: exportTaskResponse.geometries,
@@ -48,7 +44,7 @@ export class TasksManager {
         estimatedTime: exstimations.estimatedTime,
       });
 
-      const res = await this.taskRepository.createEntity(newEntity);
+      const res = await this.taskRepository.createTask(newEntity);
       return res;
     } catch (error) {
       const errMessage = `Failed to create export task: ${(error as Error).message}`;
@@ -57,24 +53,27 @@ export class TasksManager {
     }
   }
 
-  public async findOneEntity(param: FindOneEntityParams): Promise<ITaskEntity | undefined> {
+  public async getTaskById(id: number): Promise<ITaskEntity | undefined> {
     try {
-      this.logger.info({ msg: `Getting task by id`, param });
-      const task = await this.taskRepository.findOneEntity(param);
+      this.logger.info({ msg: `Getting task by id: ${id}`, id });
+
+      const task = await this.taskRepository.getTaskById({ id });
+      if (!task) {
+        throw new NotFoundError(`Task id: ${id} is not found`);
+      }
       return task;
     } catch (error) {
-      const errMessage = `Failed to get task id ${param}: ${(error as Error).message}`;
-      this.logger.error({ err: error, taskId: param, msg: errMessage });
+      const errMessage = `Failed to get task id ${id}: ${(error as Error).message}`;
+      this.logger.error({ err: error, id, msg: errMessage });
       throw error;
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers
   public async getLatestTasksByLimit(limit = 10): Promise<ITaskEntity[]> {
     try {
       this.logger.info({ msg: `Getting task by limit ${limit}`, limit });
-
-      const res = await this.taskRepository.getLatestEntitiesByLimit(limit);
-      console.log("RES:", res)
+      const res = await this.taskRepository.getLatestTasksByLimit(limit);
       return res;
     } catch (error) {
       const errMessage = `Failed to get tasks by limit: ${(error as Error).message}`;

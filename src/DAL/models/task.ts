@@ -5,13 +5,13 @@ import { ITaskGeometries } from './taskGeometry';
 
 export interface ITaskEntity extends CreateExportTaskRequest<TaskParameters> {
   /** The auto-generated ID of the artifact. */
-  id?: number
+  id?: number;
   /** The unique job id of the task. */
   jobId: string;
   /** Contains all of the geometries on the ROI that given. */
   taskGeometries: ITaskGeometries[];
   /** The artifacts relation of the task. */
-  artifacts?: IArtifact[]
+  artifacts?: IArtifact[];
   /** The costumer that send the task. */
   customerName?: string;
   /** The domain that the task belongs to. */

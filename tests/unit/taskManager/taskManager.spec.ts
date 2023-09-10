@@ -1,43 +1,41 @@
 import jsLogger from '@map-colonies/js-logger';
-import { faker } from '@faker-js/faker';
-import { TasksManager } from '../../../src/tasks/models/tasksManager';
+import { Domain, EPSGDATA } from '@map-colonies/types';
+import { NotFoundError } from '@map-colonies/error-types';
+import { GetEstimationsResponse, TaskEvent } from '@map-colonies/export-interfaces';
 import { TaskRepository } from '../../../src/DAL/repositories/taskRepository';
 import { createFakeEntity } from '../helpers/helpers';
-import { Domain, EPSGDATA } from '@map-colonies/types';
 import { geo1 } from '../../../src/exportManager/geoMocks';
-import { CreateExportTaskResponse, GetEstimationsResponse, TaskEvent } from '@map-colonies/export-interfaces';
 import { ExportManagerRaster } from '../../../src/exportManager/exportManagerRaster';
-import { NotFound } from 'express-openapi-validator/dist/openapi.validator';
-import { NotFoundError } from '@map-colonies/error-types';
+import { TasksManager } from '../../../src/task/models/tasksManager';
 
 let taskManager: TasksManager;
 let taskRepository: TaskRepository;
 
 describe('taskManager', () => {
-  const createEntity = jest.fn();
-  const findOneEntity = jest.fn();
-  const getLatestEntitiesByLimit = jest.fn();
+  const createTask = jest.fn();
+  const getTaskById = jest.fn();
+  const getLatestTasksByLimit = jest.fn();
 
   beforeEach(() => {
     jest.resetAllMocks();
 
     taskRepository = {
-      createEntity,
-      findOneEntity,
-      getLatestEntitiesByLimit,
+      createTask,
+      getTaskById,
+      getLatestTasksByLimit,
     } as unknown as TaskRepository;
 
     taskManager = new TasksManager(jsLogger({ enabled: false }), taskRepository);
   });
 
-  describe('#createEntity', () => {
+  describe('#createTask', () => {
     it('resolves without errors', async () => {
       const entity = createFakeEntity();
 
-      findOneEntity.mockResolvedValue(undefined);
-      createEntity.mockResolvedValue(undefined);
+      getTaskById.mockResolvedValue(undefined);
+      createTask.mockResolvedValue(undefined);
 
-      const createPromise = taskManager.createExportTask(entity);
+      const createPromise = taskManager.createTask(entity);
 
       await expect(createPromise).resolves.not.toThrow();
     });
@@ -46,13 +44,13 @@ describe('taskManager', () => {
       const entity = createFakeEntity();
       entity.domain = Domain.DEM;
 
-      createEntity.mockResolvedValue(undefined);
+      createTask.mockResolvedValue(undefined);
 
-      const createPromise = taskManager.createExportTask(entity);
+      const createPromise = taskManager.createTask(entity);
 
       await expect(createPromise).rejects.toThrow();
-      expect(findOneEntity).not.toBeCalled();
-      expect(createEntity).not.toBeCalled();
+      expect(getTaskById).not.toHaveBeenCalled();
+      expect(createTask).not.toHaveBeenCalled();
     });
 
     it('resolves and call with the received task geometries and estimations', async () => {
@@ -66,15 +64,15 @@ describe('taskManager', () => {
 
       createExportTaskResponseSpy.mockResolvedValue(response);
       getEstimationsSpy.mockResolvedValue(estimationsResponse);
-      findOneEntity.mockResolvedValue(undefined);
-      createEntity.mockResolvedValue(entity);
+      getTaskById.mockResolvedValue(undefined);
+      createTask.mockResolvedValue(entity);
 
-      const createPromise = taskManager.createExportTask(entity);
+      const createPromise = taskManager.createTask(entity);
 
       await expect(createPromise).resolves.not.toThrow();
-      expect(getEstimationsSpy).toBeCalledTimes(1);
-      expect(createEntity).toBeCalledTimes(1);
-      expect(createEntity).toBeCalledWith({
+      expect(getEstimationsSpy).toHaveBeenCalledTimes(1);
+      expect(createTask).toHaveBeenCalledTimes(1);
+      expect(createTask).toHaveBeenCalledWith({
         ...entity,
         taskGeometries: response.geometries,
         jobId: response.jobId,
@@ -95,23 +93,23 @@ describe('taskManager', () => {
 
       createExportTaskResponseSpy.mockResolvedValue(response);
       getEstimationsSpy.mockResolvedValue({ estimatedTime: undefined, estimatedFileSize: undefined });
-      findOneEntity.mockResolvedValue(entity);
+      getTaskById.mockResolvedValue(entity);
 
-      const createPromise = taskManager.createExportTask(entity);
+      const createPromise = taskManager.createTask(entity);
 
       await expect(createPromise).resolves.not.toThrow();
-      expect(getEstimationsSpy).not.toBeCalled();
-      expect(createEntity).not.toBeCalled();
+      expect(getEstimationsSpy).not.toHaveBeenCalled();
+      expect(createTask).not.toHaveBeenCalled();
     });
   });
 
-  describe('#findOneEntity', () => {
+  describe('#getTaskById', () => {
     it('resolves and find exists entity', async () => {
       const entity = createFakeEntity();
 
-      findOneEntity.mockResolvedValue(entity);
+      getTaskById.mockResolvedValue(entity);
 
-      const findPromise = taskManager.findOneEntity({ id: 1 });
+      const findPromise = taskManager.getTaskById(1);
 
       await expect(findPromise).resolves.not.toThrow();
       await expect(findPromise).resolves.toStrictEqual({
@@ -123,13 +121,11 @@ describe('taskManager', () => {
     });
 
     it('resolves with not found error if task id is not exists', async () => {
-      const entity = createFakeEntity();
+      getTaskById.mockResolvedValue(undefined);
 
-      findOneEntity.mockResolvedValue(undefined);
+      const findPromise = taskManager.getTaskById(1);
 
-      const findPromise = taskManager.findOneEntity({ id: 1 });
-
-      await expect(findPromise).resolves.toBeUndefined();
+      await expect(findPromise).rejects.toThrow(NotFoundError);
     });
   });
 });

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 import { TaskGeometry } from '@map-colonies/export-interfaces';
 
 export const geo1: TaskGeometry = {

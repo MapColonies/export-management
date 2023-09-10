@@ -5,17 +5,16 @@ import { DependencyContainer } from 'tsyringe/dist/typings/types';
 import jsLogger, { LoggerOptions } from '@map-colonies/js-logger';
 import { DataSource } from 'typeorm';
 import { Metrics } from '@map-colonies/telemetry';
+import { instanceCachingFactory } from 'tsyringe';
+import { HealthCheck } from '@godaddy/terminus';
 import { DB_CONNECTION_TIMEOUT, SERVICES, SERVICE_NAME } from './common/constants';
 import { TASK_REPOSITORY_SYMBOL, taskRepositoryFactory } from './DAL/repositories/taskRepository';
 import { tracing } from './common/tracing';
 import { InjectionObject, registerDependencies } from './common/dependencyRegistration';
-import { tasksRouterFactory, TASKS_ROUTER_SYMBOL } from './tasks/routes/tasksRouter';
+import { tasksRouterFactory, TASKS_ROUTER_SYMBOL } from './task/routes/tasksRouter';
 import { initConnection } from './DAL/utils/createConnection';
-import { container, instanceCachingFactory } from 'tsyringe';
 import { IDbConfig } from './common/interfaces';
-import { HealthCheck } from '@godaddy/terminus';
 import { promiseTimeout } from './common/utils';
-import { TaskEntity } from './DAL/entity';
 
 const healthCheck = (connection: DataSource): HealthCheck => {
   return async (): Promise<void> => {
@@ -37,7 +36,7 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
 
   const connectionOptions = config.get<IDbConfig>('typeOrm');
   const connection = await initConnection(connectionOptions);
-  
+
   const metrics = new Metrics();
   metrics.start();
 
@@ -50,7 +49,6 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
     { token: SERVICES.TRACER, provider: { useValue: tracer } },
     { token: SERVICES.METER, provider: { useValue: OtelMetrics.getMeterProvider().getMeter(SERVICE_NAME) } },
     { token: TASKS_ROUTER_SYMBOL, provider: { useFactory: tasksRouterFactory } },
-    //{ token: TASK_REPOSITORY_SYMBOL, provider: { useFactory: entityRepositoryFactory } },
     { token: DataSource, provider: { useValue: connection } },
     {
       token: 'onSignal',
@@ -71,8 +69,7 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
         }),
       },
     },
-    //{ token: TASK_REPOSITORY_SYMBOL, provider: { useFactory: taskRepositoryFactory } },
-    { token: TASK_REPOSITORY_SYMBOL, provider: { useFactory: instanceCachingFactory((c) => taskRepositoryFactory(c))}},
+    { token: TASK_REPOSITORY_SYMBOL, provider: { useFactory: instanceCachingFactory((c) => taskRepositoryFactory(c)) } },
   ];
 
   return registerDependencies(dependencies, options?.override, options?.useChild);

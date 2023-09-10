@@ -4,14 +4,22 @@ module.exports = {
   },
   coverageReporters: ['text', 'html'],
   collectCoverage: true,
-  collectCoverageFrom: ['<rootDir>/src/**/*.ts', '!*/node_modules/', '!/vendor/**', '!*/common/**', '!**/models/**', '!<rootDir>/src/*'],
+  collectCoverageFrom: [
+    '<rootDir>/src/**/*.ts',
+    '!*/node_modules/',
+    '!/vendor/**',
+    '!*/common/**',
+    '!**/models/**',
+    '!<rootDir>/src/*',
+    '!<rootDir>/src/DAL/migrations/**',
+  ],
   coverageDirectory: '<rootDir>/coverage',
   rootDir: '../../../.',
   testMatch: ['<rootDir>/tests/integration/**/*.spec.ts'],
   setupFiles: ['<rootDir>/tests/configurations/jest.setup.ts'],
   setupFilesAfterEnv: ['jest-openapi'],
   globalSetup: '<rootDir>/tests/configurations/integration/jest.globalSetup.ts',
-  //globalTeardown: '<rootDir>/tests/configurations/integration/jest.globalTeardown.ts',
+  globalTeardown: '<rootDir>/tests/configurations/integration/jest.globalTeardown.ts',
   reporters: [
     'default',
     [
@@ -24,10 +32,10 @@ module.exports = {
   testEnvironment: 'node',
   coverageThreshold: {
     global: {
-      branches: 0,
-      functions: 0,
-      lines: 0,
-      statements: 0,
+      branches: 50,
+      functions: 50,
+      lines: 50,
+      statements: 50,
     },
   },
 };

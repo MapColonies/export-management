@@ -1,19 +1,18 @@
-import { FactoryFunction, container } from 'tsyringe';
+import { FactoryFunction } from 'tsyringe';
 import { DataSource } from 'typeorm';
 import { TaskEntity } from '../entity/task';
 import { ITaskEntity } from '../models/task';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const createTaskRepository = (dataSource: DataSource) => {
-  // @ts-ignore
-  console.log('3################',dataSource.avi)
   return dataSource.getRepository(TaskEntity).extend({
-    async createEntity(entity: ITaskEntity): Promise<ITaskEntity> {
+    async createTask(entity: ITaskEntity): Promise<ITaskEntity> {
       const res = await this.save(entity);
       return res;
     },
 
-    async findOneEntity(param: FindOneEntityParams): Promise<ITaskEntity | undefined> {
+    async getTaskById(param: FindTaskParams): Promise<ITaskEntity | undefined> {
+      console.log('##############', param);
       const taskEntity = await this.findOne({ where: param, relations: ['artifacts', 'webhook', 'taskGeometries'] });
       if (taskEntity === null) {
         return undefined;
@@ -21,7 +20,7 @@ const createTaskRepository = (dataSource: DataSource) => {
       return taskEntity;
     },
 
-    async getLatestEntitiesByLimit(limit: number): Promise<ITaskEntity[]> {
+    async getLatestTasksByLimit(limit: number): Promise<ITaskEntity[]> {
       const taskEntities = await this.find({ take: limit, order: { id: 'DESC' }, relations: ['artifacts', 'webhook', 'taskGeometries'] });
       return taskEntities;
     },
@@ -46,8 +45,17 @@ const createTaskRepository = (dataSource: DataSource) => {
   });
 };
 
+// eslint-disable-next-line import/exports-last
+export interface FindTaskByJobId {
+  jobId: string;
+}
+// eslint-disable-next-line import/exports-last
+export interface FindTaskById {
+  id: number;
+}
+
 export type TaskRepository = ReturnType<typeof createTaskRepository>;
-export type FindOneEntityParams = { id: number } | { jobId: string };
+export type FindTaskParams = FindTaskById | FindTaskByJobId;
 
 export const taskRepositoryFactory: FactoryFunction<TaskRepository> = (depContainer) => {
   return createTaskRepository(depContainer.resolve<DataSource>(DataSource));

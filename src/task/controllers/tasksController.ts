@@ -7,11 +7,11 @@ import { CreateExportTaskRequest, TaskParameters } from '@map-colonies/export-in
 import { SERVICES } from '../../common/constants';
 import { TasksManager } from '../models/tasksManager';
 import { ITaskEntity } from '../../DAL/models/task';
-import { NotFoundError } from '@map-colonies/error-types';
+import { FindTaskById } from '../../DAL/repositories/taskRepository';
 
 type CreateTaskHandler = RequestHandler<undefined, ITaskEntity, CreateExportTaskRequest<TaskParameters>>;
-type GetTaskByIdHandler = RequestHandler<{ taskId: number }, ITaskEntity | undefined, undefined, undefined>;
-type getLatestTasksByLimitHandler = RequestHandler<undefined, ITaskEntity[], undefined, { limit: number }>;
+type GetTaskByIdHandler = RequestHandler<FindTaskById, ITaskEntity | undefined, undefined, undefined>;
+type GetLatestTasksByLimitHandler = RequestHandler<undefined, ITaskEntity[], undefined, { limit: number }>;
 
 @injectable()
 export class TasksController {
@@ -21,9 +21,9 @@ export class TasksController {
     @inject(SERVICES.METER) private readonly meter: Meter
   ) {}
 
-  public createExportTask: CreateTaskHandler = async (req, res, next) => {
+  public createTask: CreateTaskHandler = async (req, res, next) => {
     try {
-      const entity = await this.taskManager.createExportTask(req.body);
+      const entity = await this.taskManager.createTask(req.body);
       return res.status(httpStatus.CREATED).json(entity);
     } catch (error) {
       next(error);
@@ -32,18 +32,15 @@ export class TasksController {
 
   public getTaskById: GetTaskByIdHandler = async (req, res, next) => {
     try {
-      const params = { id: req.params.taskId };
-      const result = await this.taskManager.findOneEntity(params);
-      if (!result) {
-        throw new NotFoundError(`Task id: ${params.id} is not found`);
-      }
+      const id = req.params.id;
+      const result = await this.taskManager.getTaskById(id);
       return res.status(httpStatus.OK).json(result);
     } catch (error) {
       next(error);
     }
   };
 
-  public getTasks: getLatestTasksByLimitHandler = async (req, res, next) => {
+  public getLatestTasksByLimit: GetLatestTasksByLimitHandler = async (req, res, next) => {
     try {
       const result = await this.taskManager.getLatestTasksByLimit(req.query.limit);
       return res.status(httpStatus.OK).json(result);

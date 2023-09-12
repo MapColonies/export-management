@@ -3,7 +3,6 @@ global:
     dockerRegistryUrl: acrarolibotnonprod.azurecr.io
     imagePullSecretName: 'acr-registry'
     flavor: openshift
-  servicePort: 8080  
   tracing: {}
   metrics: {}
   environment: {}
@@ -77,7 +76,7 @@ nginx:
   authorization:
     enabled: true
     domain: 'raster'
-    url: http://opa-la-opa-service.integration/v1/data/http/authz/decision
+    url: http://opa-la-opa-service/v1/data/http/authz/decision
 
   extraVolumes:
     - name: nginx-config
@@ -90,4 +89,17 @@ nginx:
       subPath: default.conf
     - mountPath: "/etc/nginx/nginx.conf"
       name: nginx-config
-      subPath: nginx.conf         
+      subPath: nginx.conf
+  route:
+    enabled: true
+    path: /
+    host: 
+    timeout:
+      enabled: false # defaults to 30s by openshift
+      duration: 60s # supported units (us, ms, s, m, h, d)
+    tls:
+      enabled: true
+      useCerts: false
+      certificate: ''
+      key: ''
+      caCertificate: ''                   

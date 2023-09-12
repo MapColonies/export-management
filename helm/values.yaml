@@ -77,7 +77,7 @@ nginx:
   nodePort: 30001
   authorization:
     enabled: true
-    domain: 'raster'
+    domain: 'rasterExport'
     url: http://opa-la-opa-service/v1/data/http/authz/decision
 
   extraVolumes:

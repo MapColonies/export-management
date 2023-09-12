@@ -77,8 +77,8 @@ Returns the cloud provider name from global if exists or from the chart's values
 {{- define "export-management.cloudProviderFlavor" -}}
 {{- if .Values.global.cloudProvider.flavor }}
     {{- .Values.global.cloudProvider.flavor -}}
-{{- else if .Values.global.cloudProvider -}}
-    {{- .Values.global.cloudProvider.flavor | default "minikube" -}}
+{{- else if .Values.cloudProvider -}}
+    {{- .Values.cloudProvider.flavor | default "minikube" -}}
 {{- else -}}
     {{ "minikube" }}
 {{- end -}}

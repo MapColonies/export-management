@@ -1,8 +1,5 @@
 global:
-  cloudProvider:
-    dockerRegistryUrl: acrarolibotnonprod.azurecr.io
-    imagePullSecretName: 'acr-registry'
-    flavor: openshift
+  cloudProvider: {}
   tracing: {}
   metrics: {}
   environment: {}
@@ -14,6 +11,11 @@ initialDelaySeconds: 60
 nodePort: 30030 #for minikube deployment only
 resetOnConfigChange: true
 imagePullPolicy: Always
+
+cloudProvider:
+  dockerRegistryUrl: my-registry-url.io
+  imagePullSecretName: 'my-registry-secret'
+  flavor: openshift
 
 caSecretName: ''
 caPath: '/usr/local/share/ca-certificates'
@@ -102,4 +104,11 @@ nginx:
       useCerts: false
       certificate: ''
       key: ''
-      caCertificate: ''                   
+      caCertificate: ''
+  ingress:
+    enabled: false
+    path: /
+    host: 'localhost'
+    tls: 
+      enabled: true
+      secretName: ''                       

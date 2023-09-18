@@ -38,30 +38,5 @@
         }
       }
     }
-  },
-  "serviceWebhookEndpoint": "SERVICE_WEBHOOK_ENDPOINT",
-  "externalClients": {
-    "httpRetry": {
-      "attempts": {
-        "__name": "HTTP_RETRY_ATTEMPTS",
-        "__format": "number"
-      },
-      "delay": "HTTP_RETRY_DELAY",
-      "shouldResetTimeout": {
-        "__name": "HTTP_RETRY_SHOULD_RESET_TIMEOUT",
-        "__format": "boolean"
-      }
-    },
-    "disableHttpClientLogs": {
-      "__name": "DISABLE_HTTP_CLIENT_LOGS",
-      "__format": "boolean"
-    },
-    "exporterTrigger": {
-      "url": "EXPORTER_TRIGGER_URL"
-    },
-    "jobManager": {
-      "url": "JOB_MANAGER_URL",
-      "exportJobType": "JOB_MANAGER_EXPORT_JOB_TYPE"
-    }
   }
 }

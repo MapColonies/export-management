@@ -10,6 +10,7 @@ import {
 } from '@map-colonies/export-interfaces';
 import { inject, injectable } from 'tsyringe';
 import { SERVICES } from '../common/constants';
+// TODO: removed when SDKis provided
 import { geo1, geo2 } from './geoMocks';
 
 @injectable()

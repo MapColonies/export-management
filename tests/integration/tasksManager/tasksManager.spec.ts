@@ -1,5 +1,3 @@
-// /// <reference types="jest-extended" />
-
 import jsLogger from '@map-colonies/js-logger';
 import { DependencyContainer } from 'tsyringe';
 import { Domain } from '@map-colonies/types';
@@ -62,6 +60,7 @@ describe('tasks', function () {
 
         expect(response.status).toBe(httpStatusCodes.CREATED);
         expect(saveSpy).toHaveBeenCalledTimes(1);
+        //expect(response).toSatisfyApiSpec();
       });
 
       it('should return 201 status code and the cached resource', async function () {

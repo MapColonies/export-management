@@ -14,25 +14,28 @@ export class TasksManager {
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
     @inject(TASK_REPOSITORY_SYMBOL) private readonly taskRepository: TaskRepository
-  ) {}
+  ) { }
 
   public async createTask(req: CreateExportTaskRequest<TaskParameters>): Promise<ITaskEntity> {
     try {
-      this.logger.info({ msg: `Creating export task`, req: req });
+      this.logger.debug({ msg: `create export task request`, req: req });
+      this.logger.info({ msg: `creating export task`, catalogRecordID: req.catalogRecordID, domain: req.domain, webhook: req.webhook, artifactCRS: req.artifactCRS });
 
       const domain = req.domain;
       const exportManagerInstance = this.getExportManagerInstance(domain);
       // TODO: Call Domain SDK
       const exportTaskResponse = await exportManagerInstance.createExportTask(req);
       const jobId = exportTaskResponse.jobId;
+      this.logger.info({ msg: `received jobId: ${jobId} from domain: ${domain}` })
       const entity = await this.taskRepository.getTaskById({ jobId });
       // return the entity if its already exists
       if (entity) {
-        this.logger.debug(entity, `Found an entity with the same job ib: ${jobId}`);
+        this.logger.debug(entity, `found an entity with the same job ib: ${jobId}`);
         return entity;
       }
       // TODO Call Domain SDK to get estimations
-      const exstimations = await exportManagerInstance.getEstimations();
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      const exstimations = await exportManagerInstance.getEstimations({ROI: req.ROI});
       // TODO: Get customer name
       const customerName = 'Cutomer_Name';
       const newEntity = new TaskEntity();

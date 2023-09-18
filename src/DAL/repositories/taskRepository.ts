@@ -24,7 +24,7 @@ const createTaskRepository = (dataSource: DataSource) => {
       return taskEntities;
     },
 
-    // TODO: Consider use this function to convert geometry from WKT geometry
+    // TODO: Consider use this function to convert geometry from WKT geometry - Task with Shimon 
     // async updateTaskGeometry(): Promise<void> {
     //   const queryRunner = dataSource.createQueryRunner();
     //   await queryRunner.query(`

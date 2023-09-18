@@ -22,7 +22,7 @@ void getApp()
     const server = createTerminus(createServer(app), {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       healthChecks: { '/liveness': container.resolve(SERVICES.HEALTH_CHECK) },
-      onSignal: container.resolve(SERVICES.HEALTH_CHECK),
+      onSignal: container.resolve('onSignal'),
     });
 
     server.listen(port, () => {
@@ -36,7 +36,7 @@ void getApp()
         : console.error;
     errorLogger({ msg: '😢 - failed initializing the server', err: error });
 
-    if (depContainer?.isRegistered(SERVICES.HEALTHCHECK) == true) {
+    if (depContainer?.isRegistered(SERVICES.HEALTH_CHECK) == true) {
       const shutDown: () => Promise<void> = depContainer.resolve(SERVICES.HEALTH_CHECK);
       await shutDown();
     }

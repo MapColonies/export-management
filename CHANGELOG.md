@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/MapColonies/export-management/compare/v1.1.5...v1.2.0) (2023-09-19)
+
+
+### Features
+
+* change deployemnt name ([#9](https://github.com/MapColonies/export-management/issues/9)) ([d17becd](https://github.com/MapColonies/export-management/commit/d17becd4a8f574d15bab4766672090d7fdcd0e69))
+
 ### [1.1.5](https://github.com/MapColonies/export-management/compare/v1.1.4...v1.1.5) (2023-09-13)
 
 ### [1.1.4](https://github.com/MapColonies/export-management/compare/v1.1.3...v1.1.4) (2023-06-25)

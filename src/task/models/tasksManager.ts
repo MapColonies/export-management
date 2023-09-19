@@ -27,19 +27,13 @@ export class TasksManager {
       const exportTaskResponse = await exportManagerInstance.createExportTask(req);
       const jobId = exportTaskResponse.jobId;
       this.logger.info({ msg: `received jobId: ${jobId} from domain: ${domain}` })
-      const entity = await this.taskRepository.getTaskById({ jobId });
-      // return the entity if its already exists
-      if (entity) {
-        this.logger.debug(entity, `found an entity with the same job ib: ${jobId}`);
-        return entity;
-      }
       // TODO Call Domain SDK to get estimations
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      const exstimations = await exportManagerInstance.getEstimations({ROI: req.ROI});
+      const exstimations = await exportManagerInstance.getEstimations();
       // TODO: Get customer name
-      const customerName = 'Cutomer_Name';
-      const newEntity = new TaskEntity();
-      Object.assign(newEntity, req, {
+      const customerName = 'cutomer_name';
+      const task = new TaskEntity();
+      Object.assign(task, req, {
         taskGeometries: exportTaskResponse.geometries,
         jobId: exportTaskResponse.jobId,
         customerName,
@@ -47,10 +41,11 @@ export class TasksManager {
         estimatedTime: exstimations.estimatedTime,
       });
 
-      const res = await this.taskRepository.createTask(newEntity);
+      const res = await this.taskRepository.createTask(task);
+      this.logger.debug({ msg: `successfully created task`, res })
       return res;
     } catch (error) {
-      const errMessage = `Failed to create export task: ${(error as Error).message}`;
+      const errMessage = `failed to create export task: ${(error as Error).message}`;
       this.logger.error({ err: error, req: req, msg: errMessage });
       throw error;
     }
@@ -58,15 +53,15 @@ export class TasksManager {
 
   public async getTaskById(id: number): Promise<ITaskEntity | undefined> {
     try {
-      this.logger.info({ msg: `Getting task by id: ${id}`, id });
+      this.logger.info({ msg: `getting task by id: ${id}`, id });
 
       const task = await this.taskRepository.getTaskById({ id });
       if (!task) {
-        throw new NotFoundError(`Task id: ${id} is not found`);
+        throw new NotFoundError(`task id: ${id} is not found`);
       }
       return task;
     } catch (error) {
-      const errMessage = `Failed to get task id ${id}: ${(error as Error).message}`;
+      const errMessage = `failed to get task id ${id}: ${(error as Error).message}`;
       this.logger.error({ err: error, id, msg: errMessage });
       throw error;
     }
@@ -75,11 +70,11 @@ export class TasksManager {
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers
   public async getLatestTasksByLimit(limit = 10): Promise<ITaskEntity[]> {
     try {
-      this.logger.info({ msg: `Getting task by limit ${limit}`, limit });
+      this.logger.info({ msg: `getting task by limit ${limit}`, limit });
       const res = await this.taskRepository.getLatestTasksByLimit(limit);
       return res;
     } catch (error) {
-      const errMessage = `Failed to get tasks by limit: ${(error as Error).message}`;
+      const errMessage = `failed to get tasks by limit: ${(error as Error).message}`;
       this.logger.error({ err: error, limit: limit, msg: errMessage });
       throw error;
     }
@@ -87,9 +82,9 @@ export class TasksManager {
 
   private getExportManagerInstance(domain: Domain): IExportManager {
     let exportManagerInstance: IExportManager;
-    const unsupportedDomainErrorMsg = `Unsupported domain requested: "${domain}" - currently only "${Domain.RASTER}" domain is supported`;
+    const unsupportedDomainErrorMsg = `unsupported domain requested: "${domain}" - currently only "${Domain.RASTER}" domain is supported`;
     try {
-      this.logger.debug({ msg: `Getting export manager instance by domain: ${domain}`, domain });
+      this.logger.debug({ msg: `getting export manager instance by domain: ${domain}`, domain });
 
       switch (domain) {
         case Domain.RASTER:
@@ -104,7 +99,7 @@ export class TasksManager {
       }
       return exportManagerInstance;
     } catch (error) {
-      const errMessage = `Failed to get export manager instance by domain, ${(error as Error).message}`;
+      const errMessage = `failed to get export manager instance by domain, ${(error as Error).message}`;
       this.logger.error({ err: error, domain: domain, msg: errMessage });
       throw error;
     }

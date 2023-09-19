@@ -8,7 +8,7 @@ export function getFakeTask(): ITaskEntity {
     id: 1,
     jobId: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
     catalogRecordID: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-    customerName: 'Cutomer_Name',
+    customerName: 'cutomer_name',
     artifactCRS: '4326',
     domain: Domain.RASTER,
     status: TaskStatus.COMPLETED,

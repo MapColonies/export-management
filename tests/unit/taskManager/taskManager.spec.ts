@@ -79,7 +79,7 @@ describe('taskManager', () => {
         estimatedDataSize: estimationsResponse.estimatedFileSize,
         estimatedTime: estimationsResponse.estimatedTime,
         // TODO: handle customer name once implemented
-        customerName: 'Cutomer_Name',
+        customerName: 'cutomer_name',
       });
     });
 
@@ -93,13 +93,12 @@ describe('taskManager', () => {
 
       createExportTaskResponseSpy.mockResolvedValue(response);
       getEstimationsSpy.mockResolvedValue({ estimatedTime: undefined, estimatedFileSize: undefined });
-      getTaskById.mockResolvedValue(entity);
 
       const createPromise = taskManager.createTask(entity);
 
       await expect(createPromise).resolves.not.toThrow();
-      expect(getEstimationsSpy).not.toHaveBeenCalled();
-      expect(createTask).not.toHaveBeenCalled();
+      expect(getEstimationsSpy).toHaveBeenCalledTimes(1);
+      expect(createTask).toHaveBeenCalledTimes(1);
     });
   });
 

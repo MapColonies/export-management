@@ -75,7 +75,7 @@ describe('tasks', function () {
         const response = await requestSender.createTask(req);
 
         expect(response.status).toBe(httpStatusCodes.CREATED);
-        expect(saveSpy).toHaveBeenCalledTimes(0);
+        expect(saveSpy).toHaveBeenCalledTimes(1);
         //expect(response).toSatisfyApiSpec();
       });
     });
@@ -148,7 +148,7 @@ describe('tasks', function () {
             domain: Domain.RASTER,
             webhook: [{ url: 'http://localhost:8080', events: [TaskEvent.TASK_COMPLETED] }],
           };
-          findOneSpy.mockRejectedValue(new Error());
+          saveSpy.mockRejectedValue(new Error());
 
           const res = await requestSender.createTask(req);
 

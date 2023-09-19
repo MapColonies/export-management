@@ -19,7 +19,7 @@ export class ExportManagerRaster implements IExportManager {
 
   public async createExportTask(req: CreateExportTaskRequest<TaskParameters>): Promise<CreateExportTaskResponse> {
     try {
-      this.logger.info({ msg: `Creating export task`, req: req });
+      this.logger.info({ msg: `creating export task`, req });
       // TODO: Call Raster SDK here to get geometries & jobId
       const geometries: TaskGeometry[] = [geo1, geo2];
       const jobId = 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9';
@@ -28,7 +28,7 @@ export class ExportManagerRaster implements IExportManager {
         geometries,
       };
     } catch (error) {
-      const errMessage = `Failed to create export task: ${(error as Error).message}`;
+      const errMessage = `failed to create export task: ${(error as Error).message}`;
       this.logger.error({ err: error, req: req, msg: errMessage });
       throw error;
     }
@@ -45,7 +45,7 @@ export class ExportManagerRaster implements IExportManager {
         estimatedTime,
       };
     } catch (error) {
-      const errMessage = `Failed to get export estimations: ${(error as Error).message}`;
+      const errMessage = `failed to get export estimations: ${(error as Error).message}`;
       this.logger.error({ err: error, msg: errMessage });
       throw error;
     }

@@ -14,23 +14,31 @@ export class TasksManager {
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
     @inject(TASK_REPOSITORY_SYMBOL) private readonly taskRepository: TaskRepository
-  ) { }
+  ) {}
 
   public async createTask(req: CreateExportTaskRequest<TaskParameters>): Promise<ITaskEntity> {
     try {
       this.logger.debug({ msg: `create export task request`, req: req });
-      this.logger.info({ msg: `creating export task`, catalogRecordID: req.catalogRecordID, domain: req.domain, webhook: req.webhook, artifactCRS: req.artifactCRS });
+      this.logger.info({
+        msg: `creating export task`,
+        catalogRecordID: req.catalogRecordID,
+        domain: req.domain,
+        webhook: req.webhook,
+        artifactCRS: req.artifactCRS,
+      });
 
       const domain = req.domain;
       const exportManagerInstance = this.getExportManagerInstance(domain);
       // TODO: Call Domain SDK
       const exportTaskResponse = await exportManagerInstance.createExportTask(req);
       const jobId = exportTaskResponse.jobId;
-      this.logger.info({ msg: `received jobId: ${jobId} from domain: ${domain}` })
+      this.logger.info({ msg: `received jobId: ${jobId} from domain: ${domain}` });
       // TODO Call Domain SDK to get estimations
       const exstimations = await exportManagerInstance.getEstimations(req.catalogRecordID, req.ROI);
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      this.logger.debug({ msg: `received exstimations, estimated file size: ${exstimations.estimatedFileSize} estimated time: ${exstimations.estimatedTime}` })
+      this.logger.debug({
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        msg: `received exstimations, estimated file size: ${exstimations.estimatedFileSize} estimated time: ${exstimations.estimatedTime}`,
+      });
       // TODO: Get customer name
       const customerName = 'cutomer_name';
       const task = new TaskEntity();
@@ -43,7 +51,7 @@ export class TasksManager {
       });
 
       const res = await this.taskRepository.createTask(task);
-      this.logger.debug({ msg: `successfully created task`, res })
+      this.logger.debug({ msg: `successfully created task`, res });
       return res;
     } catch (error) {
       const errMessage = `failed to create export task: ${(error as Error).message}`;

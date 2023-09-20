@@ -108,7 +108,7 @@ describe('tasks', function () {
       describe('POST /export-tasks', function () {
         it('should return 400 status code due to unsupported domain', async function () {
           const req = { ...exportRequest };
-          req.domain = Domain.DEM
+          req.domain = Domain.DEM;
           const response = await requestSender.createTask(req);
 
           expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);

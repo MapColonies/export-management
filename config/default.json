@@ -41,8 +41,6 @@
     "schema": "export_manager",
     "synchronize": false,
     "logging": false,
-    "migrations": [
-      "**/DAL/migrations/*.ts"
-    ]
+    "migrations": ["**/DAL/migrations/*.ts"]
   }
 }

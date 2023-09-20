@@ -14,7 +14,7 @@ export const geo1: TaskGeometry = {
     ],
     type: 'Polygon',
   },
-  metadata: { maxResolutionDeg: 0.072 }
+  metadata: { maxResolutionDeg: 0.072 },
 };
 
 export const geo2: TaskGeometry = {
@@ -30,5 +30,5 @@ export const geo2: TaskGeometry = {
     ],
     type: 'Polygon',
   },
-  metadata: { maxResolutionDeg: 0.03333 }
+  metadata: { maxResolutionDeg: 0.03333 },
 };

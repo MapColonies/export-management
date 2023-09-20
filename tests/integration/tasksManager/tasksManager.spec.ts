@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import jsLogger from '@map-colonies/js-logger';
 import { DependencyContainer } from 'tsyringe';
 import { Domain } from '@map-colonies/types';
 import { trace } from '@opentelemetry/api';
-import { CreateExportTaskRequest, TaskEvent, TaskParameters } from '@map-colonies/export-interfaces';
 import { DataSource } from 'typeorm';
 import httpStatusCodes from 'http-status-codes';
 import { getApp } from '../../../src/app';
+import { exportRequest } from '../../utils/exportRequest';
 import { SERVICES } from '../../../src/common/constants';
 import { TASK_REPOSITORY_SYMBOL, TaskRepository } from '../../../src/DAL/repositories/taskRepository';
 import { TaskEntity } from '../../../src/DAL/entity';
@@ -49,12 +50,7 @@ describe('tasks', function () {
   describe('Happy Path', function () {
     describe('POST /export-tasks', function () {
       it('should return 201 status code and the resource', async function () {
-        const req: CreateExportTaskRequest<TaskParameters> = {
-          catalogRecordID: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
-          artifactCRS: '4326',
-          domain: Domain.RASTER,
-          webhook: [{ url: 'http://localhost:8080', events: [TaskEvent.TASK_COMPLETED] }],
-        };
+        const req = { ...exportRequest };
 
         const response = await requestSender.createTask(req);
 
@@ -65,12 +61,7 @@ describe('tasks', function () {
 
       it('should return 201 status code and the cached resource', async function () {
         saveSpy = jest.spyOn(repo, 'save');
-        const req: CreateExportTaskRequest<TaskParameters> = {
-          catalogRecordID: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
-          artifactCRS: '4326',
-          domain: Domain.RASTER,
-          webhook: [{ url: 'http://localhost:8080', events: [TaskEvent.TASK_COMPLETED] }],
-        };
+        const req = { ...exportRequest };
 
         const response = await requestSender.createTask(req);
 
@@ -116,12 +107,8 @@ describe('tasks', function () {
     describe('Bad Path', function () {
       describe('POST /export-tasks', function () {
         it('should return 400 status code due to unsupported domain', async function () {
-          const req: CreateExportTaskRequest<TaskParameters> = {
-            catalogRecordID: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
-            artifactCRS: '4326',
-            domain: Domain.DEM,
-            webhook: [{ url: 'http://localhost:8080', events: [TaskEvent.TASK_COMPLETED] }],
-          };
+          const req = { ...exportRequest };
+          req.domain = Domain.DEM
           const response = await requestSender.createTask(req);
 
           expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
@@ -142,12 +129,7 @@ describe('tasks', function () {
     describe('Sad Path', function () {
       describe('POST /export-tasks', function () {
         it('should return 500 status code if db throws an error', async function () {
-          const req: CreateExportTaskRequest<TaskParameters> = {
-            catalogRecordID: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
-            artifactCRS: '4326',
-            domain: Domain.RASTER,
-            webhook: [{ url: 'http://localhost:8080', events: [TaskEvent.TASK_COMPLETED] }],
-          };
+          const req = { ...exportRequest };
           saveSpy.mockRejectedValue(new Error());
 
           const res = await requestSender.createTask(req);

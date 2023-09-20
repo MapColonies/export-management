@@ -177,6 +177,7 @@ components:
     taskCreate:
       type: object
       required:
+        - ROI
         - catalogRecordID
         - domain
         - artifactCRS

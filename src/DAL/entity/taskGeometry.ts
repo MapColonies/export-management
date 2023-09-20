@@ -11,7 +11,7 @@ export class TaskGeometryEntity implements ITaskGeometries {
   @ManyToMany(() => TaskEntity)
   public tasks: TaskEntity[];
 
-  @Column({ name: 'wkt_geometry', type: 'text', nullable: true })
+  @Column({ name: 'geom', type: 'geometry', nullable: false })
   public geometry: MultiPolygon | Polygon;
 
   @Column('jsonb', { nullable: true })

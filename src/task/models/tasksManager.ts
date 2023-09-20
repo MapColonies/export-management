@@ -28,8 +28,9 @@ export class TasksManager {
       const jobId = exportTaskResponse.jobId;
       this.logger.info({ msg: `received jobId: ${jobId} from domain: ${domain}` })
       // TODO Call Domain SDK to get estimations
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      const exstimations = await exportManagerInstance.getEstimations();
+      const exstimations = await exportManagerInstance.getEstimations(req.catalogRecordID, req.ROI);
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      this.logger.debug({ msg: `received exstimations, estimated file size: ${exstimations.estimatedFileSize} estimated time: ${exstimations.estimatedTime}` })
       // TODO: Get customer name
       const customerName = 'cutomer_name';
       const task = new TaskEntity();

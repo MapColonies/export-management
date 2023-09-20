@@ -9,6 +9,7 @@ import {
   TaskParameters,
 } from '@map-colonies/export-interfaces';
 import { inject, injectable } from 'tsyringe';
+import { FeatureCollection } from '@turf/turf';
 import { SERVICES } from '../common/constants';
 // TODO: removed when SDKis provided
 import { geo1, geo2 } from './geoMocks';
@@ -46,6 +47,17 @@ export class ExportManagerRaster implements IExportManager {
       };
     } catch (error) {
       const errMessage = `failed to get export estimations: ${(error as Error).message}`;
+      this.logger.error({ err: error, msg: errMessage });
+      throw error;
+    }
+  }
+
+  public async getFootprint(): Promise<FeatureCollection> {
+    try {
+      this.logger.info({ msg: `get footprint request` });
+      throw new Error('not implemented yet');
+    } catch (error) {
+      const errMessage = `failed to get foo: ${(error as Error).message}`;
       this.logger.error({ err: error, msg: errMessage });
       throw error;
     }

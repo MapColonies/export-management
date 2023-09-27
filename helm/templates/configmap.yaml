@@ -40,4 +40,5 @@ data:
   {{- else }}
   DB_ENABLE_SSL_AUTH: "false"
   {{- end }}
+  MAX_TASKS_NUMBER: {{ .Values.env.maxTasksNumber | quote }}
 {{- end }}

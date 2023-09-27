@@ -58,6 +58,7 @@ env:
     attempts: 5
     delay: exponential
     shouldResetTimeout: true
+  maxTasksNumber: 10
 
 dbConfig:
   host: localhost

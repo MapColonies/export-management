@@ -39,8 +39,6 @@
     },
     "database": "raster",
     "schema": "export_manager",
-    "synchronize": false,
-    "logging": false,
     "migrations": ["**/DAL/migrations/*.ts"]
   }
 }

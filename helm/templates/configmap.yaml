@@ -27,4 +27,17 @@ data:
   EXPORTER_TRIGGER_URL: {{ .Values.serviceUrls.exporterTrigger  | quote }}
   JOB_MANAGER_URL: {{ .Values.serviceUrls.jobManager  | quote }}
   JOB_MANAGER_EXPORT_JOB_TYPE: {{ .Values.jobManagement.exporter.jobType | quote }}
+  {{- with .Values.dbConfig }}
+  DB_HOST: {{ .host }}
+  DB_NAME: {{ .database }}
+  DB_PORT: {{ .port | default 5432 | quote }}
+  {{- end -}}
+  {{- if .Values.dbConfig.sslAuth.enabled }}
+  DB_ENABLE_SSL_AUTH: "true"
+  DB_CERT_PATH: /tmp/certs/{{ .Values.dbConfig.sslAuth.certFileName }}
+  DB_KEY_PATH: /tmp/certs/{{ .Values.dbConfig.sslAuth.keyFileName }}
+  DB_CA_PATH: /tmp/certs/{{ .Values.dbConfig.sslAuth.caFileName }}
+  {{- else }}
+  DB_ENABLE_SSL_AUTH: "false"
+  {{- end }}
 {{- end }}

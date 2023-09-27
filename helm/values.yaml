@@ -59,6 +59,20 @@ env:
     delay: exponential
     shouldResetTimeout: true
 
+dbConfig:
+  host: localhost
+  username: postgres
+  password: postgres
+  database: auth-manager
+  # port: 5432
+  externalSecretName: ''
+  useExternalSecret: false  
+  sslAuth:
+    enabled: false
+    certFileName: postgresql.crt
+    keyFileName: postgresql.key
+    caFileName: root.crt
+
 opa:
   image: openpolicyagent/opa
   imageTag: 0.29.4-envoy-3

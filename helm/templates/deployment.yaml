@@ -4,6 +4,7 @@
 {{- $cloudProviderDockerRegistryUrl := include "export-management.cloudProviderDockerRegistryUrl" . -}}
 {{- $cloudProviderImagePullSecretName := include "export-management.cloudProviderImagePullSecretName" . -}}
 {{- $imageTag := include "export-management.tag" . -}}
+{{ $postgresSecretName := ternary .Values.dbConfig.externalSecretName (printf "%s%s" .Release.Name "-postgres-secret") .Values.dbConfig.useExternalSecret }}
 {{- if .Values.enabled -}}
 
 apiVersion: apps/v1
@@ -55,6 +56,16 @@ spec:
           env:
             - name: SERVER_PORT
               value: {{ .Values.env.targetPort | quote }}
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $postgresSecretName }}
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $postgresSecretName }}
+                  key: password   
             {{- if .Values.caSecretName }}
             - name: REQUESTS_CA_BUNDLE
               value: {{ printf "%s/%s" .Values.caPath .Values.caKey | quote }}

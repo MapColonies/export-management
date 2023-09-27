@@ -37,8 +37,7 @@
       "key": "",
       "cert": ""
     },
-    "database": "raster",
-    "schema": "export_manager",
-    "migrations": ["**/DAL/migrations/*.ts"]
+    "database": "postgres",
+    "schema": "export_manager"
   }
 }

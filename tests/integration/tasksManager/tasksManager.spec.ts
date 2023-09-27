@@ -30,7 +30,7 @@ describe('tasks', function () {
     requestSender = new TasksRequestSender(app);
     depContainer = container;
     repo = depContainer.resolve(TASK_REPOSITORY_SYMBOL);
-  }, 70000);
+  });
 
   beforeEach(function () {
     saveSpy = jest.spyOn(repo, 'save');
@@ -76,6 +76,7 @@ describe('tasks', function () {
         const res = await requestSender.getLatestTasksByLimit(1);
 
         expect(res).toHaveProperty('status', httpStatusCodes.OK);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         expect(JSON.parse(res.text)).toHaveLength(1);
         //expect(res).toSatisfyApiSpec();
       });

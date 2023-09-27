@@ -1,7 +1,7 @@
 import jsLogger from '@map-colonies/js-logger';
-import { Domain, EPSGDATA } from '@map-colonies/types';
+import { Domain } from '@map-colonies/types';
 import { NotFoundError } from '@map-colonies/error-types';
-import { GetEstimationsResponse, TaskEvent } from '@map-colonies/export-interfaces';
+import { GetEstimationsResponse } from '@map-colonies/export-interfaces';
 import { TaskRepository } from '../../../src/DAL/repositories/taskRepository';
 import { createFakeEntity } from '../helpers/helpers';
 import { geo1 } from '../../../src/exportManager/geoMocks';
@@ -111,12 +111,7 @@ describe('taskManager', () => {
       const findPromise = taskManager.getTaskById(1);
 
       await expect(findPromise).resolves.not.toThrow();
-      await expect(findPromise).resolves.toStrictEqual({
-        artifactCRS: EPSGDATA[4326].code,
-        catalogRecordID: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
-        domain: Domain.RASTER,
-        webhook: [{ events: [TaskEvent.TASK_COMPLETED], url: 'http://localhost:8080/' }],
-      });
+      await expect(findPromise).resolves.toStrictEqual(entity);
     });
 
     it('resolves with not found error if task id is not exists', async () => {

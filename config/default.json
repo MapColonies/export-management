@@ -37,7 +37,8 @@
       "key": "",
       "cert": ""
     },
-    "database": "postgres",
+    "database": "raster",
     "schema": "export_manager"
-  }
+  },
+  "maxTasksNumber": 10
 }

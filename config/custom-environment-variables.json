@@ -59,5 +59,9 @@
     },
     "database": "DB_NAME",
     "schema": "DB_SCHEMA"
+  },
+  "maxTasksNumber": {
+    "__name": "MAX_TASKS_NUMBER",
+    "__format": "number"
   }
 }

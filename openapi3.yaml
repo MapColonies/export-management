@@ -65,13 +65,13 @@ paths:
                 $ref: '#/components/schemas/error'
     get:
       operationId: getTasks
-      summary: get tasks by limit - default to 10
+      summary: get tasks by limit
       tags:
         - Tasks
       parameters:
         - name: limit
           in: query
-          required: false
+          required: true
           schema:
             type: number
       responses:

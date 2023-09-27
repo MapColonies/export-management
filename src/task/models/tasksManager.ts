@@ -1,4 +1,5 @@
 import { Logger } from '@map-colonies/js-logger';
+import config from 'config';
 import { CreateExportTaskRequest, IExportManager, TaskParameters } from '@map-colonies/export-interfaces';
 import { inject, injectable } from 'tsyringe';
 import { Domain } from '@map-colonies/types';
@@ -11,10 +12,14 @@ import { ITaskEntity } from '../../DAL/models/task';
 
 @injectable()
 export class TasksManager {
+  private readonly maxTasksNumber: number;
+
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
     @inject(TASK_REPOSITORY_SYMBOL) private readonly taskRepository: TaskRepository
-  ) {}
+  ) {
+    this.maxTasksNumber = config.get<number>('maxTasksNumber');
+  }
 
   public async createTask(req: CreateExportTaskRequest<TaskParameters>): Promise<ITaskEntity> {
     try {
@@ -51,7 +56,16 @@ export class TasksManager {
       });
 
       const res = await this.taskRepository.createTask(task);
-      this.logger.debug({ msg: `successfully created task`, res });
+      const msg = 'successfully created task';
+      this.logger.info({
+        msg: msg,
+        id: res.id,
+        jobId: res.jobId,
+        domain: res.domain,
+        customerName: res.customerName,
+        catalogRecordId: res.catalogRecordID,
+      });
+      this.logger.debug({ msg: msg, res });
       return res;
     } catch (error) {
       const errMessage = `failed to create export task: ${(error as Error).message}`;
@@ -77,9 +91,12 @@ export class TasksManager {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-  public async getLatestTasksByLimit(limit = 10): Promise<ITaskEntity[]> {
+  public async getLatestTasksByLimit(limit: number): Promise<ITaskEntity[]> {
     try {
       this.logger.info({ msg: `getting task by limit ${limit}`, limit });
+      if (limit > this.maxTasksNumber) {
+        throw new BadRequestError(`requested limit ${limit} is more than the maximum possible tasks number ${this.maxTasksNumber}`);
+      }
       const res = await this.taskRepository.getLatestTasksByLimit(limit);
       return res;
     } catch (error) {

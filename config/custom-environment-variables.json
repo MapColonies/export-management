@@ -39,29 +39,29 @@
       }
     }
   },
-  "serviceWebhookEndpoint": "SERVICE_WEBHOOK_ENDPOINT",
-  "externalClients": {
-    "httpRetry": {
-      "attempts": {
-        "__name": "HTTP_RETRY_ATTEMPTS",
-        "__format": "number"
-      },
-      "delay": "HTTP_RETRY_DELAY",
-      "shouldResetTimeout": {
-        "__name": "HTTP_RETRY_SHOULD_RESET_TIMEOUT",
-        "__format": "boolean"
-      }
+  "typeOrm": {
+    "type": "DB_TYPE",
+    "host": "DB_HOST",
+    "port": {
+      "__name": "DB_PORT",
+      "__format": "number"
     },
-    "disableHttpClientLogs": {
-      "__name": "DISABLE_HTTP_CLIENT_LOGS",
+    "username": "DB_USERNAME",
+    "password": "DB_PASSWORD",
+    "enableSslAuth": {
+      "__name": "DB_ENABLE_SSL_AUTH",
       "__format": "boolean"
     },
-    "exporterTrigger": {
-      "url": "EXPORTER_TRIGGER_URL"
+    "sslPaths": {
+      "ca": "DB_CA_PATH",
+      "key": "DB_KEY_PATH",
+      "cert": "DB_CERT_PATH"
     },
-    "jobManager": {
-      "url": "JOB_MANAGER_URL",
-      "exportJobType": "JOB_MANAGER_EXPORT_JOB_TYPE"
-    }
+    "database": "DB_NAME",
+    "schema": "DB_SCHEMA"
+  },
+  "maxTasksNumber": {
+    "__name": "MAX_TASKS_NUMBER",
+    "__format": "number"
   }
 }

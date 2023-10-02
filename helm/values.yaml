@@ -53,6 +53,21 @@ env:
     attempts: 5
     delay: exponential
     shouldResetTimeout: true
+  maxTasksNumber: 10
+
+dbConfig:
+  host: localhost
+  username: postgres
+  password: postgres
+  database: auth-manager
+  # port: 5432
+  externalSecretName: ''
+  useExternalSecret: false  
+  sslAuth:
+    enabled: false
+    certFileName: postgresql.crt
+    keyFileName: postgresql.key
+    caFileName: root.crt
 
 resources:
   enabled: true
@@ -61,7 +76,7 @@ resources:
       cpu: 100m
       memory: 128Mi
     requests:
-      cpu: 100m
+      cpu: 25m
       memory: 128Mi
 
 nginx:

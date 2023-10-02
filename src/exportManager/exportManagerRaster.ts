@@ -1,106 +1,64 @@
+/* eslint-disable @typescript-eslint/require-await */
 import { Logger } from '@map-colonies/js-logger';
-import { Artifact } from '@map-colonies/export-interfaces';
+import {
+  CreateExportTaskRequest,
+  CreateExportTaskResponse,
+  GetEstimationsResponse,
+  IExportManager,
+  TaskGeometry,
+  TaskParameters,
+} from '@map-colonies/export-interfaces';
 import { inject, injectable } from 'tsyringe';
-import config from 'config';
-import { Domain, EPSGDATA } from '@map-colonies/types';
 import { FeatureCollection } from '@turf/turf';
-import { generateUniqueId } from '../common/utils';
 import { SERVICES } from '../common/constants';
-import { CreateExportJobTriggerResponse, ExporterTriggerClient } from '../clients/exporterTriggerClient';
-import { CreateExportTaskExtendedRequest, CreatePackageParams } from '../tasks/models/tasksManager';
-import { OperationStatus } from '../tasks/enums';
-import { ExportJobParameters, JobManagerClient } from '../clients/jobManagerClient';
-import { ITaskResponse } from '../tasks/interfaces';
-import { IExportManager } from '../exportManager/interfaces';
-
-export interface WebhookParams {
-  expirationTime: string;
-  recordCatalogId: string;
-  jobId: string;
-  description?: string;
-  artifacts: Artifact[];
-  roi: FeatureCollection;
-  status: OperationStatus;
-  errorReason?: string;
-}
+// TODO: removed when SDKis provided
+import { geo1, geo2 } from './geoMocks';
 
 @injectable()
 export class ExportManagerRaster implements IExportManager {
-  private readonly serviceWebhookEndpoint: string;
-  public constructor(
-    @inject(SERVICES.LOGGER) private readonly logger: Logger,
-    private readonly exporterTriggerClient: ExporterTriggerClient,
-    private readonly jobManagerClient: JobManagerClient
-  ) {
-    this.serviceWebhookEndpoint = config.get<string>('serviceWebhookEndpoint');
+  public constructor(@inject(SERVICES.LOGGER) private readonly logger: Logger) {}
+
+  public async createExportTask(req: CreateExportTaskRequest<TaskParameters>): Promise<CreateExportTaskResponse> {
+    try {
+      this.logger.info({ msg: `creating export task`, req });
+      // TODO: Call Raster SDK here to get geometries & jobId
+      const geometries: TaskGeometry[] = [geo1, geo2];
+      const jobId = 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9';
+      return {
+        jobId,
+        geometries,
+      };
+    } catch (error) {
+      const errMessage = `failed to create export task: ${(error as Error).message}`;
+      this.logger.error({ err: error, req: req, msg: errMessage });
+      throw error;
+    }
   }
 
-  public async createExportTask(req: CreateExportTaskExtendedRequest): Promise<ITaskResponse<ExportJobParameters>> {
+  public async getEstimations(): Promise<GetEstimationsResponse> {
     try {
-      this.logger.info({ msg: `Create export task request`, req: req });
-      const requestedEPSG = `EPSG:${req.artifactCRS}`;
-      const createPackageParams: CreatePackageParams = {
-        roi: req.ROI,
-        dbId: req.catalogRecordID,
-        crs: requestedEPSG,
-        description: req.description,
-        callbackURLs: [this.serviceWebhookEndpoint],
+      this.logger.info({ msg: `get export task estimations` });
+      // TODO: Call Raster SDK here to get geometries & jobId
+      const estimatedFileSize = 205200;
+      const estimatedTime = 1352;
+      return {
+        estimatedFileSize,
+        estimatedTime,
       };
-      const res = await this.exporterTriggerClient.createExportTask(createPackageParams);
-      const exportJob = await this.jobManagerClient.getJobById(res.jobId);
-
-      if ((res as WebhookParams).status === OperationStatus.COMPLETED) {
-        const task: ITaskResponse<ExportJobParameters> = {
-          id: exportJob.parameters.id,
-          catalogRecordID: (res as WebhookParams).recordCatalogId,
-          domain: Domain.RASTER,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          ROI: (res as WebhookParams).roi,
-          artifactCRS: EPSGDATA[4326].code,
-          description: req.description,
-          keywords: req.keywords,
-          status: (res as WebhookParams).status,
-          artifacts: (res as WebhookParams).artifacts,
-          createdAt: new Date(exportJob.created),
-          finishedAt: new Date(exportJob.updated),
-          expiredAt: new Date((res as WebhookParams).expirationTime),
-          webhook: req.webhook,
-        };
-
-        return task;
-      } else {
-        let createExportJobResponse: ITaskResponse<ExportJobParameters>;
-        if ((res as CreateExportJobTriggerResponse).isDuplicated) {
-          createExportJobResponse = {
-            id: exportJob.parameters.id,
-            catalogRecordID: req.catalogRecordID,
-            artifactCRS: EPSGDATA[4326].code,
-            createdAt: new Date(exportJob.created),
-            status: (res as WebhookParams).status,
-            domain: Domain.RASTER,
-            webhook: req.webhook,
-          };
-          return createExportJobResponse;
-        }
-
-        const exportId = generateUniqueId();
-        const updatedParams = { ...exportJob.parameters, id: exportId, keywords: req.keywords, webhook: req.webhook };
-
-        await this.jobManagerClient.updateJobParameters((res as { jobId: string }).jobId, updatedParams);
-        createExportJobResponse = {
-          id: exportId,
-          catalogRecordID: req.catalogRecordID,
-          artifactCRS: EPSGDATA[4326].code,
-          createdAt: new Date(exportJob.created),
-          status: (res as WebhookParams).status,
-          domain: Domain.RASTER,
-          webhook: req.webhook,
-        };
-        return createExportJobResponse;
-      }
     } catch (error) {
-      const errMessage = `Failed to create export task: ${(error as Error).message}`;
-      this.logger.error({ err: error, req: req, msg: errMessage });
+      const errMessage = `failed to get export estimations: ${(error as Error).message}`;
+      this.logger.error({ err: error, msg: errMessage });
+      throw error;
+    }
+  }
+
+  public async getFootprint(): Promise<FeatureCollection> {
+    try {
+      this.logger.info({ msg: `get footprint request` });
+      throw new Error('not implemented yet');
+    } catch (error) {
+      const errMessage = `failed to get foo: ${(error as Error).message}`;
+      this.logger.error({ err: error, msg: errMessage });
       throw error;
     }
   }

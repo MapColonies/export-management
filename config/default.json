@@ -25,20 +25,20 @@
       }
     }
   },
-  "serviceWebhookEndpoint": "http://localhost:8080/export-tasks/webhook",
-  "externalClients": {
-    "httpRetry": {
-      "attempts": 10,
-      "delay": "exponential",
-      "shouldResetTimeout": true
+  "typeOrm": {
+    "type": "postgres",
+    "host": "localhost",
+    "port": 5432,
+    "username": "postgres",
+    "password": "",
+    "enableSslAuth": false,
+    "sslPaths": {
+      "ca": "",
+      "key": "",
+      "cert": ""
     },
-    "disableHttpClientLogs": true,
-    "exporterTrigger": {
-      "url": "http://localhost:8083"
-    },
-    "jobManager": {
-      "url": "http://localhost:8088",
-      "exportJobType": "rasterTilesExporter"
-    }
-  }
+    "database": "raster",
+    "schema": "export_manager"
+  },
+  "maxTasksNumber": 10
 }

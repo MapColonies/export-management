@@ -6,6 +6,10 @@
   "scripts": {
     "test:unit": "jest --config=./tests/configurations/unit/jest.config.js",
     "test:integration": "jest --config=./tests/configurations/integration/jest.config.js",
+    "typeorm": "node --require ts-node/register node_modules/typeorm/cli.js -d ./dataSource.ts",
+    "migration:create": "npm run typeorm migration:generate src/DAL/migrations/migration --",
+    "migration:run": "npm run typeorm migration:run --",
+    "migration:revert": "npm run typeorm migration:revert",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
     "prelint:fix": "npm run format:fix",
@@ -14,9 +18,9 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "release": "standard-version",
-    "test": "npm run test:unit",
+    "test": "npm run test:unit && npm run test:integration",
     "prebuild": "npm run clean",
-    "build": "tsc --project tsconfig.build.json  && npm run assets:copy",
+    "build": "tsc --project tsconfig.build.json && npm run assets:copy",
     "start": "npm run build && cd dist && node ./index.js",
     "assets:copy": "copyfiles -f ./config/* ./dist/config && copyfiles -f ./openapi3.yaml ./dist/ && copyfiles ./package.json dist",
     "clean": "rimraf dist",
@@ -39,10 +43,11 @@
     }
   },
   "dependencies": {
+    "@faker-js/faker": "^8.0.2",
     "@godaddy/terminus": "^4.11.2",
     "@map-colonies/error-express-handler": "^2.1.0",
     "@map-colonies/error-types": "^1.1.5",
-    "@map-colonies/export-interfaces": "^1.1.4",
+    "@map-colonies/export-interfaces": "^1.2.1",
     "@map-colonies/express-access-log-middleware": "^1.0.0",
     "@map-colonies/js-logger": "^1.0.1",
     "@map-colonies/mc-utils": "^2.0.0",
@@ -61,8 +66,10 @@
     "express-openapi-validator": "^5.0.3",
     "geojson": "^0.5.0",
     "http-status-codes": "^2.2.0",
+    "pg": "^8.11.1",
     "reflect-metadata": "^0.1.13",
-    "tsyringe": "^4.7.0"
+    "tsyringe": "^4.7.0",
+    "typeorm": "^0.3.17"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.4.4",
@@ -84,7 +91,7 @@
     "cz-conventional-changelog": "^3.3.0",
     "eslint": "^8.36.0",
     "husky": "^8.0.3",
-    "jest": "^29.5.0",
+    "jest": "^29.6.4",
     "jest-create-mock-instance": "^2.0.0",
     "jest-html-reporters": "^3.1.4",
     "jest-openapi": "^0.14.2",

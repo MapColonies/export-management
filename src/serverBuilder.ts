@@ -10,7 +10,7 @@ import httpLogger from '@map-colonies/express-access-log-middleware';
 import { defaultMetricsMiddleware, getTraceContexHeaderMiddleware } from '@map-colonies/telemetry';
 import { SERVICES } from './common/constants';
 import { IConfig } from './common/interfaces';
-import { TASKS_ROUTER_SYMBOL } from './tasks/routes/tasksRouter';
+import { TASKS_ROUTER_SYMBOL } from './task/routes/tasksRouter';
 
 @injectable()
 export class ServerBuilder {

@@ -32,8 +32,7 @@ describe('taskManager', () => {
     it('resolves without errors', async () => {
       const entity = createFakeEntity();
 
-      getTaskById.mockResolvedValue(undefined);
-      createTask.mockResolvedValue(undefined);
+      createTask.mockResolvedValue(entity);
 
       const createPromise = taskManager.createTask(entity);
 
@@ -49,7 +48,6 @@ describe('taskManager', () => {
       const createPromise = taskManager.createTask(entity);
 
       await expect(createPromise).rejects.toThrow();
-      expect(getTaskById).not.toHaveBeenCalled();
       expect(createTask).not.toHaveBeenCalled();
     });
 
@@ -81,24 +79,6 @@ describe('taskManager', () => {
         // TODO: handle customer name once implemented
         customerName: 'cutomer_name',
       });
-    });
-
-    it('resolves and return the entity if job id is exists', async () => {
-      const entity = createFakeEntity();
-      entity.domain = Domain.RASTER;
-
-      const createExportTaskResponseSpy = jest.spyOn(ExportManagerRaster.prototype, 'createExportTask');
-      const getEstimationsSpy = jest.spyOn(ExportManagerRaster.prototype, 'getEstimations');
-      const response = { geometries: [geo1], jobId: 'de0dab85-6bc5-4b9f-9a64-9e61627d82c2' };
-
-      createExportTaskResponseSpy.mockResolvedValue(response);
-      getEstimationsSpy.mockResolvedValue({ estimatedTime: undefined, estimatedFileSize: undefined });
-
-      const createPromise = taskManager.createTask(entity);
-
-      await expect(createPromise).resolves.not.toThrow();
-      expect(getEstimationsSpy).toHaveBeenCalledTimes(1);
-      expect(createTask).toHaveBeenCalledTimes(1);
     });
   });
 

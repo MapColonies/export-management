@@ -14,6 +14,7 @@ export default async (): Promise<void> => {
     await connection.query(`DROP SCHEMA IF EXISTS ${dataSourceOptions.schema} CASCADE`);
   }
   await connection.query(`CREATE SCHEMA IF NOT EXISTS ${dataSourceOptions.schema ?? 'public'}`);
+  await connection.query(`CREATE EXTENSION IF NOT EXISTS postgis`);
   await connection.runMigrations({ transaction: 'all' });
   await connection.destroy();
 };

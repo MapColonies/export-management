@@ -3,7 +3,7 @@ import { CreateExportTaskRequest, TaskEvent, TaskParameters } from '@map-colonie
 import { inject, injectable } from 'tsyringe';
 import { Domain, EPSGDATA } from '@map-colonies/types';
 import { FeatureCollection } from '@turf/turf';
-import { BadRequestError } from '@map-colonies/error-types';
+import { BadRequestError, NotFoundError } from '@map-colonies/error-types';
 import { ExporterTriggerClient } from '../../clients/exporterTriggerClient';
 import { SERVICES } from '../../common/constants';
 import { ExportManagerRaster, WebhookParams } from '../../exportManager/exportManagerRaster';
@@ -41,6 +41,26 @@ export class TasksManager {
     const exportManagerInstance = this.getExportManagerInstance(domain);
     const jobCreated = await exportManagerInstance.createExportTask(req);
     return jobCreated;
+  }
+
+  public async getTaskById(id: number): Promise<ITaskResponse<ExportJobParameters>> {
+    try {
+      this.logger.info({ msg: `getting task by id: ${id}`, id });
+      const exportManagerInstance = this.getExportManagerInstance(Domain.RASTER);
+      const existingExportTask: ITaskResponse<ExportJobParameters> = await exportManagerInstance.getTaskById(id);
+      if (!existingExportTask) {
+        throw new NotFoundError(`task id: ${id} is not found`);
+      }
+      return existingExportTask;
+    } catch (error) {
+      const httpError = error instanceof NotFoundError ? error as NotFoundError : undefined;
+      if (httpError) {
+        throw httpError;
+      }
+      const errMessage = `failed to get task id ${id}: ${(error as Error).message}`;
+      this.logger.error({ err: error, id, msg: errMessage });
+      throw error;
+    }
   }
 
   public async handleWebhookEvent(params: WebhookParams): Promise<void> {

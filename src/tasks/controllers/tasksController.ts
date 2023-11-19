@@ -8,9 +8,18 @@ import { WebhookParams } from '../../exportManager/exportManagerRaster';
 import { ExportJobParameters } from '../../clients/jobManagerClient';
 import { ITaskResponse } from '../interfaces';
 import { CreateExportTaskExtendedRequest, TasksManager } from '../models/tasksManager';
+import { BadRequestError } from '@map-colonies/error-types';
+// import { ITaskEntity } from '../../DAL/models/task';
+// import { FindTaskById } from '../../DAL/repositories/taskRepository';
 
 type CreateTaskHandler = RequestHandler<undefined, ITaskResponse<ExportJobParameters>, CreateExportTaskExtendedRequest>;
+type GetTaskByIdHandler = RequestHandler<FindTaskById, /*ITaskEntity |*/ undefined, undefined, undefined>;
 type SendWebhookHandler = RequestHandler<undefined, undefined, WebhookParams>;
+
+// eslint-disable-next-line import/exports-last
+export interface FindTaskById {
+  id: number;
+}
 
 @injectable()
 export class TasksController {
@@ -24,6 +33,16 @@ export class TasksController {
     try {
       const jobCreated = await this.taskManager.createExportTask(req.body);
       return res.status(httpStatus.CREATED).json(jobCreated);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public getTaskById: GetTaskByIdHandler = async (req, res, next) => {
+    try {
+      const id = req.params.id;
+      const result = await this.taskManager.getTaskById(id);
+      return res.status(httpStatus.OK).json(result);
     } catch (error) {
       next(error);
     }

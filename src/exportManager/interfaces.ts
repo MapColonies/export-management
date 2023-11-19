@@ -9,4 +9,5 @@ export interface Webhook {
 }
 export interface IExportManager {
   createExportTask: (data: CreateExportTaskExtendedRequest) => Promise<ITaskResponse<ExportJobParameters>>;
+  getTaskById: (id: string) => Promise<ITaskResponse<ExportJobParameters>>;
 }

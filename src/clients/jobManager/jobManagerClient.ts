@@ -1,27 +1,12 @@
 import { inject, injectable } from 'tsyringe';
 import config from 'config';
 import { Logger } from '@map-colonies/js-logger';
+import { NotFoundError } from '@map-colonies/error-types';
 import { HttpClient, IHttpRetryConfig } from '@map-colonies/mc-utils';
-import { Webhook } from '@map-colonies/export-interfaces';
-import { SERVICES } from '../common/constants';
+import { SERVICES } from '../../common/constants';
+import { ExportJobResponse, FindJobsResponse, IGetJobResponse } from './interfaces';
 
-// eslint-disable-next-line import/exports-last
-export interface ExportJobParameters {
-  id: number;
-  keywords: Record<string, unknown>;
-  webhook: Webhook[];
-}
 
-// eslint-disable-next-line import/exports-last
-export interface ExportJobResponse {
-  parameters: ExportJobParameters;
-  created: string;
-  updated: string;
-}
-
-export interface GetJobByExportIdRequest {
-  id: number;
-}
 @injectable()
 export class JobManagerClient extends HttpClient {
   private readonly exportJobType: string;
@@ -48,9 +33,14 @@ export class JobManagerClient extends HttpClient {
     return result;
   }
 
-  public async getJobByExportId(id: number): Promise<ExportJobResponse> {
+  public async getJobByExportId(id: number): Promise<IGetJobResponse> {
     this.logger.info({ msg: `get job by export id request`, id });
-    const result: ExportJobResponse = await this.get(`/jobs/parameters?id=${id}`);
-    return result;
+    const result: FindJobsResponse = await this.get(`/jobs/parameters?id=${id}`);
+    if(result.length > 0) {
+      return result[0];
+    }
+    const msg = `Export task id: ${id} is not found`
+    this.logger.info({ msg: msg, id });
+    throw new NotFoundError(msg);
   }
 }

@@ -19,6 +19,9 @@ export interface ExportJobResponse {
   updated: string;
 }
 
+export interface GetJobByExportIdRequest {
+  id: number;
+}
 @injectable()
 export class JobManagerClient extends HttpClient {
   private readonly exportJobType: string;
@@ -42,6 +45,12 @@ export class JobManagerClient extends HttpClient {
   public async getJobById(jobId: string): Promise<ExportJobResponse> {
     this.logger.info({ msg: `get job by jobId request`, jobId, jobType: this.exportJobType });
     const result: ExportJobResponse = await this.get(`/jobs/${jobId}`);
+    return result;
+  }
+
+  public async getJobByExportId(id: number): Promise<ExportJobResponse> {
+    this.logger.info({ msg: `get job by export id request`, id });
+    const result: ExportJobResponse = await this.get(`/jobs/parameters?id=${id}`);
     return result;
   }
 }

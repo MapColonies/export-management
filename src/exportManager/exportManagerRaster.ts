@@ -104,4 +104,11 @@ export class ExportManagerRaster implements IExportManager {
       throw error;
     }
   }
+
+  public async getTaskById(id: number) {
+    this.logger.info({ msg: `get export task by id`, id });
+    const job = await this.jobManagerClient.getJobByExportId(id)
+    console.log("job", job)
+    return job;
+  }
 }

@@ -1,21 +1,13 @@
 import { Artifact, TaskEvent } from '@map-colonies/export-interfaces';
 import { FeatureCollection } from 'geojson';
+import { OperationStatus } from '../tasks/enums';
 import { ExportJobParameters } from '../clients/jobManager/interfaces';
 import { ITaskResponse } from '../tasks/interfaces';
 import { CreateExportTaskExtendedRequest } from '../tasks/models/tasksManager';
-import { ArtifactType } from './enum';
-import { OperationStatus } from '../tasks/enums';
 
 export interface Webhook {
   events: TaskEvent[];
   url: string;
-}
-
-export interface IArtifactDefinition {
-  name: string;
-  url?: string;
-  size?: number;
-  type: ArtifactType;
 }
 
 export interface ILinkDefinition {

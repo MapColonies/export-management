@@ -6,7 +6,6 @@ import { HttpClient, IHttpRetryConfig } from '@map-colonies/mc-utils';
 import { SERVICES } from '../../common/constants';
 import { ExportJobResponse, FindJobsResponse, IGetJobResponse } from './interfaces';
 
-
 @injectable()
 export class JobManagerClient extends HttpClient {
   private readonly exportJobType: string;
@@ -36,10 +35,10 @@ export class JobManagerClient extends HttpClient {
   public async getJobByExportId(id: number): Promise<IGetJobResponse> {
     this.logger.info({ msg: `get job by export id request`, id });
     const result: FindJobsResponse = await this.get(`/jobs/parameters?id=${id}`);
-    if(result.length > 0) {
+    if (result.length > 0) {
       return result[0];
     }
-    const msg = `Export task id: ${id} is not found`
+    const msg = `Export task id: ${id} is not found`;
     this.logger.info({ msg: msg, id });
     throw new NotFoundError(msg);
   }

@@ -1,9 +1,9 @@
 import { Logger } from '@map-colonies/js-logger';
-import { Artifact, TaskEvent, Webhook } from '@map-colonies/export-interfaces';
+import { Artifact, Webhook } from '@map-colonies/export-interfaces';
 import { inject, injectable } from 'tsyringe';
 import config from 'config';
 import { Domain, EPSGDATA } from '@map-colonies/types';
-import { FeatureCollection, } from '@turf/turf';
+import { FeatureCollection } from '@turf/turf';
 import { generateUniqueId } from '../common/utils';
 import { SERVICES } from '../common/constants';
 import { CreateExportJobTriggerResponse, ExporterTriggerClient } from '../clients/exporterTriggerClient';
@@ -121,17 +121,15 @@ export class ExportManagerRaster implements IExportManager {
       progress: job.percentage,
       errorReason: job.reason,
       estimatedSize: job.parameters.gpkgEstimatedSize as number,
-      artifacts: job.status === OperationStatus.COMPLETED ? callbackParams.artifacts  : undefined,
+      artifacts: job.status === OperationStatus.COMPLETED ? callbackParams.artifacts : undefined,
       createdAt: job.created,
       finishedAt: job.updated,
       expiredAt: job.status === OperationStatus.COMPLETED ? callbackParams.expirationTime : undefined,
       // eslint-disable-next-line @typescript-eslint/naming-convention
       ROI: job.parameters.roi as FeatureCollection,
       webhook: webhook,
-
     };
 
     return task;
   }
 }
-

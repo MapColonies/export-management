@@ -10,9 +10,11 @@ import { ExportManagerRaster, WebhookParams } from '../../exportManager/exportMa
 import { Webhook } from '../../exportManager/interfaces';
 import { IExportManager } from '../../exportManager/interfaces';
 import { ITaskResponse, WebhookEvent } from '../interfaces';
-import { ExportJobParameters, JobManagerClient } from '../../clients/jobManagerClient';
-import { OperationStatus } from '../enums';
+import { JobManagerClient } from '../../clients/jobManager/jobManagerClient';
 import { WebhookClient } from '../../clients/webhookClient';
+import { ExportJobParameters } from '../../clients/jobManager/interfaces';
+import { OperationStatus } from '../../clients/jobManager/enums';
+import { convertToUnifiedTaskStatus } from '../../common/utils';
 
 export interface CreateExportTaskExtendedRequest extends CreateExportTaskRequest<TaskParameters> {
   domain: Domain;
@@ -43,6 +45,13 @@ export class TasksManager {
     return jobCreated;
   }
 
+  public async getTaskById(id: number): Promise<ITaskResponse<ExportJobParameters>> {
+    const domain = Domain.RASTER;
+    const exportManagerInstance = this.getExportManagerInstance(domain);
+    const task = await exportManagerInstance.getTaskById(id);
+    return task;
+  }
+
   public async handleWebhookEvent(params: WebhookParams): Promise<void> {
     const exportJob = await this.jobManagerClient.getJobById(params.jobId);
     const jobParameters = exportJob.parameters;
@@ -55,7 +64,7 @@ export class TasksManager {
       artifactCRS: EPSGDATA[4326].code,
       description: params.description,
       keywords: jobParameters.keywords,
-      status: params.status,
+      status: convertToUnifiedTaskStatus(params.status),
       artifacts: params.artifacts,
       webhook: exportJob.parameters.webhook,
       createdAt: new Date(exportJob.created),
@@ -70,7 +79,7 @@ export class TasksManager {
       timestamp: new Date(),
     };
 
-    const webhookUrls = this.getWebhookUrls(webhook, task.status);
+    const webhookUrls = this.getWebhookUrls(webhook, params.status);
     await this.sendWebhookEvent(webhookUrls, webhookEvent);
   }
 
@@ -113,6 +122,7 @@ export class TasksManager {
     if (webhookUrls.length > 0) {
       const webhookPromises: Promise<void>[] = [];
       for (const url of webhookUrls) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         webhookPromises.push(this.webhookClient.send(url, webhookEvent));
       }
 

@@ -119,6 +119,61 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+  /export-tasks/{id}:
+    get:
+      operationId: getTaskById
+      summary: get task by id
+      tags:
+        - Tasks
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/task'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '509':
+          description: Insufficient Storage
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
 components:
   schemas:
     taskCreate:

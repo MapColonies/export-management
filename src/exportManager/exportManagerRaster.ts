@@ -1,17 +1,18 @@
 import { Logger } from '@map-colonies/js-logger';
-import { Artifact } from '@map-colonies/export-interfaces';
+import { Artifact, TaskStatus, Webhook } from '@map-colonies/export-interfaces';
 import { inject, injectable } from 'tsyringe';
 import config from 'config';
 import { Domain, EPSGDATA } from '@map-colonies/types';
 import { FeatureCollection } from '@turf/turf';
-import { generateUniqueId } from '../common/utils';
+import { convertToUnifiedTaskStatus, generateUniqueId } from '../common/utils';
 import { SERVICES } from '../common/constants';
 import { CreateExportJobTriggerResponse, ExporterTriggerClient } from '../clients/exporterTriggerClient';
 import { CreateExportTaskExtendedRequest, CreatePackageParams } from '../tasks/models/tasksManager';
-import { OperationStatus } from '../tasks/enums';
-import { ExportJobParameters, JobManagerClient } from '../clients/jobManagerClient';
+import { JobManagerClient } from '../clients/jobManager/jobManagerClient';
+import { ExportJobParameters } from '../clients/jobManager/interfaces';
 import { ITaskResponse } from '../tasks/interfaces';
-import { IExportManager } from '../exportManager/interfaces';
+import { ICallbackExportData, IExportManager } from '../exportManager/interfaces';
+import { OperationStatus } from '../clients/jobManager/enums';
 
 export interface WebhookParams {
   expirationTime: string;
@@ -59,7 +60,7 @@ export class ExportManagerRaster implements IExportManager {
           artifactCRS: EPSGDATA[4326].code,
           description: req.description,
           keywords: req.keywords,
-          status: (res as WebhookParams).status,
+          status: convertToUnifiedTaskStatus((res as WebhookParams).status),
           artifacts: (res as WebhookParams).artifacts,
           createdAt: new Date(exportJob.created),
           finishedAt: new Date(exportJob.updated),
@@ -76,7 +77,7 @@ export class ExportManagerRaster implements IExportManager {
             catalogRecordID: req.catalogRecordID,
             artifactCRS: EPSGDATA[4326].code,
             createdAt: new Date(exportJob.created),
-            status: (res as WebhookParams).status,
+            status: convertToUnifiedTaskStatus((res as WebhookParams).status),
             domain: Domain.RASTER,
             webhook: req.webhook,
           };
@@ -92,7 +93,7 @@ export class ExportManagerRaster implements IExportManager {
           catalogRecordID: req.catalogRecordID,
           artifactCRS: EPSGDATA[4326].code,
           createdAt: new Date(exportJob.created),
-          status: (res as WebhookParams).status,
+          status: convertToUnifiedTaskStatus((res as WebhookParams).status),
           domain: Domain.RASTER,
           webhook: req.webhook,
         };
@@ -103,5 +104,33 @@ export class ExportManagerRaster implements IExportManager {
       this.logger.error({ err: error, req: req, msg: errMessage });
       throw error;
     }
+  }
+
+  public async getTaskById(id: number): Promise<ITaskResponse<ExportJobParameters>> {
+    this.logger.info({ msg: `get export task by id`, id });
+    const job = await this.jobManagerClient.getJobByExportId(id);
+    const percentage = await this.exporterTriggerClient.getTaskPercentage(job.id);
+    const callbackParams = job.parameters.callbackParams as ICallbackExportData;
+    const webhook = job.parameters.webhook as Webhook[];
+    const task: ITaskResponse<ExportJobParameters> = {
+      id: id,
+      catalogRecordID: job.internalId,
+      domain: Domain.RASTER,
+      artifactCRS: EPSGDATA[4326].code,
+      description: job.description,
+      status: job.isCleaned ? TaskStatus.EXPIRED : convertToUnifiedTaskStatus(job.status),
+      progress: percentage,
+      errorReason: job.reason,
+      estimatedSize: job.parameters.gpkgEstimatedSize as number,
+      artifacts: job.status === OperationStatus.COMPLETED && !job.isCleaned ? callbackParams.artifacts : undefined,
+      createdAt: job.created,
+      finishedAt: job.updated,
+      expiredAt: job.status === OperationStatus.COMPLETED ? callbackParams.expirationTime : undefined,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      ROI: job.parameters.roi as FeatureCollection,
+      webhook: webhook,
+    };
+
+    return task;
   }
 }

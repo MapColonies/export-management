@@ -5,13 +5,18 @@ import { SERVICES } from '../common/constants';
 import { IConfig } from '../common/interfaces';
 import { CreatePackageParams } from '../tasks/models/tasksManager';
 import { WebhookParams } from '../exportManager/exportManagerRaster';
-import { OperationStatus } from '../tasks/enums';
+import { OperationStatus } from './jobManager/enums';
 
 export interface CreateExportJobTriggerResponse {
   jobId: string;
   taskIds: string[];
   status: OperationStatus;
   isDuplicated: boolean;
+}
+
+export interface ITaskStatusResponse {
+  percentage: number | undefined;
+  status: OperationStatus;
 }
 
 @singleton()
@@ -29,5 +34,11 @@ export class ExporterTriggerClient extends HttpClient {
   public async createExportTask(params: CreatePackageParams): Promise<CreateExportJobTriggerResponse | WebhookParams> {
     const result = await this.post<CreateExportJobTriggerResponse | WebhookParams>('/create/roi', params);
     return result;
+  }
+
+  public async getTaskPercentage(jobId: string): Promise<number> {
+    const result = await this.get<ITaskStatusResponse>(`/taskStatus/${jobId}`);
+    const percentage = result.percentage ?? 0;
+    return percentage;
   }
 }

@@ -1,3 +1,6 @@
+import { snakeCase } from 'lodash';
+import { TaskStatus } from '@map-colonies/export-interfaces';
+
 export const generateUniqueId = (): number => {
   const date = new Date();
   const utcDateTime = Date.UTC(
@@ -10,4 +13,9 @@ export const generateUniqueId = (): number => {
     date.getMilliseconds()
   );
   return utcDateTime;
+};
+
+export const convertToUnifiedTaskStatus = (taskStatus: string): TaskStatus => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+  return snakeCase(taskStatus).toUpperCase() as TaskStatus;
 };

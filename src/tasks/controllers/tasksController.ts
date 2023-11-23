@@ -5,11 +5,12 @@ import httpStatus from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
 import { SERVICES } from '../../common/constants';
 import { WebhookParams } from '../../exportManager/exportManagerRaster';
-import { ExportJobParameters } from '../../clients/jobManagerClient';
 import { ITaskResponse } from '../interfaces';
 import { CreateExportTaskExtendedRequest, TasksManager } from '../models/tasksManager';
+import { ExportJobParameters, GetJobByExportIdRequest } from '../../clients/jobManager/interfaces';
 
 type CreateTaskHandler = RequestHandler<undefined, ITaskResponse<ExportJobParameters>, CreateExportTaskExtendedRequest>;
+type GetTaskByIdHandler = RequestHandler<GetJobByExportIdRequest, ITaskResponse<ExportJobParameters>, undefined>;
 type SendWebhookHandler = RequestHandler<undefined, undefined, WebhookParams>;
 
 @injectable()
@@ -33,6 +34,15 @@ export class TasksController {
     try {
       await this.taskManager.handleWebhookEvent(req.body);
       return res.sendStatus(httpStatus.OK);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public getTaskById: GetTaskByIdHandler = async (req, res, next) => {
+    try {
+      const job = await this.taskManager.getTaskById(req.params.id);
+      return res.status(httpStatus.OK).json(job);
     } catch (error) {
       next(error);
     }

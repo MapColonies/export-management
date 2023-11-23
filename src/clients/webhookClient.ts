@@ -4,7 +4,7 @@ import { Logger } from '@map-colonies/js-logger';
 import { SERVICES } from '../common/constants';
 import { IConfig } from '../common/interfaces';
 import { WebhookEvent } from '../tasks/interfaces';
-import { ExportJobParameters } from './jobManagerClient';
+import { ExportJobParameters } from './jobManager/interfaces';
 
 @singleton()
 export class WebhookClient extends HttpClient {

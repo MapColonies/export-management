@@ -1,5 +1,5 @@
 import { Logger } from '@map-colonies/js-logger';
-import { Artifact, Webhook } from '@map-colonies/export-interfaces';
+import { Artifact, TaskStatus, Webhook } from '@map-colonies/export-interfaces';
 import { inject, injectable } from 'tsyringe';
 import config from 'config';
 import { Domain, EPSGDATA } from '@map-colonies/types';
@@ -117,7 +117,7 @@ export class ExportManagerRaster implements IExportManager {
       domain: Domain.RASTER,
       artifactCRS: EPSGDATA[4326].code,
       description: job.description,
-      status: convertToUnifiedTaskStatus(job.status),
+      status: job.isCleaned? TaskStatus.EXPIRED : convertToUnifiedTaskStatus(job.status),
       progress: job.percentage,
       errorReason: job.reason,
       estimatedSize: job.parameters.gpkgEstimatedSize as number,

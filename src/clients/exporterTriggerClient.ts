@@ -36,9 +36,9 @@ export class ExporterTriggerClient extends HttpClient {
     return result;
   }
 
-  public async getTaskPercentage(jobId: string): Promise<number | undefined> {
+  public async getTaskPercentage(jobId: string): Promise<number> {
     const result = await this.get<ITaskStatusResponse>(`/taskStatus/${jobId}`);
-    const percentage = result.percentage?? undefined;
+    const percentage = result.percentage ?? 0;
     return percentage;
   }
 }

@@ -1,8 +1,7 @@
 import { GeoJSON } from 'geojson';
 import { FeatureCollection } from '@turf/turf';
 import { Domain } from '@map-colonies/types';
-import { Artifact, TaskEvent, Webhook } from '@map-colonies/export-interfaces';
-import { OperationStatus } from '../clients/jobManager/enums';
+import { Artifact, TaskEvent, TaskStatus, Webhook } from '@map-colonies/export-interfaces';
 
 export interface ITaskCreate<T> {
   catalogRecordID: string;
@@ -22,7 +21,7 @@ export interface ITaskResponse<T> extends ITaskCreate<T> {
   estimatedTime?: number;
   footprint?: GeoJSON;
   totalSize?: number;
-  status: OperationStatus; // TBD => use TaskStatus in future version
+  status: TaskStatus;
   progress?: number;
   artifacts?: Artifact[];
   createdAt: Date;

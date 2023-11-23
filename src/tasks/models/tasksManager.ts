@@ -14,6 +14,7 @@ import { JobManagerClient } from '../../clients/jobManager/jobManagerClient';
 import { WebhookClient } from '../../clients/webhookClient';
 import { ExportJobParameters } from '../../clients/jobManager/interfaces';
 import { OperationStatus } from '../../clients/jobManager/enums';
+import { convertToUnifiedTaskStatus } from '../../common/utils';
 
 export interface CreateExportTaskExtendedRequest extends CreateExportTaskRequest<TaskParameters> {
   domain: Domain;
@@ -63,7 +64,7 @@ export class TasksManager {
       artifactCRS: EPSGDATA[4326].code,
       description: params.description,
       keywords: jobParameters.keywords,
-      status: params.status,
+      status: convertToUnifiedTaskStatus(params.status),
       artifacts: params.artifacts,
       webhook: exportJob.parameters.webhook,
       createdAt: new Date(exportJob.created),
@@ -78,7 +79,7 @@ export class TasksManager {
       timestamp: new Date(),
     };
 
-    const webhookUrls = this.getWebhookUrls(webhook, task.status);
+    const webhookUrls = this.getWebhookUrls(webhook, params.status);
     await this.sendWebhookEvent(webhookUrls, webhookEvent);
   }
 

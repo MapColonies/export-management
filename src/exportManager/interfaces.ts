@@ -1,9 +1,9 @@
 import { Artifact, TaskEvent } from '@map-colonies/export-interfaces';
 import { FeatureCollection } from 'geojson';
-import { OperationStatus } from '../tasks/enums';
 import { ExportJobParameters } from '../clients/jobManager/interfaces';
 import { ITaskResponse } from '../tasks/interfaces';
 import { CreateExportTaskExtendedRequest } from '../tasks/models/tasksManager';
+import { OperationStatus } from '../clients/jobManager/enums';
 
 export interface Webhook {
   events: TaskEvent[];

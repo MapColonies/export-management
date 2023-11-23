@@ -5,7 +5,7 @@ import { SERVICES } from '../common/constants';
 import { IConfig } from '../common/interfaces';
 import { CreatePackageParams } from '../tasks/models/tasksManager';
 import { WebhookParams } from '../exportManager/exportManagerRaster';
-import { OperationStatus } from '../tasks/enums';
+import { OperationStatus } from './jobManager/enums';
 
 export interface CreateExportJobTriggerResponse {
   jobId: string;

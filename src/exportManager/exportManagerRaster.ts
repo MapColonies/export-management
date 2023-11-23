@@ -121,7 +121,7 @@ export class ExportManagerRaster implements IExportManager {
       progress: job.percentage,
       errorReason: job.reason,
       estimatedSize: job.parameters.gpkgEstimatedSize as number,
-      artifacts: job.status === OperationStatus.COMPLETED ? callbackParams.artifacts : undefined,
+      artifacts: job.status === OperationStatus.COMPLETED && !job.isCleaned? callbackParams.artifacts : undefined,
       createdAt: job.created,
       finishedAt: job.updated,
       expiredAt: job.status === OperationStatus.COMPLETED ? callbackParams.expirationTime : undefined,

@@ -26,7 +26,7 @@ image:
   tag: 'latest'
 
 serviceUrls:
-  exporterTrigger: "http://job-manager-service-url"
+  exporterTrigger: "https://raster-exporter-trigger-int-route-integration.apps.j1lk3njp.eastus.aroapp.io/"
   jobManager: "http://job-manager-service-url"
 jobManagement:
     exporter:

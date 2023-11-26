@@ -1,6 +1,10 @@
 apiVersion: v2
-name: export-management
+name: common-export-management
 description: A Helm chart for export-management service
 type: application
-version: 1.1.4
-appVersion: 1.1.4
+version: 1.4.0
+appVersion: 1.4.0
+# dependencies:
+#   - name: nginx
+#     version: 1.1.0
+#     repository: oci://acrarolibotnonprod.azurecr.io/helm

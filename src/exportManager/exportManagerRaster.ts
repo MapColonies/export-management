@@ -109,7 +109,7 @@ export class ExportManagerRaster implements IExportManager {
   public async getTaskById(id: number): Promise<ITaskResponse<ExportJobParameters>> {
     this.logger.info({ msg: `get export task by id`, id });
     const job = await this.jobManagerClient.getJobByExportId(id);
-    const percentage = await this.exporterTriggerClient.getTaskPercentage(job.id);
+    const taskStatus = await this.exporterTriggerClient.getTaskStatusByJobId(job.id);
     const callbackParams = job.parameters.callbackParams as ICallbackExportData;
     const webhook = job.parameters.webhook as Webhook[];
     const task: ITaskResponse<ExportJobParameters> = {
@@ -118,8 +118,8 @@ export class ExportManagerRaster implements IExportManager {
       domain: Domain.RASTER,
       artifactCRS: EPSGDATA[4326].code,
       description: job.description,
-      status: job.isCleaned ? TaskStatus.EXPIRED : convertToUnifiedTaskStatus(job.status),
-      progress: percentage,
+      status: job.isCleaned ? TaskStatus.EXPIRED : convertToUnifiedTaskStatus(taskStatus.status),
+      progress: taskStatus.percentage,
       errorReason: job.reason,
       estimatedSize: job.parameters.gpkgEstimatedSize as number,
       artifacts: job.status === OperationStatus.COMPLETED && !job.isCleaned ? callbackParams.artifacts : undefined,

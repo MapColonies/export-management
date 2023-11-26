@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.4.2](https://github.com/MapColonies/export-management/compare/v1.4.1...v1.4.2) (2023-11-26)
+
+
+### Bug Fixes
+
+* task status ([#13](https://github.com/MapColonies/export-management/issues/13)) ([3410e47](https://github.com/MapColonies/export-management/commit/3410e47d43313088aabcd0e4eb9245cec7b5160f))
+
 ### [1.4.1](https://github.com/MapColonies/export-management/compare/v1.4.0...v1.4.1) (2023-11-26)
 
 

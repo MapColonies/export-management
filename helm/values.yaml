@@ -111,4 +111,5 @@ nginx:
     host: 'localhost'
     tls: 
       enabled: true
-      secretName: ''                       
+      secretName: ''
+                 

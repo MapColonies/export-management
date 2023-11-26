@@ -77,7 +77,7 @@ export class ExportManagerRaster implements IExportManager {
             catalogRecordID: req.catalogRecordID,
             artifactCRS: EPSGDATA[4326].code,
             createdAt: new Date(exportJob.created),
-            status: convertToUnifiedTaskStatus((res as WebhookParams).status),
+            status: TaskStatus.PENDING,
             domain: Domain.RASTER,
             webhook: req.webhook,
           };

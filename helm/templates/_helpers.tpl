@@ -27,13 +27,6 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
-Create service name as used by the service name label.
-*/}}
-{{- define "service.fullname" -}}
-{{- printf "%s-%s" .Release.Name "service" }}
-{{- end }}
-
-{{/*
 Common labels
 */}}
 {{- define "export-management.labels" -}}
@@ -90,8 +83,8 @@ Returns the cloud provider docker registry url from global if exists or from the
 {{- define "export-management.cloudProviderDockerRegistryUrl" -}}
 {{- if .Values.global.cloudProvider.dockerRegistryUrl }}
     {{- printf "%s/" .Values.global.cloudProvider.dockerRegistryUrl -}}
-{{- else if .Values.global.cloudProvider.dockerRegistryUrl -}}
-    {{- printf "%s/" .Values.global.cloudProvider.dockerRegistryUrl -}}
+{{- else if .Values.cloudProvider.dockerRegistryUrl -}}
+    {{- printf "%s/" .Values.cloudProvider.dockerRegistryUrl -}}
 {{- else -}}
 {{- end -}}
 {{- end -}}
@@ -102,8 +95,8 @@ Returns the cloud provider image pull secret name from global if exists or from 
 {{- define "export-management.cloudProviderImagePullSecretName" -}}
 {{- if .Values.global.cloudProvider.imagePullSecretName }}
     {{- .Values.global.cloudProvider.imagePullSecretName -}}
-{{- else if .Values.global.cloudProvider.imagePullSecretName -}}
-    {{- .Values.global.cloudProvider.imagePullSecretName -}}
+{{- else if .Values.cloudProvider.imagePullSecretName -}}
+    {{- .Values.cloudProvider.imagePullSecretName -}}
 {{- end -}}
 {{- end -}}
 
@@ -113,7 +106,7 @@ Returns the tracing url from global if exists or from the chart's values
 {{- define "export-management.tracingUrl" -}}
 {{- if .Values.global.tracing.url }}
     {{- .Values.global.tracing.url -}}
-{{- else if .Values.global.cloudProvider -}}
+{{- else if .Values.cloudProvider -}}
     {{- .Values.env.tracing.url -}}
 {{- end -}}
 {{- end -}}

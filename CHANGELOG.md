@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/MapColonies/export-management/compare/v1.1.4...v1.5.0) (2023-11-27)
+
+
+### Features
+
+* add status support ([#11](https://github.com/MapColonies/export-management/issues/11)) ([666cf94](https://github.com/MapColonies/export-management/commit/666cf94431a3118ac430ed6395ab961d6df07873))
+* change deployemnt name ([#9](https://github.com/MapColonies/export-management/issues/9)) ([d17becd](https://github.com/MapColonies/export-management/commit/d17becd4a8f574d15bab4766672090d7fdcd0e69))
+* change templates name ([#10](https://github.com/MapColonies/export-management/issues/10)) ([79e6c62](https://github.com/MapColonies/export-management/commit/79e6c626a219871c9d7a2fd6a6c3e998d6b775a7))
+
+
+### Bug Fixes
+
+* get task status and not the job status ([#12](https://github.com/MapColonies/export-management/issues/12)) ([ececfbc](https://github.com/MapColonies/export-management/commit/ececfbc0844a55ef067e62a14fdf9577f6b89ded))
+* return id as number instead of string ([#14](https://github.com/MapColonies/export-management/issues/14)) ([e2ca46f](https://github.com/MapColonies/export-management/commit/e2ca46fcc37b43c0fd2cd513abdf0cce4354db51))
+* task status ([#13](https://github.com/MapColonies/export-management/issues/13)) ([3410e47](https://github.com/MapColonies/export-management/commit/3410e47d43313088aabcd0e4eb9245cec7b5160f))
+
 ### [1.4.2](https://github.com/MapColonies/export-management/compare/v1.4.1...v1.4.2) (2023-11-26)
 
 

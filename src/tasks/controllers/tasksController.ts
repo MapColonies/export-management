@@ -3,6 +3,8 @@ import { Meter } from '@opentelemetry/api';
 import { RequestHandler } from 'express';
 import httpStatus from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
+import { isNumber, isString } from 'lodash';
+import { BadRequestError } from '@map-colonies/error-types';
 import { SERVICES } from '../../common/constants';
 import { WebhookParams } from '../../exportManager/exportManagerRaster';
 import { ITaskResponse } from '../interfaces';
@@ -41,7 +43,14 @@ export class TasksController {
 
   public getTaskById: GetTaskByIdHandler = async (req, res, next) => {
     try {
-      const job = await this.taskManager.getTaskById(req.params.id);
+      let id = req.params.id;
+      if (isString(req.params.id)) {
+        id = Number(req.params.id);
+      }
+      if (!isNumber(id)) {
+        throw new BadRequestError(`id should be a number`);
+      }
+      const job = await this.taskManager.getTaskById(id);
       return res.status(httpStatus.OK).json(job);
     } catch (error) {
       next(error);

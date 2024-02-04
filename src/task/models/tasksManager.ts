@@ -40,6 +40,7 @@ export class TasksManager {
       this.logger.info({ msg: `received jobId: ${jobId} from domain: ${domain}` });
       // TODO Call Domain SDK to get estimations
       const exstimations = await exportManagerInstance.getEstimations(req.catalogRecordID, req.ROI);
+      console.log("ESTIM", exstimations)
       this.logger.debug({
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         msg: `received exstimations, estimated file size: ${exstimations.estimatedFileSize} estimated time: ${exstimations.estimatedTime}`,
@@ -54,8 +55,10 @@ export class TasksManager {
         estimatedDataSize: exstimations.estimatedFileSize,
         estimatedTime: exstimations.estimatedTime,
       });
+      console.log('its HERE',task);
 
       const res = await this.taskRepository.createTask(task);
+      console.log("MA LASOT", res)
       const msg = 'successfully created task';
       this.logger.info({
         msg: msg,
@@ -90,12 +93,11 @@ export class TasksManager {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers
   public async getLatestTasksByLimit(limit: number): Promise<ITaskEntity[]> {
     try {
       this.logger.info({ msg: `getting task by limit ${limit}`, limit });
       if (limit > this.maxTasksNumber) {
-        throw new BadRequestError(`requested limit ${limit} is more than the maximum possible tasks number ${this.maxTasksNumber}`);
+        throw new BadRequestError(`requested limit ${limit} is higher than the maximum possible limit tasks number ${this.maxTasksNumber}`);
       }
       const res = await this.taskRepository.getLatestTasksByLimit(limit);
       return res;

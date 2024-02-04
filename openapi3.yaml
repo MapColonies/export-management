@@ -192,16 +192,21 @@ components:
             - DEM
             - 3D
             - RASTER
+          example: RASTER
         ROI:
           $ref: '#/components/schemas/FeatureCollection'
         artifactCRS:
           type: string
           enum:
             - '4326'
+          example: '4326'
         description:
           type: string
+          nullable: true
+          example: export description example
         keywords:
           type: object
+          nullable: true
           description: task metadata in key-value pair
           example:
             foo: kuku
@@ -268,6 +273,7 @@ components:
                 - ARCHIVED
             errorReason:
               type: string
+              nullable: true
             progress:
               type: number
               minimum: 0
@@ -282,10 +288,12 @@ components:
               description: creation task time - UTC format
             expiredAt:
               type: string
+              nullable: true
               format: date-time
               description: when the task will be expired at - UTC format
             finishedAt:
               type: string
+              nullable: true
               format: date-time
               description: when the task reached an end state - UTC format
     artifact:
@@ -335,6 +343,7 @@ components:
         - METADATA
         - ROI
         - LEGEND
+
     FeatureCollection:
       type: object
       description: GeoJson Feature Collection
@@ -363,18 +372,18 @@ components:
           enum:
             - Feature
         properties:
-          type: object
           $ref: '#/components/schemas/FeatureProperties'
         geometry:
-          type: object
-          nullable: true
           $ref: '#/components/schemas/Geometry'
     FeatureProperties:
-      description: define any additional properties fields for the feature
-
-    Geometry:
-      description: GeoJSon geometry
       type: object
+      description: define any additional properties fields for the feature
+      example:
+        maxResolutionDeg: 0.703125
+    Geometry:
+      type: object
+      nullable: true
+      description: GeoJSon geometry
       oneOf:
         - $ref: '#/components/schemas/Polygon'
         - $ref: '#/components/schemas/MultiPolygon'
@@ -392,6 +401,7 @@ components:
                 type: array
                 items:
                   $ref: '#/components/schemas/Point2D'
+              example: [[[-180,-90],[-180,90],[180,90],[180,-190],[-180,-90]]]
     MultiPolygon:
       type: object
       description: GeoJSon geometry
@@ -408,6 +418,7 @@ components:
                   type: array
                   items:
                     $ref: '#/components/schemas/Point2D'
+              
     GeometryBase:
       type: object
       description: GeoJSon geometry

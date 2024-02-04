@@ -9,10 +9,10 @@ export class TasksRequestSender {
   }
 
   public async getLatestTasksByLimit(limit: number): Promise<supertest.Response> {
-    return supertest.agent(this.app).get('/export-tasks').query({ limit }).set('Content-Type', 'application/json');
+    return supertest.agent(this.app).get('/export-tasks').query({ limit }).set('Content-Type', 'application/json').send();
   }
 
   public async getTaskById(id: number): Promise<supertest.Response> {
-    return supertest.agent(this.app).get(`/export-tasks/${id}`).set('Content-Type', 'application/json');
+    return supertest.agent(this.app).get(`/export-tasks/${id}`).set('Content-Type', 'application/json').send();
   }
 }

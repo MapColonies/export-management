@@ -1,6 +1,6 @@
 import jsLogger from '@map-colonies/js-logger';
 import { Domain } from '@map-colonies/types';
-import { NotFoundError } from '@map-colonies/error-types';
+import { BadRequestError, NotFoundError } from '@map-colonies/error-types';
 import { GetEstimationsResponse } from '@map-colonies/export-interfaces';
 import { TaskRepository } from '../../../src/DAL/repositories/taskRepository';
 import { createFakeEntity } from '../helpers/helpers';
@@ -39,7 +39,7 @@ describe('taskManager', () => {
       await expect(createPromise).resolves.not.toThrow();
     });
 
-    it('rejects if domain is not supported', async () => {
+    it('rejects with bad request error due to unsupported domain "DEM"', async () => {
       const entity = createFakeEntity();
       entity.domain = Domain.DEM;
 
@@ -47,7 +47,31 @@ describe('taskManager', () => {
 
       const createPromise = taskManager.createTask(entity);
 
-      await expect(createPromise).rejects.toThrow();
+      await expect(createPromise).rejects.toThrow(BadRequestError);
+      expect(createTask).not.toHaveBeenCalled();
+    });
+
+    it('rejects with bad request error due to unsupported domain "3D"', async () => {
+      const entity = createFakeEntity();
+      entity.domain = Domain._3D;
+
+      createTask.mockResolvedValue(undefined);
+
+      const createPromise = taskManager.createTask(entity);
+
+      await expect(createPromise).rejects.toThrow(BadRequestError);
+      expect(createTask).not.toHaveBeenCalled();
+    });
+
+    it('rejects with bad request error due to any other unsupported domain value', async () => {
+      const entity = createFakeEntity();
+      entity.domain = 'test_domain' as unknown as Domain;
+
+      createTask.mockResolvedValue(undefined);
+
+      const createPromise = taskManager.createTask(entity);
+
+      await expect(createPromise).rejects.toThrow(BadRequestError);
       expect(createTask).not.toHaveBeenCalled();
     });
 
@@ -100,6 +124,30 @@ describe('taskManager', () => {
       const findPromise = taskManager.getTaskById(1);
 
       await expect(findPromise).rejects.toThrow(NotFoundError);
+    });
+  });
+
+
+  describe('#getLatestTasksByLimit', () => {
+    it('resolves and returns all task amount by requested limit if its not higher than the max configured limit', async () => {
+      const entity = createFakeEntity();
+
+      getLatestTasksByLimit.mockResolvedValue(entity);
+
+      const findPromise = taskManager.getLatestTasksByLimit(10);
+
+      await expect(findPromise).resolves.not.toThrow();
+      await expect(findPromise).resolves.toStrictEqual(entity);
+    });
+
+    it('rejects and throws bad requests error if requested limit is higher than the max configured limit', async () => {
+      const entity = createFakeEntity();
+
+      getLatestTasksByLimit.mockResolvedValue(entity);
+
+      const findPromise = taskManager.getLatestTasksByLimit(11);
+
+      await expect(findPromise).rejects.toThrow(BadRequestError);
     });
   });
 });

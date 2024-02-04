@@ -9,7 +9,7 @@ import { WebhookEntity } from './webhook';
 @Entity('task')
 export class TaskEntity extends BaseEntity implements ITaskEntity {
   @PrimaryGeneratedColumn()
-  public id?: number;
+  public id: number;
 
   // add column explicitly here for type ORM bug - https://github.com/typeorm/typeorm/issues/586
   @Column({ name: 'job_id', nullable: false, type: 'uuid' })
@@ -75,10 +75,10 @@ export class TaskEntity extends BaseEntity implements ITaskEntity {
   @Column('varchar', { length: 2000, nullable: true })
   public description: string;
 
-  @Column('numeric', { name: 'estimated_data_size', nullable: true, default: 0 })
+  @Column('integer', { name: 'estimated_data_size', nullable: true, default: 0 })
   public estimatedDataSize: number;
 
-  @Column('numeric', { name: 'estimated_time', nullable: true, default: 0 })
+  @Column('integer', { name: 'estimated_time', nullable: true, default: 0 })
   public estimatedTime: number;
 
   @Column('jsonb', { nullable: true })

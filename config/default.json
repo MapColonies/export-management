@@ -37,8 +37,8 @@
       "key": "",
       "cert": ""
     },
-    "database": "raster",
+    "database": "libot",
     "schema": "export_manager"
   },
-  "maxTasksNumber": 10
+  "maxTasksNumber": 1000
 }

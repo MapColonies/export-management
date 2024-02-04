@@ -24,6 +24,7 @@ export class TasksController {
   public createTask: CreateTaskHandler = async (req, res, next) => {
     try {
       const entity = await this.taskManager.createTask(req.body);
+      console.log("ENTIT", entity)
       return res.status(httpStatus.CREATED).json(entity);
     } catch (error) {
       next(error);

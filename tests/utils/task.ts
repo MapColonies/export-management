@@ -13,13 +13,13 @@ export function getFakeTask(): ITaskEntity {
     domain: Domain.RASTER,
     status: TaskStatus.COMPLETED,
     description: 'string',
-    estimatedDataSize: 205200,
+    estimatedSize: 205200,
     estimatedTime: 1352,
     webhook: [{ events: [TaskEvent.TASK_COMPLETED], url: 'http://localhost:8080' }],
     keywords: {
       foo: 'kuku',
     },
-    percentage: 0,
+    progress: 0,
     taskGeometries: [
       {
         geometry: {

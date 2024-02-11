@@ -5,11 +5,11 @@ import httpStatus from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
 import { CreateExportTaskRequest, TaskParameters } from '@map-colonies/export-interfaces';
 import { SERVICES } from '../../common/constants';
-import { TasksManager } from '../models/tasksManager';
+import { CreateTaskResponse, TasksManager } from '../models/tasksManager';
 import { ITaskEntity } from '../../DAL/models/task';
 import { FindTaskById } from '../../DAL/repositories/taskRepository';
 
-type CreateTaskHandler = RequestHandler<undefined, ITaskEntity, CreateExportTaskRequest<TaskParameters>>;
+type CreateTaskHandler = RequestHandler<undefined, CreateTaskResponse, CreateExportTaskRequest<TaskParameters>>;
 type GetTaskByIdHandler = RequestHandler<FindTaskById, ITaskEntity | undefined, undefined, undefined>;
 type GetLatestTasksByLimitHandler = RequestHandler<undefined, ITaskEntity[], undefined, { limit: number }>;
 
@@ -24,7 +24,6 @@ export class TasksController {
   public createTask: CreateTaskHandler = async (req, res, next) => {
     try {
       const entity = await this.taskManager.createTask(req.body);
-      console.log("ENTIT", entity)
       return res.status(httpStatus.CREATED).json(entity);
     } catch (error) {
       next(error);

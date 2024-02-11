@@ -76,7 +76,7 @@ export class TaskEntity extends BaseEntity implements ITaskEntity {
   public description: string;
 
   @Column('integer', { name: 'estimated_data_size', nullable: true, default: 0 })
-  public estimatedDataSize: number;
+  public estimatedSize: number;
 
   @Column('integer', { name: 'estimated_time', nullable: true, default: 0 })
   public estimatedTime: number;
@@ -85,10 +85,10 @@ export class TaskEntity extends BaseEntity implements ITaskEntity {
   public keywords: Record<string, unknown>;
 
   @Column('varchar', { nullable: true })
-  public reason: string;
+  public errorReason: string;
 
   @Column('smallint', { nullable: true, default: 0 })
-  public percentage: number;
+  public progress: number;
 
   @CreateDateColumn({
     name: 'created_at',

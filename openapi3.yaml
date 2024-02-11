@@ -243,59 +243,59 @@ components:
     task:
       allOf:
         - $ref: '#/components/schemas/taskCreate'
-        - type: object
-          required:
-            - id
-            - status
-            - createdAt
-          properties:
-            id:
-              type: number
-              format: int32
-            estimatedSize:
-              type: number
-              format: int64
-              description: the estimated size of the artifacts in bytes
-            estimatedTime:
-              type: number
-              format: int64
-              description: the estimated time of the export task
-            status:
-              type: string
-              enum:
-                - IN_PROGRESS
-                - COMPLETED
-                - ABORTED
-                - PAUSED
-                - FAILED
-                - PENDING
-                - EXPIRED
-                - ARCHIVED
-            errorReason:
-              type: string
-              nullable: true
-            progress:
-              type: number
-              minimum: 0
-              maximum: 100
-            artifacts:
-              type: array
-              items:
-                $ref: '#/components/schemas/artifact'
-            createdAt:
-              type: string
-              format: date-time
-              description: creation task time - UTC format
-            expiredAt:
-              type: string
-              nullable: true
-              format: date-time
-              description: when the task will be expired at - UTC format
-            finishedAt:
-              type: string
-              nullable: true
-              format: date-time
-              description: when the task reached an end state - UTC format
+      type: object
+      required:
+        - id
+        - status
+        - createdAt
+      properties:
+        id:
+          type: number
+          format: int32
+        estimatedSize:
+          type: number
+          format: int64
+          description: the estimated size of the artifacts in bytes
+        estimatedTime:
+          type: number
+          format: int64
+          description: the estimated time of the export task
+        status:
+          type: string
+          enum:
+            - IN_PROGRESS
+            - COMPLETED
+            - ABORTED
+            - PAUSED
+            - FAILED
+            - PENDING
+            - EXPIRED
+            - ARCHIVED
+        errorReason:
+          type: string
+          nullable: true
+        progress:
+          type: number
+          minimum: 0
+          maximum: 100
+        artifacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/artifact'
+        createdAt:
+          type: string
+          format: date-time
+          description: creation task time - UTC format
+        expiredAt:
+          type: string
+          nullable: true
+          format: date-time
+          description: when the task will be expired at - UTC format
+        finishedAt:
+          type: string
+          nullable: true
+          format: date-time
+          description: when the task reached an end state - UTC format
     artifact:
       type: object
       description: GeoJson Feature Collection

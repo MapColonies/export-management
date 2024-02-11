@@ -98,7 +98,7 @@ describe('taskManager', () => {
         ...entity,
         taskGeometries: response.geometries,
         jobId: response.jobId,
-        estimatedDataSize: estimationsResponse.estimatedFileSize,
+        estimatedSize: estimationsResponse.estimatedFileSize,
         estimatedTime: estimationsResponse.estimatedTime,
         // TODO: handle customer name once implemented
         customerName: 'cutomer_name',

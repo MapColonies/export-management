@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class Migration1707064469585 implements MigrationInterface {
-    name = 'Migration1707064469585'
+export class Migration1707647936251 implements MigrationInterface {
+    name = 'Migration1707647936251'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TABLE "export_manager"."artifact_type" ("id" SERIAL NOT NULL, "type" character varying NOT NULL, CONSTRAINT "PK_ae163e73ca0196fdb444350a29f" PRIMARY KEY ("id"))`);
@@ -9,7 +9,7 @@ export class Migration1707064469585 implements MigrationInterface {
         await queryRunner.query(`CREATE TYPE "export_manager"."webhook_events_enum" AS ENUM('TASK_STARTED', 'TASK_UPDATED', 'TASK_COMPLETED', 'TASK_FAILED', 'TASK_ABORTED', 'TASK_EXPIRED', 'TASK_PAUSED', 'TASK_ARCHIVED')`);
         await queryRunner.query(`CREATE TABLE "export_manager"."webhook" ("id" SERIAL NOT NULL, "url" character varying NOT NULL, "events" "export_manager"."webhook_events_enum" array NOT NULL, CONSTRAINT "PK_e6765510c2d078db49632b59020" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TYPE "export_manager"."task_status_enum" AS ENUM('IN_PROGRESS', 'COMPLETED', 'ABORTED', 'PAUSED', 'FAILED', 'PENDING', 'EXPIRED')`);
-        await queryRunner.query(`CREATE TABLE "export_manager"."task" ("id" SERIAL NOT NULL, "job_id" uuid NOT NULL, "catalog_record_id" uuid NOT NULL, "customer_name" character varying NOT NULL, "artifact_crs" character varying NOT NULL, "domain" character varying NOT NULL, "status" "export_manager"."task_status_enum" NOT NULL DEFAULT 'PENDING', "description" character varying(2000), "estimated_data_size" integer DEFAULT '0', "estimated_time" integer DEFAULT '0', "keywords" jsonb, "reason" character varying, "percentage" smallint DEFAULT '0', "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "expired_at" TIMESTAMP WITH TIME ZONE, "finished_at" TIMESTAMP WITH TIME ZONE, CONSTRAINT "PK_fb213f79ee45060ba925ecd576e" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "export_manager"."task" ("id" SERIAL NOT NULL, "job_id" uuid NOT NULL, "catalog_record_id" uuid NOT NULL, "customer_name" character varying NOT NULL, "artifact_crs" character varying NOT NULL, "domain" character varying NOT NULL, "status" "export_manager"."task_status_enum" NOT NULL DEFAULT 'PENDING', "description" character varying(2000), "estimated_data_size" integer DEFAULT '0', "estimated_time" integer DEFAULT '0', "keywords" jsonb, "errorReason" character varying, "progress" smallint DEFAULT '0', "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "expired_at" TIMESTAMP WITH TIME ZONE, "finished_at" TIMESTAMP WITH TIME ZONE, CONSTRAINT "PK_fb213f79ee45060ba925ecd576e" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "export_manager"."artifact" ("id" SERIAL NOT NULL, "name" character varying NOT NULL, "url" character varying NOT NULL, "size" numeric NOT NULL DEFAULT '0', "artifact_type_id" integer NOT NULL, CONSTRAINT "PK_1f238d1d4ef8f85d0c0b8616fa3" PRIMARY KEY ("id"))`);
         await queryRunner.query(`CREATE TABLE "export_manager"."task_geometry_to_task" ("task_id" integer NOT NULL, "task_geometry_id" integer NOT NULL, CONSTRAINT "PK_b5ee2f17de2c7cc478598e71c5e" PRIMARY KEY ("task_id", "task_geometry_id"))`);
         await queryRunner.query(`CREATE INDEX "IDX_e8bd5ecc0a8c06dbe970e62adb" ON "export_manager"."task_geometry_to_task" ("task_id") `);

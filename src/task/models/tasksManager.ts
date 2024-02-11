@@ -1,6 +1,6 @@
 import { Logger } from '@map-colonies/js-logger';
 import config from 'config';
-import { CreateExportTaskRequest, IExportManager, TaskParameters } from '@map-colonies/export-interfaces';
+import { CreateExportTaskRequest, CreateExportTaskResponse, IExportManager, TaskParameters, TaskStatus } from '@map-colonies/export-interfaces';
 import { inject, injectable } from 'tsyringe';
 import { Domain } from '@map-colonies/types';
 import { BadRequestError, NotFoundError } from '@map-colonies/error-types';
@@ -10,6 +10,18 @@ import { TASK_REPOSITORY_SYMBOL, TaskRepository } from '../../DAL/repositories/t
 import { TaskEntity } from '../../DAL/entity/task';
 import { ITaskEntity } from '../../DAL/models/task';
 
+export interface CreateTaskResponse extends CreateExportTaskRequest<TaskParameters> {
+  id?: number;
+  status: TaskStatus
+  estimatedSize?: number,
+  estimatedTime?: number,
+  progress?: number,
+  createdAt: Date,
+  updatedAt?: Date,
+  expiredAt?: Date,
+  finishedAt?: Date,
+  errorReason?: string,
+}
 @injectable()
 export class TasksManager {
   private readonly maxTasksNumber: number;
@@ -21,7 +33,7 @@ export class TasksManager {
     this.maxTasksNumber = config.get<number>('maxTasksNumber');
   }
 
-  public async createTask(req: CreateExportTaskRequest<TaskParameters>): Promise<ITaskEntity> {
+  public async createTask(req: CreateExportTaskRequest<TaskParameters>): Promise<CreateTaskResponse> {
     try {
       this.logger.debug({ msg: `create export task request`, req: req });
       this.logger.info({
@@ -39,11 +51,10 @@ export class TasksManager {
       const jobId = exportTaskResponse.jobId;
       this.logger.info({ msg: `received jobId: ${jobId} from domain: ${domain}` });
       // TODO Call Domain SDK to get estimations
-      const exstimations = await exportManagerInstance.getEstimations(req.catalogRecordID, req.ROI);
-      console.log("ESTIM", exstimations)
+      const estimations = await exportManagerInstance.getEstimations(req.catalogRecordID, req.ROI);
       this.logger.debug({
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        msg: `received exstimations, estimated file size: ${exstimations.estimatedFileSize} estimated time: ${exstimations.estimatedTime}`,
+        msg: `received exstimations, estimated file size: ${estimations.estimatedFileSize} estimated time: ${estimations.estimatedTime}`,
       });
       // TODO: Get customer name
       const customerName = 'cutomer_name';
@@ -52,13 +63,24 @@ export class TasksManager {
         taskGeometries: exportTaskResponse.geometries,
         jobId: exportTaskResponse.jobId,
         customerName,
-        estimatedDataSize: exstimations.estimatedFileSize,
-        estimatedTime: exstimations.estimatedTime,
+        estimatedSize: estimations.estimatedFileSize,
+        estimatedTime: estimations.estimatedTime,
       });
-      console.log('its HERE',task);
 
       const res = await this.taskRepository.createTask(task);
-      console.log("MA LASOT", res)
+      const createTaskResponse: CreateTaskResponse = {
+        ...req, id: res.id,
+        status: res.status,
+        estimatedSize: estimations.estimatedFileSize,
+        estimatedTime: estimations.estimatedTime,
+        errorReason: res.errorReason,
+        progress: res.progress,
+        expiredAt: res.expiredAt,
+        finishedAt: res.finishedAt,
+        createdAt: res.createdAt,
+        updatedAt: res.updatedAt
+      }
+      console.log("CREATE TASK:", createTaskResponse)
       const msg = 'successfully created task';
       this.logger.info({
         msg: msg,
@@ -69,7 +91,7 @@ export class TasksManager {
         catalogRecordId: res.catalogRecordID,
       });
       this.logger.debug({ msg: msg, res });
-      return res;
+      return createTaskResponse;
     } catch (error) {
       const errMessage = `failed to create export task: ${(error as Error).message}`;
       this.logger.error({ err: error, req: req, msg: errMessage });

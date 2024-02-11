@@ -54,6 +54,7 @@ describe('tasks', function () {
         const req = { ...exportRequest };
 
         const response = await requestSender.createTask(req);
+        console.log('response:', response)
         expect(response).toSatisfyApiSpec();
         expect(response.status).toBe(httpStatusCodes.CREATED);
         expect(saveSpy).toHaveBeenCalledTimes(1);

@@ -54,7 +54,7 @@ spec:
             {{- end }}
           env:
             - name: SERVER_PORT
-              value: {{ .Values.env.targetPort | quote }}
+              value: {{ .Values.targetPort | quote }}
             {{- if .Values.caSecretName }}
             - name: REQUESTS_CA_BUNDLE
               value: {{ printf "%s/%s" .Values.caPath .Values.caKey | quote }}
@@ -66,13 +66,13 @@ spec:
                 name: {{ $releaseName }}-configmap
           ports:
             - name: http
-              containerPort: {{ .Values.env.targetPort }}
+              containerPort: {{ .Values.targetPort }}
               protocol: {{ .Values.env.protocol }}
           livenessProbe:
             initialDelaySeconds: {{ .Values.initialDelaySeconds }}
             httpGet:
               path: /liveness
-              port: {{ .Values.env.targetPort }}
+              port: {{ .Values.targetPort }}
           {{- if .Values.resources.enabled }}
           resources:
             {{- toYaml .Values.resources.value | nindent 12 }}

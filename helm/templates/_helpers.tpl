@@ -90,8 +90,8 @@ Returns the cloud provider docker registry url from global if exists or from the
 {{- define "export-management.cloudProviderDockerRegistryUrl" -}}
 {{- if .Values.global.cloudProvider.dockerRegistryUrl }}
     {{- printf "%s/" .Values.global.cloudProvider.dockerRegistryUrl -}}
-{{- else if .Values.global.cloudProvider.dockerRegistryUrl -}}
-    {{- printf "%s/" .Values.global.cloudProvider.dockerRegistryUrl -}}
+{{- else if .Values.cloudProvider.dockerRegistryUrl -}}
+    {{- printf "%s/" .Values.cloudProvider.dockerRegistryUrl -}}
 {{- else -}}
 {{- end -}}
 {{- end -}}
@@ -128,3 +128,18 @@ Returns the tracing url from global if exists or from the chart's values
     {{- .Values.env.metrics.url -}}
 {{- end -}}
 {{- end -}}
+
+
+{{/*
+Create export-management nginx configmap name as used by the service name label.
+*/}}
+{{- define "nginx-configmap.fullname" -}}
+{{- printf "%s-%s-%s" .Release.Name .Chart.Name "nginx-configmap" | indent 1 }}
+{{- end }}
+
+{{/*
+Create export-management envoy configmap name as used by the service name label.
+*/}}
+{{- define "envoy-configmap.fullname" -}}
+{{- printf "%s-%s-%s" .Release.Name .Chart.Name "envoy-configmap" | indent 1 }}
+{{- end }}

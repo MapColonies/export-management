@@ -1,11 +1,11 @@
-import { AtrifactType } from '../entity/artifactType';
-import { IArtifact } from './artifact';
+import { AtrifactType } from '../entity';
+import { IArtifactEntity } from './artifact';
 
-export interface IArtifactType {
+export interface IArtifactTypeEntity {
   /** The auto-generated ID of the artifact type. */
-  id?: number;
+  id: number;
   /** The artifact type. */
   type: AtrifactType;
   /** The artifacts that belongs to the type. */
-  artifacts?: IArtifact[];
+  artifacts?: IArtifactEntity[];
 }

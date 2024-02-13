@@ -1,10 +1,10 @@
 import { Entity, Column, PrimaryGeneratedColumn, MultiPolygon, Polygon, ManyToMany } from 'typeorm';
 import { GeometryMetadata } from '@map-colonies/export-interfaces';
-import { ITaskGeometries } from '../models/taskGeometry';
+import { ITaskGeometriesEntity } from '../models/taskGeometry';
 import { TaskEntity } from './task';
 
 @Entity('task_geometry')
-export class TaskGeometryEntity implements ITaskGeometries {
+export class TaskGeometryEntity implements ITaskGeometriesEntity {
   @PrimaryGeneratedColumn()
   public id: number;
 

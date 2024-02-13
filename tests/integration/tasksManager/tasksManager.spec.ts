@@ -54,7 +54,7 @@ describe('tasks', function () {
         const req = { ...exportRequest };
 
         const response = await requestSender.createTask(req);
-        console.log('response:', response)
+
         expect(response).toSatisfyApiSpec();
         expect(response.status).toBe(httpStatusCodes.CREATED);
         expect(saveSpy).toHaveBeenCalledTimes(1);
@@ -66,9 +66,9 @@ describe('tasks', function () {
 
         const response = await requestSender.createTask(req);
 
+        expect(response).toSatisfyApiSpec();
         expect(response.status).toBe(httpStatusCodes.CREATED);
         expect(saveSpy).toHaveBeenCalledTimes(1);
-        //expect(response).toSatisfyApiSpec();
       });
     });
 
@@ -76,19 +76,19 @@ describe('tasks', function () {
       it('should return 200 status code and the resource', async function () {
         const response = await requestSender.getLatestTasksByLimit(1);
         
+        expect(response).toSatisfyApiSpec();
         expect(response.status).toBe(httpStatusCodes.OK);
         expect(response.body).toHaveLength(1);
-        //expect(res).toSatisfyApiSpec();
       });
 
       it('should return 200 status code and an empty array', async function () {
         findSpy.mockResolvedValue([]);
         const response = await requestSender.getLatestTasksByLimit(1);
 
+        expect(response).toSatisfyApiSpec();
         expect(findSpy).toHaveBeenCalledTimes(1);
         expect(response.status).toBe(httpStatusCodes.OK);
         expect(response.body).toHaveLength(0);
-        //expect(res).toSatisfyApiSpec();
       });
     });
 
@@ -97,13 +97,13 @@ describe('tasks', function () {
         it('should return 200 status code and the resource', async function () {
           // task entity setup for get by id test
           const req = { ...exportRequest };
-          const res = await requestSender.createTask(req);
-          const entity = res.body as TaskEntity;
+          const createTaskResponse = await requestSender.createTask(req);
+          const entity = createTaskResponse.body as TaskEntity;
           const response = await requestSender.getTaskById(entity.id);
 
+          expect(response).toSatisfyApiSpec();
           expect(response.status).toBe(httpStatusCodes.OK);
           expect((response.body as unknown as TaskEntity).id).toBe(entity.id);
-          //expect(res).toSatisfyApiSpec();
         });
       });
     });
@@ -117,18 +117,18 @@ describe('tasks', function () {
 
           const response = await requestSender.createTask(req);
 
+          expect(response).toSatisfyApiSpec();
           expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
           expect((response.body as {message: string}).message).toBe(errMessage);
-          //expect(response).toSatisfyApiSpec(); // TODO: use when tests are done
         });
       });
 
       describe('GET /export-tasks/:taskId', function () {
         it('should return 404 status code if id is not exists', async function () {
-          const res = await requestSender.getTaskById(150);
+          const response = await requestSender.getTaskById(150);
 
-          expect(res).toHaveProperty('status', httpStatusCodes.NOT_FOUND);
-          //expect(res).toSatisfyApiSpec();
+          expect(response).toSatisfyApiSpec();
+          expect(response).toHaveProperty('status', httpStatusCodes.NOT_FOUND);
         });
       });
 
@@ -139,8 +139,8 @@ describe('tasks', function () {
           const errMessage = `requested limit ${requestedLimit} is higher than the maximum possible limit tasks number ${limit}`;
           const response = await requestSender.getLatestTasksByLimit(requestedLimit);
           
+          expect(response).toSatisfyApiSpec();
           expect((response.body as {message: string}).message).toBe(errMessage);
-          //expect(res).toSatisfyApiSpec();
         });
       });
     });
@@ -153,8 +153,8 @@ describe('tasks', function () {
 
           const response = await requestSender.createTask(req);
 
+          expect(response).toSatisfyApiSpec();
           expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-          //expect(res).toSatisfyApiSpec();
         });
       });
 
@@ -164,9 +164,9 @@ describe('tasks', function () {
 
           const response = await requestSender.getTaskById(1);
 
+          expect(response).toSatisfyApiSpec();
           expect(findOneSpy).toHaveBeenCalledTimes(1);
           expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-          //expect(res).toSatisfyApiSpec();
         });
       });
 
@@ -176,8 +176,8 @@ describe('tasks', function () {
 
           const response = await requestSender.getLatestTasksByLimit(1);
 
+          expect(response).toSatisfyApiSpec();
           expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
-          //expect(res).toSatisfyApiSpec();
         });
       });
     });

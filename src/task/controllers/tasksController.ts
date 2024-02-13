@@ -5,11 +5,11 @@ import httpStatus from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
 import { CreateExportTaskRequest, TaskParameters } from '@map-colonies/export-interfaces';
 import { SERVICES } from '../../common/constants';
-import { CreateTaskResponse, TasksManager } from '../models/tasksManager';
+import { TaskResponse, TasksManager } from '../models/tasksManager';
 import { ITaskEntity } from '../../DAL/models/task';
 import { FindTaskById } from '../../DAL/repositories/taskRepository';
 
-type CreateTaskHandler = RequestHandler<undefined, CreateTaskResponse, CreateExportTaskRequest<TaskParameters>>;
+type CreateTaskHandler = RequestHandler<undefined, TaskResponse, CreateExportTaskRequest<TaskParameters>>;
 type GetTaskByIdHandler = RequestHandler<FindTaskById, ITaskEntity | undefined, undefined, undefined>;
 type GetLatestTasksByLimitHandler = RequestHandler<undefined, ITaskEntity[], undefined, { limit: number }>;
 

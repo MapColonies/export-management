@@ -35,6 +35,7 @@ authentication:
     opa:
       enabled: false
       customHeaderName: ""
+    jwtPublicKeySecretName: map-colonies-jwks
 
 
 env:
@@ -64,8 +65,9 @@ dbConfig:
   host: localhost
   username: postgres
   password: postgres
-  database: auth-manager
-  # port: 5432
+  database: libot
+  schema: export_manager
+  port: 5432
   externalSecretName: ''
   useExternalSecret: false  
   sslAuth:
@@ -118,7 +120,7 @@ resources:
 route:
   enabled: true
   host:
-  path: /api/raster/v1
+  path:
   https: true
   useCert: false
   timeout:

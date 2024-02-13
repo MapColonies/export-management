@@ -10,7 +10,7 @@ import { TASK_REPOSITORY_SYMBOL, TaskRepository } from '../../DAL/repositories/t
 import { TaskEntity } from '../../DAL/entity/task';
 import { ITaskEntity } from '../../DAL/models/task';
 
-export interface CreateTaskResponse extends CreateExportTaskRequest<TaskParameters> {
+export interface TaskResponse extends CreateExportTaskRequest<TaskParameters> {
   id?: number;
   status: TaskStatus
   estimatedSize?: number,
@@ -33,7 +33,7 @@ export class TasksManager {
     this.maxTasksNumber = config.get<number>('maxTasksNumber');
   }
 
-  public async createTask(req: CreateExportTaskRequest<TaskParameters>): Promise<CreateTaskResponse> {
+  public async createTask(req: CreateExportTaskRequest<TaskParameters>): Promise<TaskResponse> {
     try {
       this.logger.debug({ msg: `create export task request`, req: req });
       this.logger.info({
@@ -68,7 +68,7 @@ export class TasksManager {
       });
 
       const res = await this.taskRepository.createTask(task);
-      const createTaskResponse: CreateTaskResponse = {
+      const taskResponse: TaskResponse = {
         ...req, id: res.id,
         status: res.status,
         estimatedSize: estimations.estimatedFileSize,
@@ -80,7 +80,7 @@ export class TasksManager {
         createdAt: res.createdAt,
         updatedAt: res.updatedAt
       }
-      console.log("CREATE TASK:", createTaskResponse)
+
       const msg = 'successfully created task';
       this.logger.info({
         msg: msg,
@@ -91,7 +91,7 @@ export class TasksManager {
         catalogRecordId: res.catalogRecordID,
       });
       this.logger.debug({ msg: msg, res });
-      return createTaskResponse;
+      return taskResponse;
     } catch (error) {
       const errMessage = `failed to create export task: ${(error as Error).message}`;
       this.logger.error({ err: error, req: req, msg: errMessage });

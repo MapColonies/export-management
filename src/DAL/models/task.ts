@@ -1,27 +1,28 @@
-import { TaskStatus, Webhook } from '@map-colonies/export-interfaces';
+import { TaskStatus } from '@map-colonies/export-interfaces';
 import { Domain, EpsgCode } from '@map-colonies/types';
-import { IArtifact } from './artifact';
-import { ITaskGeometries } from './taskGeometry';
+import { IArtifactEntity } from './artifact';
+import { ITaskGeometriesEntity } from './taskGeometry';
+import { IWebhookEntity } from './webhook';
 
 export interface ITaskEntity {
-  /** The auto-generated ID of the artifact. */
+  /** The auto-generated ID of the task. */
   id: number;
   /** The catalog record id of the requested layer. */
   catalogRecordID: string;
   /** The unique job id of the task. */
   jobId: string;
   /** Contains all of the geometries on the ROI that given. */
-  taskGeometries: ITaskGeometries[];
+  taskGeometries: ITaskGeometriesEntity[];
   /** The artifacts CRS of the requested source. */
   artifactCRS: EpsgCode;
   /** The artifacts relation of the task. */
-  artifacts?: IArtifact[];
+  artifacts?: IArtifactEntity[];
   /** The costumer that send the task. */
   customerName?: string;
   /** The domain that the task belongs to. */
   domain: Domain;
   /** list of requested webhooks actions of the task. */
-  webhook: Webhook[];
+  webhook: IWebhookEntity[];
   /** Status of the task. */
   status: TaskStatus;
   /** The Description of the task. */

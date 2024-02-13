@@ -1,9 +1,10 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToMany } from 'typeorm';
 import { TaskEvent } from '@map-colonies/export-interfaces';
+import { IWebhookEntity } from '../models/webhook';
 import { TaskEntity } from './task';
 
 @Entity('webhook')
-export class WebhookEntity {
+export class WebhookEntity implements IWebhookEntity {
   @PrimaryGeneratedColumn()
   public id: number;
 

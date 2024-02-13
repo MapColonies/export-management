@@ -19,50 +19,50 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/taskCreate'
+              $ref: '#/components/schemas/CreateTaskRequest'
       responses:
         '201':
           description: Created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/task'
+                $ref: '#/components/schemas/TaskResponse'
         '400':
           description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
         '404':
           description: Not Found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
         '500':
           description: Internal Server Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
         '509':
           description: Insufficient Storage
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
     get:
       operationId: getTasks
       summary: get tasks by limit
@@ -80,43 +80,43 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/task'
+                $ref: '#/components/schemas/TasksResponse'
         '400':
           description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
         '404':
           description: Not Found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
         '500':
           description: Internal Server Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
         '509':
           description: Insufficient Storage
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
   /export-tasks/{id}:
     get:
       operationId: getTaskById
@@ -135,46 +135,46 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/task'
+                $ref: '#/components/schemas/TaskResponse'
         '400':
           description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
         '404':
           description: Not Found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
         '500':
           description: Internal Server Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
         '509':
           description: Insufficient Storage
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/error'
+                $ref: '#/components/schemas/Error'
 components:
   schemas:
-    taskCreate:
+    CreateTaskRequest:
       type: object
       required:
         - ROI
@@ -240,9 +240,8 @@ components:
                 type: string
                 example: https://webhook.com
       additionalProperties: false
-    task:
-      allOf:
-        - $ref: '#/components/schemas/taskCreate'
+
+    TaskResponse:
       type: object
       required:
         - id
@@ -252,6 +251,62 @@ components:
         id:
           type: number
           format: int32
+        catalogRecordID:
+          type: string
+          format: uuid
+        domain:
+          type: string
+          enum:
+            - DEM
+            - 3D
+            - RASTER
+          example: RASTER
+        ROI:
+          $ref: '#/components/schemas/FeatureCollection'
+        artifactCRS:
+          type: string
+          enum:
+            - '4326'
+          example: '4326'
+        description:
+          type: string
+          nullable: true
+          example: export description example
+        keywords:
+          type: object
+          nullable: true
+          description: task metadata in key-value pair
+          example:
+            foo: kuku
+        parameters:
+          type: object
+          description: task parameters in key-value pair
+          example:
+            foo: kuku
+        webhook:
+          description: >-
+            describe one or more relevant events to receive the data once event
+            has been occurred
+          type: array
+          items:
+            type: object
+            required:
+              - events
+              - url
+            properties:
+              events:
+                type: array
+                uniqueItems: true
+                minItems: 1
+                items:
+                  type: string
+                  enum:
+                    - TASK_COMPLETED
+                    - TASK_FAILED
+                  example: TASK_COMPLETED
+              url:
+                type: string
+                example: https://webhook.com
         estimatedSize:
           type: number
           format: int64
@@ -281,7 +336,7 @@ components:
         artifacts:
           type: array
           items:
-            $ref: '#/components/schemas/artifact'
+            $ref: '#/components/schemas/Artifact'
         createdAt:
           type: string
           format: date-time
@@ -296,7 +351,12 @@ components:
           nullable: true
           format: date-time
           description: when the task reached an end state - UTC format
-    artifact:
+    
+    TasksResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/TaskResponse'
+    Artifact:
       type: object
       description: GeoJson Feature Collection
       required:
@@ -305,9 +365,9 @@ components:
       properties:
         type:
           anyOf:
-            - $ref: '#/components/schemas/artifactRasterType'
-            - $ref: '#/components/schemas/artifact3DType'
-            - $ref: '#/components/schemas/artifactDEMType'
+            - $ref: '#/components/schemas/ArtifactRasterType'
+            - $ref: '#/components/schemas/Artifact3DType'
+            - $ref: '#/components/schemas/ArtifactDEMType'
         name:
           type: string
         size:
@@ -319,7 +379,8 @@ components:
           type: string
           format: uri
           example: https://download.com/file
-    artifact3DType:
+
+    Artifact3DType:
       type: string
       enum:
         - 3D_MODEL
@@ -327,7 +388,8 @@ components:
         - THUMBNAILS_SMALL
         - THUMBNAILS_MEDIUM
         - THUMBNAILS_LARGE
-    artifactRasterType:
+
+    ArtifactRasterType:
       type: string
       enum:
         - GPKG
@@ -336,7 +398,8 @@ components:
         - THUMBNAILS_SMALL
         - THUMBNAILS_MEDIUM
         - THUMBNAILS_LARGE
-    artifactDEMType:
+
+    ArtifactDEMType:
       type: string
       enum:
         - MODEL
@@ -359,6 +422,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Feature'
+
     Feature:
       required:
         - type
@@ -375,11 +439,13 @@ components:
           $ref: '#/components/schemas/FeatureProperties'
         geometry:
           $ref: '#/components/schemas/Geometry'
+
     FeatureProperties:
       type: object
       description: define any additional properties fields for the feature
       example:
         maxResolutionDeg: 0.703125
+
     Geometry:
       type: object
       nullable: true
@@ -387,6 +453,7 @@ components:
       oneOf:
         - $ref: '#/components/schemas/Polygon'
         - $ref: '#/components/schemas/MultiPolygon'
+
     Polygon:
       type: object
       description: GeoJSon geometry
@@ -402,6 +469,7 @@ components:
                 items:
                   $ref: '#/components/schemas/Point2D'
               example: [[[-180,-90],[-180,90],[180,90],[180,-190],[-180,-90]]]
+
     MultiPolygon:
       type: object
       description: GeoJSon geometry
@@ -433,12 +501,14 @@ components:
             - Polygon
             - MultiPolygon
           description: the geometry type
+
     Point2D:
       type: array
       maxItems: 2
       minItems: 2
       items:
         type: number
+
     Point:
       type: object
       description: GeoJSon geometry
@@ -449,7 +519,8 @@ components:
         - properties:
             coordinates:
               $ref: '#/components/schemas/Point2D'
-    error:
+
+    Error:
       type: object
       required:
         - message

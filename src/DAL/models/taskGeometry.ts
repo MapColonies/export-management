@@ -1,12 +1,12 @@
 import { MultiPolygon, Polygon } from 'typeorm';
 import { GeometryMetadata } from '@map-colonies/export-interfaces';
-import { TaskEntity } from '../entity';
+import { ITaskEntity } from './task';
 
-export interface ITaskGeometries {
-  /** The auto-generated ID of the artifact type. */
-  id?: number;
-  /** The tasks relation of the task geometries. */
-  tasks?: TaskEntity[];
+export interface ITaskGeometriesEntity {
+  /** The auto-generated ID of the task geometry. */
+  id: number;
+  /** The tasks relation of the tasks. */
+  tasks?: ITaskEntity[];
   /** The geometry of the task. */
   geometry: MultiPolygon | Polygon;
   /** The metadata of the geometry. */

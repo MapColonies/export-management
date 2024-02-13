@@ -1,5 +1,6 @@
-# Helm-Chart
-helm/local.yaml
+# Local configuration files
+local.yaml
+local.json
 
 # Logs
 logs

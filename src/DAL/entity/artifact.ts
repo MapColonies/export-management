@@ -1,13 +1,13 @@
 import { EpsgCode } from '@map-colonies/types';
 import { Entity, Column, ManyToOne, JoinColumn, PrimaryGeneratedColumn, ManyToMany } from 'typeorm';
-import { IArtifact } from '../models/artifact';
+import { IArtifactEntity } from '../models/artifact';
 import { ArtifactTypeEntity } from './artifactType';
 import { TaskEntity } from './task';
 
 export type EpsgPartial = Extract<EpsgCode, '4326' | '3857'>;
 
 @Entity('artifact')
-export class ArtifactEntity implements IArtifact {
+export class ArtifactEntity implements IArtifactEntity {
   @PrimaryGeneratedColumn()
   public id: number;
 

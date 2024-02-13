@@ -1,14 +1,14 @@
-import { ArtifactTypeEntity } from '../entity';
+import { IArtifactTypeEntity } from './artifactType';
 import { ITaskEntity } from './task';
 
-export interface IArtifact {
+export interface IArtifactEntity {
   /** The auto-generated ID of the artifact. */
-  id?: number;
+  id: number;
   /** The artifact type relation of the artifact. */
-  type: ArtifactTypeEntity;
+  type: IArtifactTypeEntity;
   /** The name of the artifact. */
   name: string;
-  /**The tasks relation of the artifact. */
+  /**The tasks relation of the tasks. */
   tasks?: ITaskEntity[];
   /** Url of the artifact. */
   url: string;

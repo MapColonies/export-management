@@ -19,8 +19,8 @@ spec:
   type: NodePort
   {{- end }}
   ports:
-    - port: {{ .Values.env.port }}
-      targetPort: {{ .Values.env.targetPort }}
+    - port: {{ .Values.servicePort }}
+      targetPort: {{ .Values.targetPort }}
       protocol: {{ .Values.env.protocol }}
       name: external
       {{- if eq $cloudProviderFlavor "minikube" }}

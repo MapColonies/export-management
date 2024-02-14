@@ -90,8 +90,8 @@ Returns the cloud provider docker registry url from global if exists or from the
 {{- define "export-management.cloudProviderDockerRegistryUrl" -}}
 {{- if .Values.global.cloudProvider.dockerRegistryUrl }}
     {{- printf "%s/" .Values.global.cloudProvider.dockerRegistryUrl -}}
-{{- else if .Values.global.cloudProvider.dockerRegistryUrl -}}
-    {{- printf "%s/" .Values.global.cloudProvider.dockerRegistryUrl -}}
+{{- else if .Values.cloudProvider.dockerRegistryUrl -}}
+    {{- printf "%s/" .Values.cloudProvider.dockerRegistryUrl -}}
 {{- else -}}
 {{- end -}}
 {{- end -}}

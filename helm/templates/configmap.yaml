@@ -27,4 +27,10 @@ data:
   EXPORTER_TRIGGER_URL: {{ .Values.serviceUrls.exporterTrigger  | quote }}
   JOB_MANAGER_URL: {{ .Values.serviceUrls.jobManager  | quote }}
   JOB_MANAGER_EXPORT_JOB_TYPE: {{ .Values.jobManagement.exporter.jobType | quote }}
+  AUTH_ENABLED: {{ .Values.nginx.authorization.domain | quote }}
+  {{ if and (not .Values.nginx.opalaEnabled) (.Values.nginx.authorization.domain) }}
+  AUTH_VALID_DOMAIN: {{ .Values.nginx.authorization.domain | quote }}
+  AUTH_HEADER_NAME: {{ .Values.nginx.opa.customHeaderName | quote }}
+  AUTH_QUERY_NAME: {{ .Values.nginx.authorization.token.queryName | quote }}
+  {{- end}}
 {{- end }}

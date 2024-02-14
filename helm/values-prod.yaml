@@ -7,7 +7,7 @@ global:
   metrics: {}
   environment: {}
 
-  opalaEnabled: false  
+  opalaEnabled: true  
   authentication:
     jwtPublicKeySecretName: map-colonies-jwks
 
@@ -29,9 +29,6 @@ authentication:
     enabled: false
     useExternal: false
     externalSecretName: ""
-  opa:
-    enabled: false
-    customHeaderName: "x-api-key,content-type"
 
 caSecretName: ''
 caPath: '/usr/local/share/ca-certificates'

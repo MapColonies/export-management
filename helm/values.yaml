@@ -7,7 +7,7 @@ global:
   metrics: {}
   environment: {}
 
-  opalaEnabled: true  
+  opalaEnabled: false  
   authentication:
     jwtPublicKeySecretName: map-colonies-jwks
 

@@ -1,27 +1,26 @@
 global:
   cloudProvider:
-    dockerRegistryUrl: acrarolibotnonprod.azurecr.io
-    imagePullSecretName: acr-registry
+    dockerRegistryUrl: my-registry-url.io
+    imagePullSecretName: 'my-registry-secret'
     flavor: openshift
   tracing: {}
   metrics: {}
   environment: {}
 
-  opalaEnabled: false  
+  opalaEnabled: true  
   authentication:
     jwtPublicKeySecretName: map-colonies-jwks
 
 enabled: true
-environment: production
-replicaCount: 2
+environment: development
+replicaCount: 1
 initialDelaySeconds: 60
-# nodePort: 30030 #for minikube deployment only
 resetOnConfigChange: true
 imagePullPolicy: Always
 
 cloudProvider:
-  dockerRegistryUrl: acrarolibotnonprod.azurecr.io
-  imagePullSecretName: acr-registry
+  dockerRegistryUrl: my-registry-url.io
+  imagePullSecretName: 'my-registry-secret'
   flavor: openshift
 
 authentication:
@@ -29,9 +28,6 @@ authentication:
     enabled: false
     useExternal: false
     externalSecretName: ""
-  opa:
-    enabled: false
-    customHeaderName: "x-api-key,content-type"
 
 caSecretName: ''
 caPath: '/usr/local/share/ca-certificates'
@@ -39,7 +35,7 @@ caKey: 'ca.crt'
 
 image:
   repository: export-management
-  tag: "v1.5.0"
+  tag: 'latest'
 
 targetPort: 8080
 internalServicePort: 80
@@ -47,26 +43,26 @@ servicePort: 8080
 nodePort: 30018 
 
 serviceUrls:
-  exporterTrigger: "http://raster-prod-exporter-trigger-service"
-  jobManager: "http://common-job-manager"
+  exporterTrigger: "http://raster-dev-exporter-trigger-service"
+  jobManager: "http://raster-dev-job-manager"
 jobManagement:
     exporter:
       jobType: tilesExport
 
 env:
   protocol: TCP
-  logLevel: "warn"
+  logLevel: "info"
   logPrettyPrintEnabled: false
   responseCompressionEnabled: true
   disableHttpClientLogs: false
   requestPayloadLimit: 10mb
-  serviceWebhookEndpoint: https://export-management.apps.j1lk3njp.eastus.aroapp.io/export-tasks/webhook/
+  serviceWebhookEndpoint: https://export-management/export-tasks/webhook/
   tracing:
     enabled: false
-    url: http://infra-monitoring-opentelemetry-collector.infra-services.svc.cluster.local:4317
+    url: http://localhost:55681/v1/trace
   metrics:
     enabled: false
-    url: http://infra-monitoring-opentelemetry-collector.infra-services.svc.cluster.local:4317/v1/metrics
+    url: http://localhost:55681/v1/metrics
   httpRetry:
     attempts: 5
     delay: exponential
@@ -134,7 +130,7 @@ nginx:
   authorization:
     enabled: true
     domain: "rasterExport"
-    url: http://opa-int-opa-service.infra-services/v1/data/http/authz/decision
+    url: http://opa-la-opa-service/v1/data/http/authz/decision
     token:
       queryName: token
 

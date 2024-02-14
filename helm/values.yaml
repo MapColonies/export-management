@@ -130,7 +130,7 @@ nginx:
   authorization:
     enabled: true
     domain: "rasterExport"
-    url: http://opa-la-opa-service/v1/data/http/authz/decision
+    url: http://opa-dev-opa-service.infra-services/v1/data/http/authz/decision
     token:
       queryName: token
 

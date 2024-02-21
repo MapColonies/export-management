@@ -75,7 +75,7 @@ describe('tasks', function () {
     describe('GET /export-tasks', function () {
       it('should return 200 status code and the resource', async function () {
         const response = await requestSender.getLatestTasksByLimit(1);
-        
+
         expect(response).toSatisfyApiSpec();
         expect(response.status).toBe(httpStatusCodes.OK);
         expect(response.body).toHaveLength(1);
@@ -119,7 +119,7 @@ describe('tasks', function () {
 
           expect(response).toSatisfyApiSpec();
           expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
-          expect((response.body as {message: string}).message).toBe(errMessage);
+          expect((response.body as { message: string }).message).toBe(errMessage);
         });
       });
 
@@ -138,9 +138,9 @@ describe('tasks', function () {
           const requestedLimit = 100;
           const errMessage = `requested limit ${requestedLimit} is higher than the maximum possible limit tasks number ${limit}`;
           const response = await requestSender.getLatestTasksByLimit(requestedLimit);
-          
+
           expect(response).toSatisfyApiSpec();
-          expect((response.body as {message: string}).message).toBe(errMessage);
+          expect((response.body as { message: string }).message).toBe(errMessage);
         });
       });
     });

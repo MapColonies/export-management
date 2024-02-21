@@ -351,7 +351,7 @@ components:
           nullable: true
           format: date-time
           description: when the task reached an end state - UTC format
-    
+
     TasksResponse:
       type: array
       items:
@@ -468,7 +468,7 @@ components:
                 type: array
                 items:
                   $ref: '#/components/schemas/Point2D'
-              example: [[[-180,-90],[-180,90],[180,90],[180,-190],[-180,-90]]]
+              example: [[[-180, -90], [-180, 90], [180, 90], [180, -190], [-180, -90]]]
 
     MultiPolygon:
       type: object
@@ -486,7 +486,7 @@ components:
                   type: array
                   items:
                     $ref: '#/components/schemas/Point2D'
-              
+
     GeometryBase:
       type: object
       description: GeoJSon geometry

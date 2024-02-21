@@ -40,5 +40,5 @@
     "database": "libot",
     "schema": "export_manager"
   },
-  "maxTasksNumber": 1000
+  "maxTasksNumber": 10
 }

@@ -48,6 +48,7 @@ const createTaskRepository = (dataSource: DataSource) => {
 export interface FindTaskByJobId {
   jobId: string;
 }
+
 // eslint-disable-next-line import/exports-last
 export interface FindTaskById {
   id: number;

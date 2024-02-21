@@ -1,6 +1,6 @@
 import { Logger } from '@map-colonies/js-logger';
 import config from 'config';
-import { CreateExportTaskRequest, CreateExportTaskResponse, IExportManager, TaskParameters, TaskStatus } from '@map-colonies/export-interfaces';
+import { CreateExportTaskRequest, IExportManager, TaskParameters, TaskStatus } from '@map-colonies/export-interfaces';
 import { inject, injectable } from 'tsyringe';
 import { Domain } from '@map-colonies/types';
 import { BadRequestError, NotFoundError } from '@map-colonies/error-types';
@@ -12,15 +12,15 @@ import { ITaskEntity } from '../../DAL/models/task';
 
 export interface TaskResponse extends CreateExportTaskRequest<TaskParameters> {
   id?: number;
-  status: TaskStatus
-  estimatedSize?: number,
-  estimatedTime?: number,
-  progress?: number,
-  createdAt: Date,
-  updatedAt?: Date,
-  expiredAt?: Date,
-  finishedAt?: Date,
-  errorReason?: string,
+  status: TaskStatus;
+  estimatedSize?: number;
+  estimatedTime?: number;
+  progress?: number;
+  createdAt: Date;
+  updatedAt?: Date;
+  expiredAt?: Date;
+  finishedAt?: Date;
+  errorReason?: string;
 }
 @injectable()
 export class TasksManager {
@@ -49,7 +49,7 @@ export class TasksManager {
       // TODO: Call Domain SDK
       const exportTaskResponse = await exportManagerInstance.createExportTask(req);
       const jobId = exportTaskResponse.jobId;
-      this.logger.info({ msg: `received jobId: ${jobId} from domain: ${domain}` });
+      this.logger.info({ msg: `received jobId: ${jobId} from domain: ${domain}`, catalogRecordID: req.catalogRecordID, domain: domain });
       // TODO Call Domain SDK to get estimations
       const estimations = await exportManagerInstance.getEstimations(req.catalogRecordID, req.ROI);
       this.logger.debug({
@@ -69,7 +69,8 @@ export class TasksManager {
 
       const res = await this.taskRepository.createTask(task);
       const taskResponse: TaskResponse = {
-        ...req, id: res.id,
+        ...req,
+        id: res.id,
         status: res.status,
         estimatedSize: estimations.estimatedFileSize,
         estimatedTime: estimations.estimatedTime,
@@ -78,8 +79,8 @@ export class TasksManager {
         expiredAt: res.expiredAt,
         finishedAt: res.finishedAt,
         createdAt: res.createdAt,
-        updatedAt: res.updatedAt
-      }
+        updatedAt: res.updatedAt,
+      };
 
       const msg = 'successfully created task';
       this.logger.info({

@@ -127,7 +127,6 @@ describe('taskManager', () => {
     });
   });
 
-
   describe('#getLatestTasksByLimit', () => {
     it('resolves and returns all task amount by requested limit if its not higher than the max configured limit', async () => {
       const entity = createFakeEntity();

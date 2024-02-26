@@ -21,3 +21,5 @@
 .idea/
 *.tmproj
 .vscode/
+# Common local deployment files
+local.yaml

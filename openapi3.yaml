@@ -71,7 +71,7 @@ paths:
       parameters:
         - name: limit
           in: query
-          required: true
+          required: false
           schema:
             type: number
       responses:

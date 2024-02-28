@@ -60,7 +60,7 @@ export class TaskEntity extends BaseEntity implements ITaskEntity {
   @Column({ name: 'catalog_record_id', nullable: false, type: 'uuid' })
   public catalogRecordID: string;
 
-  @Column('varchar', { name: 'customer_name', nullable: false })
+  @Column('varchar', { name: 'customer_name', nullable: true })
   public customerName: string;
 
   @Column('varchar', { name: 'artifact_crs', nullable: false })

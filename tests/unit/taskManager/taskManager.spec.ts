@@ -100,8 +100,56 @@ describe('taskManager', () => {
         jobId: response.jobId,
         estimatedSize: estimationsResponse.estimatedFileSize,
         estimatedTime: estimationsResponse.estimatedTime,
-        // TODO: handle customer name once implemented
-        customerName: 'cutomer_name',
+      });
+    });
+    it('resolves and call with the received customer name', async () => {
+      const entity = createFakeEntity();
+      entity.domain = Domain.RASTER;
+
+      const createExportTaskResponseSpy = jest.spyOn(ExportManagerRaster.prototype, 'createExportTask');
+      const getEstimationsSpy = jest.spyOn(ExportManagerRaster.prototype, 'getEstimations');
+      const response = { geometries: [geo1], jobId: 'de0dab85-6bc5-4b9f-9a64-9e61627d82c2' };
+      const estimationsResponse: GetEstimationsResponse = { estimatedTime: 53230, estimatedFileSize: 52365 };
+      const customerName = 'customer_name';
+
+      createExportTaskResponseSpy.mockResolvedValue(response);
+      getEstimationsSpy.mockResolvedValue(estimationsResponse);
+      getTaskById.mockResolvedValue(undefined);
+      createTask.mockResolvedValue(entity);
+
+      const createPromise = taskManager.createTask(entity, customerName);
+
+      await expect(createPromise).resolves.not.toThrow();
+      expect(getEstimationsSpy).toHaveBeenCalledTimes(1);
+      expect(createTask).toHaveBeenCalledTimes(1);
+      expect(createTask).toHaveBeenCalledWith({
+        ...entity,
+        customerName: customerName,
+      });
+    });
+    it('resolves and call with the customer name as undefined', async () => {
+      const entity = createFakeEntity();
+      entity.domain = Domain.RASTER;
+
+      const createExportTaskResponseSpy = jest.spyOn(ExportManagerRaster.prototype, 'createExportTask');
+      const getEstimationsSpy = jest.spyOn(ExportManagerRaster.prototype, 'getEstimations');
+      const response = { geometries: [geo1], jobId: 'de0dab85-6bc5-4b9f-9a64-9e61627d82c2' };
+      const estimationsResponse: GetEstimationsResponse = { estimatedTime: 53230, estimatedFileSize: 52365 };
+      const customerName = undefined;
+
+      createExportTaskResponseSpy.mockResolvedValue(response);
+      getEstimationsSpy.mockResolvedValue(estimationsResponse);
+      getTaskById.mockResolvedValue(undefined);
+      createTask.mockResolvedValue(entity);
+
+      const createPromise = taskManager.createTask(entity, customerName);
+
+      await expect(createPromise).resolves.not.toThrow();
+      expect(getEstimationsSpy).toHaveBeenCalledTimes(1);
+      expect(createTask).toHaveBeenCalledTimes(1);
+      expect(createTask).toHaveBeenCalledWith({
+        ...entity,
+        customerName: customerName,
       });
     });
   });

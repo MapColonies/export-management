@@ -8,6 +8,7 @@ import config from 'config';
 import { DEFAULT_SERVER_PORT, SERVICES } from './common/constants';
 
 import { getApp } from './app';
+import { initialQueue } from './messageQueue/eventQueue';
 
 const port: number = config.get<number>('server.port') || DEFAULT_SERVER_PORT;
 
@@ -19,6 +20,7 @@ void getApp()
     const server = createTerminus(createServer(app), { healthChecks: { '/liveness': healthCheck, onSignal: container.resolve('onSignal') } });
 
     server.listen(port, () => {
+      initialQueue();
       logger.info(`app started on port ${port}`);
     });
   })

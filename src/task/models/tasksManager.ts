@@ -33,7 +33,7 @@ export class TasksManager {
     this.maxTasksNumber = config.get<number>('maxTasksNumber');
   }
 
-  public async createTask(req: CreateExportTaskRequest<TaskParameters>): Promise<TaskResponse> {
+  public async createTask(req: CreateExportTaskRequest<TaskParameters>, jwtPayloadSub?: string): Promise<TaskResponse> {
     try {
       this.logger.debug({ msg: `create export task request`, req: req });
       this.logger.info({
@@ -56,8 +56,7 @@ export class TasksManager {
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         msg: `received exstimations, estimated file size: ${estimations.estimatedFileSize} estimated time: ${estimations.estimatedTime}`,
       });
-      // TODO: Get customer name
-      const customerName = 'cutomer_name';
+      const customerName = jwtPayloadSub;
       const task = new TaskEntity();
       Object.assign(task, req, {
         taskGeometries: exportTaskResponse.geometries,

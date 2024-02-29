@@ -23,23 +23,19 @@ data:
   HTTP_RETRY_DELAY: {{ .Values.env.httpRetry.delay | quote }}
   HTTP_RETRY_SHOULD_RESET_TIMEOUT: {{ .Values.env.httpRetry.shouldResetTimeout | quote }}
   DISABLE_HTTP_CLIENT_LOGS: {{ .Values.env.disableHttpClientLogs | quote }}
-  SERVICE_WEBHOOK_ENDPOINT:  {{ .Values.env.serviceWebhookEndpoint | quote }}
-  EXPORTER_TRIGGER_URL: {{ .Values.serviceUrls.exporterTrigger  | quote }}
-  JOB_MANAGER_URL: {{ .Values.serviceUrls.jobManager  | quote }}
-  JOB_MANAGER_EXPORT_JOB_TYPE: {{ .Values.jobManagement.exporter.jobType | quote }}
-  {{- with .Values.dbConfig }}
+  {{- with .Values.db }}
   DB_HOST: {{ .host }}
   DB_NAME: {{ .database }}
   DB_SCHEMA: {{ .schema }}
   DB_PORT: {{ .port | default 5432 | quote }}
-  {{- end -}}
-  {{- if .Values.dbConfig.sslAuth.enabled }}
+  {{- if .sslAuth.enabled }}
   DB_ENABLE_SSL_AUTH: "true"
-  DB_CERT_PATH: /tmp/certs/{{ .Values.dbConfig.sslAuth.certFileName }}
-  DB_KEY_PATH: /tmp/certs/{{ .Values.dbConfig.sslAuth.keyFileName }}
-  DB_CA_PATH: /tmp/certs/{{ .Values.dbConfig.sslAuth.caFileName }}
+  DB_CERT_PATH: /tmp/certs/{{ .sslAuth.certFileName }}
+  DB_KEY_PATH: /tmp/certs/{{ .sslAuth.keyFileName }}
+  DB_CA_PATH: /tmp/certs/{{ .sslAuth.caFileName }}
   {{- else }}
   DB_ENABLE_SSL_AUTH: "false"
+  {{- end }}
   {{- end }}
   MAX_TASKS_NUMBER: {{ .Values.env.maxTasksNumber | quote }}
 {{- end }}

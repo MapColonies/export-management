@@ -3,6 +3,8 @@ global:
   tracing: {}
   metrics: {}
   environment: ''
+  ingress:
+    domain: ""
 
 enabled: true
 environment: development
@@ -118,7 +120,7 @@ nginx:
 
   route:
     enabled: true
-    path: /
+    path: /api/v1
     host: 
     timeout:
       enabled: false # defaults to 30s by openshift
@@ -135,8 +137,9 @@ nginx:
 
   ingress:
     enabled: false
-    path: /
+    path: /api/v1
     host: 'localhost'
+    domain: ""
     tls: 
       enabled: true
       secretName: ''

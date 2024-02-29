@@ -102,6 +102,7 @@ describe('taskManager', () => {
         estimatedTime: estimationsResponse.estimatedTime,
       });
     });
+    
     it('resolves and call with the received customer name', async () => {
       const entity = createFakeEntity();
       entity.domain = Domain.RASTER;
@@ -127,6 +128,7 @@ describe('taskManager', () => {
         customerName: customerName,
       });
     });
+
     it('resolves and call with the customer name as undefined', async () => {
       const entity = createFakeEntity();
       entity.domain = Domain.RASTER;

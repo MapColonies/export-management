@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: MapColonies Export Service
   description: Export Service for DEM, Raster, 3D
-  version: 1.6.0
+  version: 1.6.1
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT

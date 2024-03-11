@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.0](https://github.com/MapColonies/export-management/compare/v1.5.0...v1.6.0) (2024-03-11)
+
+
+### Features
+
+* add full infra nginx support and opa envoy/ opala configuration (MAPCO-3853) ([#15](https://github.com/MapColonies/export-management/issues/15)) ([0bdbd52](https://github.com/MapColonies/export-management/commit/0bdbd52b6a276495328245823d21de121be15071))
+* upgrade git workflows ([#17](https://github.com/MapColonies/export-management/issues/17)) ([b159c41](https://github.com/MapColonies/export-management/commit/b159c4105b9faf6f01f79286c711944d4aff531d))
+
 ## [1.5.0](https://github.com/MapColonies/export-management/compare/v1.1.4...v1.5.0) (2023-11-27)
 
 

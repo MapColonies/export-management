@@ -1,12 +1,12 @@
 import { FactoryFunction } from 'tsyringe';
 import { DataSource } from 'typeorm';
-import { TaskEntity } from '../entity/task';
-import { ITaskEntity } from '../models/task';
+import { TaskEntity } from '../entity/tasks';
+import { ITaskEntity } from '../models/tasks';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const createTaskRepository = (dataSource: DataSource) => {
   return dataSource.getRepository(TaskEntity).extend({
-    async createTask(entity: ITaskEntity): Promise<ITaskEntity> {
+    async createTask(entity: TaskEntity): Promise<TaskEntity> {
       const res = await this.save(entity);
       return res;
     },

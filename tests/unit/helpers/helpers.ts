@@ -3,7 +3,7 @@
 import { Domain } from '@map-colonies/types';
 import { CreateExportTaskRequest, TaskEvent, TaskParameters } from '@map-colonies/export-interfaces';
 
-export const createFakeEntity: () => CreateExportTaskRequest<TaskParameters> = () => {
+export const mockExportTaskRequest: () => CreateExportTaskRequest<TaskParameters> = () => {
   return {
     ROI: {
       type: 'FeatureCollection',

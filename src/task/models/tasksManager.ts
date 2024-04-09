@@ -1,97 +1,97 @@
 import { Logger } from '@map-colonies/js-logger';
 import config from 'config';
-import { CreateExportTaskRequest, IExportManager, TaskParameters, TaskStatus } from '@map-colonies/export-interfaces';
+import { Artifact, CreateExportTaskRequest, IExportManager, TaskParameters, TaskStatus } from '@map-colonies/export-interfaces';
 import { inject, injectable } from 'tsyringe';
-import { Domain } from '@map-colonies/types';
+import { ArtifactRasterType, Domain } from '@map-colonies/types';
 import { BadRequestError, NotFoundError } from '@map-colonies/error-types';
 import { SERVICES } from '../../common/constants';
 import { ExportManagerRaster } from '../../exportManager/exportManagerRaster';
 import { TASK_REPOSITORY_SYMBOL, TaskRepository } from '../../DAL/repositories/taskRepository';
-import { TaskEntity } from '../../DAL/entity/task';
-import { ITaskEntity } from '../../DAL/models/task';
+import { TaskEntity } from '../../DAL/entity/tasks';
+import { ITaskEntity } from '../../DAL/models/tasks';
+import { ARTIFACT_REPOSITORY_SYMBOL, ArtifactRepository } from '../../DAL/repositories/artifactRepository';
+import { ArtifactEntity } from '../../DAL/entity';
 
-export interface TaskResponse extends CreateExportTaskRequest<TaskParameters> {
-  id?: number;
-  status: TaskStatus;
-  estimatedSize?: number;
-  estimatedTime?: number;
-  progress?: number;
-  createdAt: Date;
-  updatedAt?: Date;
-  expiredAt?: Date;
-  finishedAt?: Date;
-  errorReason?: string;
-}
+export type TaskResponse = Omit<ITaskEntity, 'jobId' | 'taskGeometries' | 'customerName'>;
+
 @injectable()
 export class TasksManager {
   private readonly maxTasksNumber: number;
 
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
-    @inject(TASK_REPOSITORY_SYMBOL) private readonly taskRepository: TaskRepository
+    @inject(TASK_REPOSITORY_SYMBOL) private readonly taskRepository: TaskRepository,
+    @inject(ARTIFACT_REPOSITORY_SYMBOL) private readonly artifactRepository: ArtifactRepository
   ) {
     this.maxTasksNumber = config.get<number>('maxTasksNumber');
   }
 
   public async createTask(req: CreateExportTaskRequest<TaskParameters>, jwtPayloadSub?: string): Promise<TaskResponse> {
     try {
+      console.log("Create Task: ", req)
+      const domain = req.domain;;
+      const exportManagerInstance = this.getExportManagerInstance(domain);
+
       this.logger.debug({ msg: `create export task request`, req: req });
       this.logger.info({
         msg: `creating export task`,
         catalogRecordID: req.catalogRecordID,
         domain: req.domain,
-        webhook: req.webhook,
-        artifactCRS: req.artifactCRS,
+        webhooks: req.webhooks
       });
 
-      const domain = req.domain;
-      const exportManagerInstance = this.getExportManagerInstance(domain);
       // TODO: Call Domain SDK
       const exportTaskResponse = await exportManagerInstance.createExportTask(req);
       const jobId = exportTaskResponse.jobId;
       this.logger.info({ msg: `received jobId: ${jobId} from domain: ${domain}`, catalogRecordID: req.catalogRecordID, domain: domain });
+
       // TODO Call Domain SDK to get estimations
       const estimations = await exportManagerInstance.getEstimations(req.catalogRecordID, req.ROI);
       this.logger.debug({
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         msg: `received exstimations, estimated file size: ${estimations.estimatedFileSize} estimated time: ${estimations.estimatedTime}`,
       });
-      const customerName = jwtPayloadSub;
-      const task = new TaskEntity();
-      Object.assign(task, req, {
-        taskGeometries: exportTaskResponse.geometries,
-        jobId: exportTaskResponse.jobId,
-        customerName,
-        estimatedSize: estimations.estimatedFileSize,
-        estimatedTime: estimations.estimatedTime,
+
+      const artifacts = exportTaskResponse.artifacts
+      if (exportTaskResponse.artifacts) {
+        console.log(exportTaskResponse.artifacts)
+      }
+      console.log("##REQ", req)
+      const task = this.taskRepository.create({
+        ...req,
+        ...exportTaskResponse,
+        ...estimations,
+        webhooks: req.webhooks,
+        customerName: jwtPayloadSub,
+        artifacts: artifacts,
       });
+      console.log("TASK",task)
 
       const res = await this.taskRepository.createTask(task);
-      const taskResponse: TaskResponse = {
-        ...req,
-        id: res.id,
-        status: res.status,
-        estimatedSize: estimations.estimatedFileSize,
-        estimatedTime: estimations.estimatedTime,
-        errorReason: res.errorReason,
-        progress: res.progress,
-        expiredAt: res.expiredAt,
-        finishedAt: res.finishedAt,
-        createdAt: res.createdAt,
-        updatedAt: res.updatedAt,
-      };
-
-      const msg = 'successfully created task';
-      this.logger.info({
-        msg: msg,
-        id: res.id,
-        jobId: res.jobId,
-        domain: res.domain,
-        customerName: res.customerName,
-        catalogRecordId: res.catalogRecordID,
-      });
-      this.logger.debug({ msg: msg, res });
+      const taskResponse: TaskResponse = res;
+      console.log("##",taskResponse)
       return taskResponse;
+      // const taskResponse: TaskResponse = {
+      //   webhook: res.webhook,
+      //   artifactCRS: res.artifactCRS,
+      //   catalogRecordID: res.catalogRecordID,
+      //   description: res.description,
+      //   domain: res.domain,
+      //   keywords: res.keywords,
+      //   artifacts: artifacts,
+      //   id: res.id,
+      //   status: res.status,
+      //   estimatedSize: estimations.estimatedFileSize,
+      //   estimatedTime: estimations.estimatedTime,
+      //   errorReason: res.errorReason,
+      //   progress: res.progress,
+      //   expiredAt: res.expiredAt,
+      //   finishedAt: res.finishedAt,
+      //   createdAt: res.createdAt,
+      //   updatedAt: res.updatedAt,
+      // };
+
+      this.logger.debug({ msg: 'successfully created task', res });
+      return res;
     } catch (error) {
       const errMessage = `failed to create export task: ${(error as Error).message}`;
       this.logger.error({ err: error, req: req, msg: errMessage });
@@ -101,7 +101,7 @@ export class TasksManager {
 
   public async getTaskById(id: number): Promise<ITaskEntity | undefined> {
     try {
-      this.logger.info({ msg: `getting task by id: ${id}`, id });
+      this.logger.info({ msg: `get task by id: ${id}`, id });
 
       const task = await this.taskRepository.getTaskById({ id });
       if (!task) {

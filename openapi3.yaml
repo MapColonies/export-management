@@ -181,7 +181,7 @@ components:
         - catalogRecordID
         - domain
         - artifactCRS
-        - webhook
+        - webhooks
       properties:
         catalogRecordID:
           type: string
@@ -215,7 +215,7 @@ components:
           description: task parameters in key-value pair
           example:
             foo: kuku
-        webhook:
+        webhooks:
           description: >-
             describe one or more relevant events to receive the data once event
             has been occurred
@@ -283,7 +283,7 @@ components:
           description: task parameters in key-value pair
           example:
             foo: kuku
-        webhook:
+        webhooks:
           description: >-
             describe one or more relevant events to receive the data once event
             has been occurred
@@ -356,6 +356,7 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/TaskResponse'
+        
     Artifact:
       type: object
       description: GeoJson Feature Collection

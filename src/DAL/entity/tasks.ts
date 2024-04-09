@@ -1,12 +1,13 @@
 import { Domain, EpsgCode } from '@map-colonies/types';
-import { Entity, Column, UpdateDateColumn, CreateDateColumn, PrimaryGeneratedColumn, ManyToMany, JoinTable, BaseEntity } from 'typeorm';
+import { Entity, Column, UpdateDateColumn, CreateDateColumn, PrimaryGeneratedColumn, ManyToMany, JoinTable, BaseEntity, OneToMany, JoinColumn, ManyToOne } from 'typeorm';
 import { TaskStatus } from '@map-colonies/export-interfaces';
-import { ITaskEntity } from '../models/task';
-import { TaskGeometryEntity } from './taskGeometry';
-import { ArtifactEntity } from './artifact';
-import { WebhookEntity } from './webhook';
+import { ITaskEntity } from '../models/tasks';
+import { TaskGeometryEntity } from './taskGeometries';
+import { ArtifactEntity } from './artifacts';
+import { WebhookEntity } from './webhooks';
+import { IArtifactEntity } from '../models/artifact';
 
-@Entity('task')
+@Entity('Tasks')
 export class TaskEntity extends BaseEntity implements ITaskEntity {
   @PrimaryGeneratedColumn()
   public id: number;
@@ -15,47 +16,17 @@ export class TaskEntity extends BaseEntity implements ITaskEntity {
   @Column({ name: 'job_id', nullable: false, type: 'uuid' })
   public jobId: string;
 
-  @ManyToMany(() => TaskGeometryEntity, { cascade: true })
-  @JoinTable({
-    name: 'task_geometry_to_task',
-    joinColumn: {
-      name: 'task_id',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'task_geometry_id',
-      referencedColumnName: 'id',
-    },
-  })
+  @OneToMany(() => TaskGeometryEntity, (taskGeometry) => taskGeometry.task, { cascade: true })
+  @JoinColumn()
   public taskGeometries: TaskGeometryEntity[];
 
-  @ManyToMany(() => ArtifactEntity)
-  @JoinTable({
-    name: 'aftifact_to_task',
-    joinColumn: {
-      name: 'task_id',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'artifact_id',
-      referencedColumnName: 'id',
-    },
-  })
+  @OneToMany(() => ArtifactEntity, (artifact) => artifact.task, { cascade: true })
+  @JoinColumn()
   public artifacts: ArtifactEntity[];
 
-  @ManyToMany(() => WebhookEntity, { cascade: true })
-  @JoinTable({
-    name: 'webhook_to_task',
-    joinColumn: {
-      name: 'task_id',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'webhook_id',
-      referencedColumnName: 'id',
-    },
-  })
-  public webhook: WebhookEntity[];
+  @OneToMany(() => WebhookEntity, (webhook) => webhook.task, { cascade: true })
+  @JoinColumn()
+  public webhooks: WebhookEntity[];
 
   @Column({ name: 'catalog_record_id', nullable: false, type: 'uuid' })
   public catalogRecordID: string;
@@ -76,7 +47,7 @@ export class TaskEntity extends BaseEntity implements ITaskEntity {
   public description: string;
 
   @Column('integer', { name: 'estimated_data_size', nullable: true, default: 0 })
-  public estimatedSize: number;
+  public estimatedFileSize: number;
 
   @Column('integer', { name: 'estimated_time', nullable: true, default: 0 })
   public estimatedTime: number;
@@ -116,3 +87,5 @@ export class TaskEntity extends BaseEntity implements ITaskEntity {
   })
   public finishedAt: Date;
 }
+
+type a = Omit<ITaskEntity, 'id'>

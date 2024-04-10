@@ -19,6 +19,8 @@ export interface ITaskEntity {
   artifacts?: IArtifactEntity[];
   /** The domain that the task belongs to. */
   domain: Domain;
+    /** The requested cutomer name that the task belongs to. */
+  customerName: string;
   /** list of requested webhooks actions of the task. */
   webhooks: IWebhookEntity[];
   /** Status of the task. */

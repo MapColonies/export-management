@@ -1,6 +1,6 @@
 import { Logger } from '@map-colonies/js-logger';
 import config from 'config';
-import { Artifact, CreateExportTaskRequest, IExportManager, TaskParameters, TaskStatus } from '@map-colonies/export-interfaces';
+import { Artifact, CreateExportTaskRequest, GetEstimationsResponse, IExportManager, TaskParameters, TaskStatus } from '@map-colonies/export-interfaces';
 import { inject, injectable } from 'tsyringe';
 import { ArtifactRasterType, Domain } from '@map-colonies/types';
 import { BadRequestError, NotFoundError } from '@map-colonies/error-types';
@@ -11,6 +11,8 @@ import { TaskEntity } from '../../DAL/entity/tasks';
 import { ITaskEntity } from '../../DAL/models/tasks';
 import { ARTIFACT_REPOSITORY_SYMBOL, ArtifactRepository } from '../../DAL/repositories/artifactRepository';
 import { ArtifactEntity } from '../../DAL/entity';
+import { FeatureCollection } from '@turf/turf';
+import { WEBHOOKS_REPOSITORY_SYMBOL, WebhooksRepository } from '../../DAL/repositories/webhooksRepository';
 
 export type TaskResponse = Omit<ITaskEntity, 'jobId' | 'taskGeometries' | 'customerName'>;
 
@@ -21,77 +23,39 @@ export class TasksManager {
   public constructor(
     @inject(SERVICES.LOGGER) private readonly logger: Logger,
     @inject(TASK_REPOSITORY_SYMBOL) private readonly taskRepository: TaskRepository,
-    @inject(ARTIFACT_REPOSITORY_SYMBOL) private readonly artifactRepository: ArtifactRepository
+    @inject(WEBHOOKS_REPOSITORY_SYMBOL) private readonly webhooksRepository: WebhooksRepository
   ) {
     this.maxTasksNumber = config.get<number>('maxTasksNumber');
   }
 
   public async createTask(req: CreateExportTaskRequest<TaskParameters>, jwtPayloadSub?: string): Promise<TaskResponse> {
     try {
-      console.log("Create Task: ", req)
       const domain = req.domain;;
+      // const customerName = jwtPayloadSub;
+      const customerName = 'Maof';
       const exportManagerInstance = this.getExportManagerInstance(domain);
 
-      this.logger.debug({ msg: `create export task request`, req: req });
-      this.logger.info({
-        msg: `creating export task`,
-        catalogRecordID: req.catalogRecordID,
-        domain: req.domain,
-        webhooks: req.webhooks
-      });
-
       // TODO: Call Domain SDK
+      this.logger.info({ msg: `create export task request for ${domain} domain`, catalogRecordID: req.catalogRecordID, domain: domain });
       const exportTaskResponse = await exportManagerInstance.createExportTask(req);
-      const jobId = exportTaskResponse.jobId;
-      this.logger.info({ msg: `received jobId: ${jobId} from domain: ${domain}`, catalogRecordID: req.catalogRecordID, domain: domain });
 
       // TODO Call Domain SDK to get estimations
-      const estimations = await exportManagerInstance.getEstimations(req.catalogRecordID, req.ROI);
-      this.logger.debug({
-        msg: `received exstimations, estimated file size: ${estimations.estimatedFileSize} estimated time: ${estimations.estimatedTime}`,
-      });
+      this.logger.info({msg: 'get estimation request', domain});
+      const estimations = await this.getEstimations(exportManagerInstance, req.catalogRecordID, req.ROI);
+      
+      const isCustomerTaskExists = await this.taskRepository.isCustomerTaskExists(exportTaskResponse.jobId, customerName);
+      // Think what to do when customer and jobId is the same with task on progress / pending;
+      if (isCustomerTaskExists){
+        const task = await this.taskRepository.getExistsCustomerTask(exportTaskResponse.jobId, customerName);
+        taskResponse = task? await this.webhooksRepository.addWebhooks(req.webhooks, task) : undefined;
+      } else {
 
-      const artifacts = exportTaskResponse.artifacts
-      if (exportTaskResponse.artifacts) {
-        console.log(exportTaskResponse.artifacts)
+        console.log("isTaskExists", isCustomerTaskExists)
+        this.logger.info({ msg: 'create and save task to database', req });
+        const taskResponse = await this.taskRepository.createAndSaveTask(req, exportTaskResponse, estimations, customerName);
       }
-      console.log("##REQ", req)
-      const task = this.taskRepository.create({
-        ...req,
-        ...exportTaskResponse,
-        ...estimations,
-        webhooks: req.webhooks,
-        customerName: jwtPayloadSub,
-        artifacts: artifacts,
-      });
-      console.log("TASK",task)
 
-      const res = await this.taskRepository.createTask(task);
-      const taskResponse: TaskResponse = res;
-      console.log("##",taskResponse)
       return taskResponse;
-      // const taskResponse: TaskResponse = {
-      //   webhook: res.webhook,
-      //   artifactCRS: res.artifactCRS,
-      //   catalogRecordID: res.catalogRecordID,
-      //   description: res.description,
-      //   domain: res.domain,
-      //   keywords: res.keywords,
-      //   artifacts: artifacts,
-      //   id: res.id,
-      //   status: res.status,
-      //   estimatedSize: estimations.estimatedFileSize,
-      //   estimatedTime: estimations.estimatedTime,
-      //   errorReason: res.errorReason,
-      //   progress: res.progress,
-      //   expiredAt: res.expiredAt,
-      //   finishedAt: res.finishedAt,
-      //   createdAt: res.createdAt,
-      //   updatedAt: res.updatedAt,
-      // };
-
-      this.logger.debug({ msg: 'successfully created task', res });
-      return res;
     } catch (error) {
       const errMessage = `failed to create export task: ${(error as Error).message}`;
       this.logger.error({ err: error, req: req, msg: errMessage });
@@ -153,5 +117,14 @@ export class TasksManager {
       this.logger.error({ err: error, domain: domain, msg: errMessage });
       throw error;
     }
+  }
+
+  private async getEstimations(exportManagerInstance: IExportManager, recordCatalogId: string , ROI: FeatureCollection): Promise<GetEstimationsResponse> {
+    const estimations = await exportManagerInstance.getEstimations(recordCatalogId, ROI);
+    this.logger.debug({
+      msg: `received exstimations, estimated file size: ${estimations.estimatedFileSize} estimated time: ${estimations.estimatedTime}`,
+    });
+
+    return estimations;
   }
 }

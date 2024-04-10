@@ -223,22 +223,22 @@ components:
           items:
             type: object
             required:
-              - events
               - url
+              - events
             properties:
+              url:
+                type: string
+                example: https://webhook.com
               events:
                 type: array
-                uniqueItems: true
                 minItems: 1
+                uniqueItems: true
                 items:
                   type: string
                   enum:
                     - TASK_COMPLETED
                     - TASK_FAILED
                   example: TASK_COMPLETED
-              url:
-                type: string
-                example: https://webhook.com
       additionalProperties: false
 
     TaskResponse:

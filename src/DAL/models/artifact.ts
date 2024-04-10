@@ -5,5 +5,5 @@ export interface IArtifactEntity extends Artifact {
   /** The auto-generated ID of the artifact. */
   id: number;
   /**The tasks relation of the tasks. */
-  task: ITaskEntity;
+  tasks: ITaskEntity[];
 }

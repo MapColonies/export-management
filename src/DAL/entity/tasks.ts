@@ -16,63 +16,51 @@ export class TaskEntity extends BaseEntity implements ITaskEntity {
   @Column({ name: 'job_id', nullable: false, type: 'uuid' })
   public jobId: string;
 
-  @OneToMany(() => TaskGeometryEntity, (taskGeometry) => taskGeometry.task, { cascade: true })
-  @JoinColumn()
-  public taskGeometries: TaskGeometryEntity[];
-
-  @OneToMany(() => ArtifactEntity, (artifact) => artifact.task, { cascade: true })
-  @JoinColumn()
-  public artifacts: ArtifactEntity[];
-
-  @OneToMany(() => WebhookEntity, (webhook) => webhook.task, { cascade: true })
-  @JoinColumn()
-  public webhooks: WebhookEntity[];
-
   @Column({ name: 'catalog_record_id', nullable: false, type: 'uuid' })
   public catalogRecordID: string;
-
-  @Column('varchar', { name: 'customer_name', nullable: true })
-  public customerName: string;
-
+  
   @Column('varchar', { name: 'artifact_crs', nullable: false })
   public artifactCRS: EpsgCode;
 
   @Column('varchar', { name: 'domain', nullable: false })
   public domain: Domain;
 
+  @Column('varchar', { name: 'customer_name', nullable: true })
+  public customerName: string;
+  
   @Column({ type: 'enum', enum: TaskStatus, default: TaskStatus.PENDING, nullable: false })
   public status: TaskStatus;
-
+  
   @Column('varchar', { length: 2000, nullable: true })
   public description: string;
-
+  
   @Column('integer', { name: 'estimated_data_size', nullable: true, default: 0 })
   public estimatedFileSize: number;
-
+  
   @Column('integer', { name: 'estimated_time', nullable: true, default: 0 })
   public estimatedTime: number;
 
   @Column('jsonb', { nullable: true })
   public keywords: Record<string, unknown>;
-
-  @Column('varchar', { nullable: true })
+  
+  @Column('varchar', { name: 'error_reason', nullable: true })
   public errorReason: string;
-
+  
   @Column('smallint', { nullable: true, default: 0 })
   public progress: number;
-
+  
   @CreateDateColumn({
     name: 'created_at',
     type: 'timestamp with time zone',
   })
   public createdAt: Date;
-
+  
   @UpdateDateColumn({
     name: 'updated_at',
     type: 'timestamp with time zone',
   })
   public updatedAt: Date;
-
+  
   @Column({
     name: 'expired_at',
     type: 'timestamptz',
@@ -86,6 +74,28 @@ export class TaskEntity extends BaseEntity implements ITaskEntity {
     nullable: true,
   })
   public finishedAt: Date;
+
+  @OneToMany(() => TaskGeometryEntity, (taskGeometry) => taskGeometry.task, { cascade: true })
+  @JoinColumn()
+  public taskGeometries: TaskGeometryEntity[];
+
+  @ManyToMany(() => ArtifactEntity, { cascade: true })
+  @JoinTable({
+    name: 'AftifactToTask',
+    joinColumn: {
+      name: 'task_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'artifact_id',
+      referencedColumnName: 'id',
+    },
+  })
+  public artifacts: ArtifactEntity[];
+
+  @OneToMany(() => WebhookEntity, (webhook) => webhook.task, { cascade: true })
+  @JoinColumn()
+  public webhooks: WebhookEntity[];
 }
 
 type a = Omit<ITaskEntity, 'id'>

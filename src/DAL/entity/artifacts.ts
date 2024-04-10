@@ -17,9 +17,8 @@ export class ArtifactEntity implements IArtifactEntity {
   @Column({ type: 'varchar', nullable: false })
   public type: ArtifactType;
   
-  @ManyToOne(() => TaskEntity, (task) => task.artifacts)
-  @JoinColumn({name: 'task_id'})
-  public task: TaskEntity;
+  @ManyToMany(() => TaskEntity)
+  public tasks: TaskEntity[];
   
   @Column('varchar', { nullable: false })
   public url: string;

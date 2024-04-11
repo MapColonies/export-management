@@ -1,6 +1,6 @@
 import { Logger } from '@map-colonies/js-logger';
 import config from 'config';
-import { Artifact, CreateExportTaskRequest, GetEstimationsResponse, IExportManager, TaskParameters, TaskStatus } from '@map-colonies/export-interfaces';
+import { Artifact, CreateExportTaskRequest, CreateExportTaskResponse, GetEstimationsResponse, IExportManager, TaskParameters, TaskStatus, Webhook } from '@map-colonies/export-interfaces';
 import { inject, injectable } from 'tsyringe';
 import { ArtifactRasterType, Domain } from '@map-colonies/types';
 import { BadRequestError, NotFoundError } from '@map-colonies/error-types';
@@ -30,6 +30,7 @@ export class TasksManager {
 
   public async createTask(req: CreateExportTaskRequest<TaskParameters>, jwtPayloadSub?: string): Promise<TaskResponse> {
     try {
+      let taskResponse: TaskResponse;
       const domain = req.domain;;
       // const customerName = jwtPayloadSub;
       const customerName = 'Maof';
@@ -41,19 +42,10 @@ export class TasksManager {
 
       // TODO Call Domain SDK to get estimations
       this.logger.info({msg: 'get estimation request', domain});
-      const estimations = await this.getEstimations(exportManagerInstance, req.catalogRecordID, req.ROI);
+      
       
       const isCustomerTaskExists = await this.taskRepository.isCustomerTaskExists(exportTaskResponse.jobId, customerName);
-      // Think what to do when customer and jobId is the same with task on progress / pending;
-      if (isCustomerTaskExists){
-        const task = await this.taskRepository.getExistsCustomerTask(exportTaskResponse.jobId, customerName);
-        taskResponse = task? await this.webhooksRepository.addWebhooks(req.webhooks, task) : undefined;
-      } else {
-
-        console.log("isTaskExists", isCustomerTaskExists)
-        this.logger.info({ msg: 'create and save task to database', req });
-        const taskResponse = await this.taskRepository.createAndSaveTask(req, exportTaskResponse, estimations, customerName);
-      }
+      taskResponse = isCustomerTaskExists? await this.createNewTask(req, exportTaskResponse, estimations, customerName) : await this.handleExistsCustomerTask(exportTaskResponse.jobId, customerName, req.webhooks);
 
       return taskResponse;
     } catch (error) {
@@ -126,5 +118,20 @@ export class TasksManager {
     });
 
     return estimations;
+  }
+  
+  private async createNewTask(exportManagerInstance: IExportManager, req: CreateExportTaskRequest<TaskParameters>): Promise<ITaskEntity> {
+    const estimations = await this.getEstimations(exportManagerInstance, req.catalogRecordID, req.ROI);
+    const taskResponse: TaskResponse = await this.taskRepository.createAndSaveTask(req, exportTaskResponse, estimations, customerName);
+    return taskResponse;
+  }
+
+  private async handleExistsCustomerTask(jobId: string, customerName: string, webhooks: Webhook[]): Promise<TaskResponse | undefined> {
+    const task = await this.taskRepository.getCustomerTaskByJobId(jobId, customerName);
+    if (task) {
+      await this.webhooksRepository.addWebhooks(webhooks, task);
+      const taskReponse: TaskResponse = task;
+      return taskReponse as TaskResponse;
+    }
   }
 }

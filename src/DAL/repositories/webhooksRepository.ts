@@ -3,11 +3,12 @@ import { DataSource } from 'typeorm';
 import { ArtifactEntity, TaskEntity, WebhookEntity } from '../entity';
 import { Webhook } from '@map-colonies/export-interfaces';
 import { IWebhookEntity } from '../models/webhooks';
+import { ITaskEntity } from '../models/tasks';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const createWebhooksRepository = (dataSource: DataSource) => {
   return dataSource.getRepository(WebhookEntity).extend({
-    async addWebhooks(webhooks: Webhook[], task: TaskEntity): Promise<void> {
+    async addWebhooks(webhooks: Webhook[], task: ITaskEntity): Promise<void> {
       webhooks.map(async webhook => {
         const exists = await this.exist({where: {url: webhook.url}})
         if (exists) {
@@ -20,8 +21,7 @@ const createWebhooksRepository = (dataSource: DataSource) => {
         })
         newWebhook.url = webhook.url;
         newWebhook.events = webhook.events;
-        newWebhook
-        const res = await this.save(newWebhook)
+        const res = await this.save(newWebhook);
         return res;
       })
     },

@@ -5,6 +5,7 @@ import { ITaskEntity } from '../models/tasks';
 import { CreateExportTaskRequest, CreateExportTaskResponse, GetEstimationsResponse, TaskParameters, TaskStatus } from '@map-colonies/export-interfaces';
 import { WebhookEntity } from '../entity';
 import { WEBHOOKS_REPOSITORY_SYMBOL, WebhooksRepository } from './webhooksRepository';
+import { TaskResponse } from '../../task/models/tasksManager';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const createTaskRepository = (dataSource: DataSource) => {
@@ -16,15 +17,15 @@ const createTaskRepository = (dataSource: DataSource) => {
     },
 
     async getTaskById(param: FindTaskParams): Promise<ITaskEntity | undefined> {
-      const taskEntity = await this.findOne({ where: param, relations: ['Artifacts', 'Webhooks', 'TaskGeometries'] });
+      const taskEntity = await this.findOne({ where: param, relations: ['artifacts', 'webhooks', 'taskGeometries'] });
       if (taskEntity === null) {
         return undefined;
       }
       return taskEntity;
     },
 
-    async getCustomerTaskByJobId(jobId: string, customerName: string): Promise<ITaskEntity | undefined> {
-      const taskEntity = await this.findOne({ where: {jobId, customerName}, relations: ['Webhooks'] });
+    async getCustomerTaskByJobId(jobId: string, customerName?: string): Promise<ITaskEntity | undefined> {
+      const taskEntity = await this.findOne({ where: {jobId, customerName}, relations: ['webhooks'] });
       if (taskEntity === null) {
         return undefined;
       }
@@ -32,31 +33,25 @@ const createTaskRepository = (dataSource: DataSource) => {
     },
 
     async getLatestTasksByLimit(limit: number): Promise<ITaskEntity[]> {
-      const taskEntities = await this.find({ take: limit, order: { id: 'DESC' }, relations: ['Artifacts', 'Webhooks', 'TaskGeometries'] });
+      const taskEntities = await this.find({ take: limit, order: { id: 'DESC' }, relations: ['artifacts', 'webhooks', 'taskGeometries'] });
       return taskEntities;
     },
 
     async isCustomerTaskExists(jobId: string, customerName?: string): Promise<boolean> {
+      console.log(customerName)
       return await this.exist({ where: { jobId, customerName, status: TaskStatus.IN_PROGRESS || TaskStatus.PENDING } });
     },
 
-    async handleExistsCustomerTask(req: CreateExportTaskRequest<TaskParameters>, jobId: string, customerName?: string): Promise<void> {
-      const task = await this.findOneBy({ jobId, customerName, status: TaskStatus.IN_PROGRESS || TaskStatus.PENDING });
-      if (task) {
-        Object.assign(task, { webhooks: req.webhooks });
-        console.log('task found:', task);   
-        await this.saveTask(task)
-      }
-    },
+    // async handleExistsCustomerTask(req: CreateExportTaskRequest<TaskParameters>, jobId: string, customerName?: string): Promise<void> {
+    //   const task = await this.findOneBy({ jobId, customerName, status: TaskStatus.IN_PROGRESS || TaskStatus.PENDING });
+    //   if (task) {
+    //     Object.assign(task, { webhooks: req.webhooks });
+    //     console.log('task found:', task);   
+    //     await this.saveTask(task)
+    //   }
+    // },
 
-    async createAndSaveTask(req: CreateExportTaskRequest<TaskParameters>, exportTaskResponse: CreateExportTaskResponse, estimations: GetEstimationsResponse, customerName?: string): Promise<ITaskEntity> {
-      const task = this.create({
-        ...req,
-        ...exportTaskResponse,
-        ...estimations,
-        customerName
-      });
-
+    async saveTask(task: ITaskEntity): Promise<ITaskEntity> {
       const res = await this.save(task);
       return res;
     }

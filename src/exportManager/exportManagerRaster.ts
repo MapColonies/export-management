@@ -25,7 +25,7 @@ export class ExportManagerRaster implements IExportManager {
       this.logger.info({ msg: `creating export task`, req });
       // TODO: Call Raster SDK here to get geometries & jobId
       const taskGeometries: TaskGeometry[] = [geo1, geo2];
-      const jobId = 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9';
+      const jobId = 'de0dab85-6bc5-4b9f-9a64-9e61627d82d7';
       return {
         jobId,
         taskGeometries,

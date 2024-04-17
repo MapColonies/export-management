@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.3](https://github.com/MapColonies/export-management/compare/v1.6.2...v1.6.3) (2024-04-17)
+
+
+### Bug Fixes
+
+* syntax for helm templating the service name ([#19](https://github.com/MapColonies/export-management/issues/19)) ([3057fdf](https://github.com/MapColonies/export-management/commit/3057fdf277e8b90b9bd13a8882b4b6160a9f2958))
+
 ### [1.6.2](https://github.com/MapColonies/export-management/compare/v1.6.1...v1.6.2) (2024-04-17)
 
 

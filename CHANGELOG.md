@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.2](https://github.com/MapColonies/export-management/compare/v1.6.1...v1.6.2) (2024-04-17)
+
+
+### Bug Fixes
+
+* service name should be concat including chart-name ([#18](https://github.com/MapColonies/export-management/issues/18)) ([05c6674](https://github.com/MapColonies/export-management/commit/05c66749f7fa1ff377bf167a9e25a16f0777cff2))
+
 ### [1.6.1](https://github.com/MapColonies/export-management/compare/v1.6.0...v1.6.1) (2024-03-11)
 
 ## [1.6.0](https://github.com/MapColonies/export-management/compare/v1.5.0...v1.6.0) (2024-03-11)

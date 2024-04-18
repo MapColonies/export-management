@@ -1,5 +1,7 @@
 {{- $releaseName := .Release.Name -}}
 {{- $chartName :=  .Chart.Name -}}
+{{- $deploymentName := include "deployment.fullname" . }}
+{{- $configmapName := include "configmap.fullname" . }}
 {{- $cloudProviderFlavor := include "export-management.cloudProviderFlavor" . -}}
 {{- $cloudProviderDockerRegistryUrl := include "export-management.cloudProviderDockerRegistryUrl" . -}}
 {{- $cloudProviderImagePullSecretName := include "export-management.cloudProviderImagePullSecretName" . -}}
@@ -9,7 +11,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ $releaseName }}-deployment
+  name: {{ $deploymentName }}
   labels:
     app: {{ $chartName }}
     component: {{ $chartName }}
@@ -63,7 +65,7 @@ spec:
             {{- end }}
           envFrom:
             - configMapRef:
-                name: {{ $releaseName }}-configmap
+                name: {{ $configmapName }}
           ports:
             - name: http
               containerPort: {{ .Values.targetPort }}

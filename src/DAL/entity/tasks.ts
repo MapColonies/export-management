@@ -6,6 +6,7 @@ import { TaskGeometryEntity } from './taskGeometries';
 import { ArtifactEntity } from './artifacts';
 import { WebhookEntity } from './webhooks';
 import { IArtifactEntity } from '../models/artifact';
+import { FeatureCollection } from '@turf/turf';
 
 @Entity('Tasks')
 export class TaskEntity extends BaseEntity implements ITaskEntity {
@@ -24,6 +25,9 @@ export class TaskEntity extends BaseEntity implements ITaskEntity {
 
   @Column('varchar', { name: 'domain', nullable: false })
   public domain: Domain;
+
+  @Column('jsonb', { nullable: true })
+  public ROI: FeatureCollection;
 
   @Column('varchar', { name: 'customer_name', nullable: true })
   public customerName: string;
@@ -97,5 +101,3 @@ export class TaskEntity extends BaseEntity implements ITaskEntity {
   @JoinColumn()
   public webhooks: WebhookEntity[];
 }
-
-type a = Omit<ITaskEntity, 'id'>

@@ -3,6 +3,7 @@ import { Domain, EpsgCode } from '@map-colonies/types';
 import { IArtifactEntity } from './artifact';
 import { ITaskGeometriesEntity } from './taskGeometries';
 import { IWebhookEntity } from './webhooks';
+import { FeatureCollection } from '@turf/turf';
 
 export interface ITaskEntity {
   /** The auto-generated ID of the task. */
@@ -19,6 +20,8 @@ export interface ITaskEntity {
   artifacts?: IArtifactEntity[];
   /** The domain that the task belongs to. */
   domain: Domain;
+  /** The domain that the task belongs to. */
+  ROI?: FeatureCollection;
     /** The requested cutomer name that the task belongs to. */
   customerName: string;
   /** list of requested webhooks actions of the task. */

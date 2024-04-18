@@ -17,4 +17,11 @@ export const unionArrays = <T>(array1: T[], array2: T[]): T[] => {
   return [...new Set<T>([...array1, ...array2])];
 }
 
-export const omit = (obj: any, keys: string[]) => Object.keys(obj).filter(k => !keys.includes(k)).reduce((res, k) => Object.assign(res, { [k]: obj[k] }), {});
+export const omit = <T extends object, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> => {
+  const o: Omit<T, K> & Partial<Pick<T, K>> = { ...obj };
+  keys.forEach(key => {
+    delete o[key];
+  });
+  return o;
+}
+

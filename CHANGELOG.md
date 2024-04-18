@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.6.4](https://github.com/MapColonies/export-management/compare/v1.6.3...v1.6.4) (2024-04-18)
+
+
+### Bug Fixes
+
+* config map + deployment names will be generic via tpls ([#20](https://github.com/MapColonies/export-management/issues/20)) ([9755b27](https://github.com/MapColonies/export-management/commit/9755b2759c632348e0f55be2b80507b5ac1b2d61))
+
 ### [1.6.3](https://github.com/MapColonies/export-management/compare/v1.6.2...v1.6.3) (2024-04-17)
 
 

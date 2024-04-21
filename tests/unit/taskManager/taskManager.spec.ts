@@ -1,13 +1,12 @@
 import jsLogger from '@map-colonies/js-logger';
 import { Domain } from '@map-colonies/types';
 import { BadRequestError, NotFoundError } from '@map-colonies/error-types';
-import { CreateExportTaskRequest, CreateExportTaskResponse, GetEstimationsResponse } from '@map-colonies/export-interfaces';
-import { TaskRepository } from '../../../src/DAL/repositories/taskRepository';
+import { CreateExportTaskResponse, GetEstimationsResponse } from '@map-colonies/export-interfaces';
 import { mockExportTaskRequest } from '../helpers/helpers';
 import { geo1 } from '../../../src/exportManager/geoMocks';
 import { ExportManagerRaster } from '../../../src/exportManager/exportManagerRaster';
 import { TasksManager } from '../../../src/task/models/tasksManager';
-import { createMock, createTaskMock, getLatestTasksByLimitMock, getTaskByIdMock, taskRepositoryMock } from '../../mocks/repositories/taskRepository.spec';
+import { createTaskMock, getLatestTasksByLimitMock, getTaskByIdMock, taskRepositoryMock } from '../../mocks/repositories/taskRepository.spec';
 import { artifactRepositoryMock } from '../../mocks/repositories/artifactRepository.spec';
 import { artifactTypeRepositoryMock } from '../../mocks/repositories/artifactTypeRepository.spec';
 
@@ -65,7 +64,7 @@ describe('taskManager', () => {
       expect(createTaskMock).not.toHaveBeenCalled();
     });
 
-    it.only('resolves and call with the received task geometries and estimations', async () => {
+    it('resolves and call with the received task geometries and estimations', async () => {
       const request = mockExportTaskRequest();
       request.domain = Domain.RASTER;
 
@@ -92,7 +91,7 @@ describe('taskManager', () => {
         estimatedTime: estimationsResponse.estimatedTime,
       });
     });
-    
+
     it('resolves and call with the received customer name', async () => {
       const request = mockExportTaskRequest();
       request.domain = Domain.RASTER;

@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { TaskStatus } from '@map-colonies/export-interfaces';
 import { Domain, EpsgCode } from '@map-colonies/types';
+import { FeatureCollection } from '@turf/turf';
 import { IArtifactEntity } from './artifact';
 import { ITaskGeometriesEntity } from './taskGeometries';
 import { IWebhookEntity } from './webhooks';
-import { FeatureCollection } from '@turf/turf';
 
 export interface ITaskEntity {
   /** The auto-generated ID of the task. */
@@ -22,7 +23,7 @@ export interface ITaskEntity {
   domain: Domain;
   /** The domain that the task belongs to. */
   ROI?: FeatureCollection;
-    /** The requested cutomer name that the task belongs to. */
+  /** The requested cutomer name that the task belongs to. */
   customerName: string;
   /** list of requested webhooks actions of the task. */
   webhooks: IWebhookEntity[];

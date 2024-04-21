@@ -1,32 +1,30 @@
 import { FactoryFunction } from 'tsyringe';
 import { DataSource } from 'typeorm';
-import { ArtifactEntity, TaskEntity, WebhookEntity } from '../entity';
 import { TaskEvent, Webhook } from '@map-colonies/export-interfaces';
-import { IWebhookEntity } from '../models/webhooks';
-import { ITaskEntity } from '../models/tasks';
+import { WebhookEntity } from '../entity';
 import { unionArrays } from '../../common/utils';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const createWebhooksRepository = (dataSource: DataSource) => {
   return dataSource.getRepository(WebhookEntity).extend({
-    async upsertWebhooks(webhooks: Webhook[], taskId: number): Promise<void> {
-      webhooks.map(async webhook => {
-        const existsWebhookUrl = await this.findOneBy({ url: webhook.url, task: { id: taskId } })
+    upsertWebhooks(webhooks: Webhook[], taskId: number): void {
+      webhooks.map(async (webhook): Promise<void> => {
+        const existsWebhookUrl = await this.findOneBy({ url: webhook.url, task: { id: taskId } });
         if (existsWebhookUrl) {
           const unionWebhookEvents = unionArrays<TaskEvent>(existsWebhookUrl.events, webhook.events);
-          const res = await this.update(existsWebhookUrl.id, { events: unionWebhookEvents });
-          return res;
+          await this.update(existsWebhookUrl.id, { events: unionWebhookEvents });
+          return;
         }
 
         const newWebhook = this.create({
-          task: {id: taskId},
+          task: { id: taskId },
           url: webhook.url,
-          events: webhook.events
-        })
+          events: webhook.events,
+        });
         newWebhook.url = webhook.url;
         newWebhook.events = webhook.events;
         await this.save(newWebhook);
-      })
+      });
     },
   });
 };

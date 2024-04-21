@@ -1,8 +1,8 @@
-import { Entity, Column, PrimaryGeneratedColumn, MultiPolygon, Polygon, ManyToMany, OneToMany, JoinColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, MultiPolygon, Polygon, JoinColumn, ManyToOne } from 'typeorm';
 import { GeometryMetadata } from '@map-colonies/export-interfaces';
 import { ITaskGeometriesEntity } from '../models/taskGeometries';
-import { TaskEntity } from './tasks';
 import { ITaskEntity } from '../models/tasks';
+import { TaskEntity } from './tasks';
 
 @Entity('TaskGeometries')
 export class TaskGeometryEntity implements ITaskGeometriesEntity {
@@ -10,7 +10,7 @@ export class TaskGeometryEntity implements ITaskGeometriesEntity {
   public id: number;
 
   @ManyToOne(() => TaskEntity, (task) => task.taskGeometries)
-  @JoinColumn({name: 'task_id'})
+  @JoinColumn({ name: 'task_id' })
   public task: ITaskEntity;
 
   @Column({ name: 'geom', type: 'geometry', nullable: false })

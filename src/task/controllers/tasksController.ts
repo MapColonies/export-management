@@ -6,7 +6,6 @@ import { injectable, inject } from 'tsyringe';
 import { CreateExportTaskRequest, TaskParameters } from '@map-colonies/export-interfaces';
 import { SERVICES } from '../../common/constants';
 import { TaskResponse, TasksManager } from '../models/tasksManager';
-import { ITaskEntity } from '../../DAL/models/tasks';
 import { FindTaskById } from '../../DAL/repositories/taskRepository';
 
 type CreateTaskHandler = RequestHandler<undefined, TaskResponse, CreateExportTaskRequest<TaskParameters>>;

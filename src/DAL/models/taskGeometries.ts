@@ -1,5 +1,4 @@
-import { MultiPolygon, Polygon } from 'typeorm';
-import { GeometryMetadata, TaskGeometry } from '@map-colonies/export-interfaces';
+import { TaskGeometry } from '@map-colonies/export-interfaces';
 import { ITaskEntity } from './tasks';
 
 export interface ITaskGeometriesEntity extends TaskGeometry {

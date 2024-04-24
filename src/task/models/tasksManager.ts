@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Logger } from '@map-colonies/js-logger';
 import config from 'config';
 import {
@@ -36,7 +37,7 @@ export class TasksManager {
   public async createTask(req: CreateExportTaskRequest<TaskParameters>, jwtPayloadSub?: string): Promise<TaskResponse> {
     try {
       const domain = req.domain;
-      const customerName = jwtPayloadSub;
+      const customerName = jwtPayloadSub ?? 'unknown';
       const catalogRecordID = req.catalogRecordID;
       const exportManagerInstance = this.getExportManagerInstance(domain);
 
@@ -122,7 +123,7 @@ export class TasksManager {
     exportManagerInstance: IExportManager,
     req: CreateExportTaskRequest<TaskParameters>,
     domainResponse: CreateExportTaskResponse,
-    customerName?: string
+    customerName: string
   ): Promise<ITaskEntity> {
     const jobId = domainResponse.jobId;
     this.logger.info({
@@ -131,10 +132,20 @@ export class TasksManager {
       customerName,
     });
     const task = await this.taskRepository.getCustomerTaskByJobId(jobId, customerName);
-
+    const taskStatus = task?.status.toLowerCase();
+    // returns the completed task if exists with the artifacts
+    if (task?.status === TaskStatus.COMPLETED) {
+      this.logger.info({
+        msg: `found similar ${taskStatus} task id ${task.id} with job id ${jobId} and customer name: ${customerName}`,
+        jobId,
+        customerName,
+      });
+      return task;
+    }
+    // return the pending/in-progress task if exists & register the reqested webhooks with the relevant task id
     if (task && (task.status === TaskStatus.PENDING || task.status === TaskStatus.IN_PROGRESS)) {
       this.logger.info({
-        msg: `found similar task id ${task.id} with job id ${jobId} and customer name: ${customerName}, updating task webhooks request`,
+        msg: `found similar ${taskStatus} task id ${task.id} with job id ${jobId} and customer name: ${customerName}, updating task webhooks request`,
         jobId,
         customerName,
         webhooks: req.webhooks,
@@ -143,7 +154,12 @@ export class TasksManager {
       return task;
     }
 
-    this.logger.info({ msg: `was not found similar task with job id: ${jobId} and customer name: ${customerName}, creating new task` });
+    this.logger.info(
+      { msg: `was not found similar task with job id: ${jobId} and customer name: ${customerName}, creating new task` },
+      jobId,
+      customerName
+    );
+    // create new task if not exists with the same job id and customer name
     const res = await this.createNewTask(exportManagerInstance, req, domainResponse, customerName);
     return res;
   }
@@ -155,7 +171,8 @@ export class TasksManager {
   ): Promise<GetEstimationsResponse> {
     const estimations = await exportManagerInstance.getEstimations(recordCatalogId, ROI);
     this.logger.debug({
-      msg: `received estimations, estimated file size: ${estimations.estimatedFileSize} estimated time: ${estimations.estimatedTime}`,
+      msg: `received estimations from domain: ${JSON.stringify(estimations)}`,
+      estimations,
     });
 
     return estimations;
@@ -165,7 +182,7 @@ export class TasksManager {
     exportManagerInstance: IExportManager,
     req: CreateExportTaskRequest<TaskParameters>,
     exportTaskResponse: CreateExportTaskResponse,
-    customerName?: string
+    customerName: string
   ): Promise<ITaskEntity> {
     const estimations = await this.getEstimations(exportManagerInstance, req.catalogRecordID, req.ROI);
     const task = this.taskRepository.create({

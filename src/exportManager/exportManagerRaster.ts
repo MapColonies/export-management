@@ -14,6 +14,7 @@ import { FeatureCollection } from '@turf/turf';
 import { SERVICES } from '../common/constants';
 // TODO: removed when SDKis provided
 import { geo1, geo2 } from './geoMocks';
+import { ArtifactRasterType } from '@map-colonies/types';
 
 @injectable()
 export class ExportManagerRaster implements IExportManager {
@@ -29,9 +30,9 @@ export class ExportManagerRaster implements IExportManager {
         jobId,
         taskGeometries,
         expiredAt: new Date('2024-04-07T10:54:52.188Z'),
-        progress: 58,
-        status: TaskStatus.IN_PROGRESS,
-        // artifacts: [{name: 'GPKG_TEST.gpkg', size: 343334, url: 'http://localhost:8080', type: ArtifactRasterType.METADATA, sha256: 'sdfsdfasdfasfasdf'}]
+        progress: 100,
+        status: TaskStatus.COMPLETED,
+        artifacts: [{name: 'GPKG_TEST.gpkg', size: 343334, url: 'http://localhost:8080', type: ArtifactRasterType.METADATA, sha256: 'sdfsdfasdfasfasdf'}]
       };
     } catch (error) {
       const errMessage = `failed to create export task: ${(error as Error).message}`;

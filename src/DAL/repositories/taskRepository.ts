@@ -32,19 +32,6 @@ const createTaskRepository = (dataSource: DataSource) => {
       return taskEntities;
     },
 
-    // async isCustomerTaskExists(jobId: string, customerName?: string): Promise<boolean> {
-    //   return this.exist({ where: { jobId, customerName, status: TaskStatus.IN_PROGRESS || TaskStatus.PENDING } });
-    // },
-
-    // async handleExistsCustomerTask(req: CreateExportTaskRequest<TaskParameters>, jobId: string, customerName?: string): Promise<void> {
-    //   const task = await this.findOneBy({ jobId, customerName, status: TaskStatus.IN_PROGRESS || TaskStatus.PENDING });
-    //   if (task) {
-    //     Object.assign(task, { webhooks: req.webhooks });
-    //     console.log('task found:', task);
-    //     await this.saveTask(task)
-    //   }
-    // },
-
     async saveTask(task: ITaskEntity): Promise<ITaskEntity> {
       const res = await this.save(task);
       return res;

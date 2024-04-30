@@ -18,6 +18,8 @@ import { ITaskEntity } from '../models/tasks';
 import { TaskGeometryEntity } from './taskGeometries';
 import { ArtifactEntity } from './artifacts';
 import { WebhookEntity } from './webhooks';
+import { IArtifactEntity } from '../models/artifact';
+import { IWebhookEntity } from '../models/webhooks';
 
 @Entity('Tasks')
 export class TaskEntity extends BaseEntity implements ITaskEntity {
@@ -105,9 +107,9 @@ export class TaskEntity extends BaseEntity implements ITaskEntity {
       referencedColumnName: 'id',
     },
   })
-  public artifacts: ArtifactEntity[];
+  public artifacts: IArtifactEntity[];
 
   @OneToMany(() => WebhookEntity, (webhook) => webhook.task, { cascade: true })
   @JoinColumn()
-  public webhooks: WebhookEntity[];
+  public webhooks: IWebhookEntity[];
 }

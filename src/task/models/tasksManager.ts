@@ -2,6 +2,7 @@
 import { Logger } from '@map-colonies/js-logger';
 import config from 'config';
 import {
+  Artifact,
   CreateExportTaskRequest,
   CreateExportTaskResponse,
   GetEstimationsResponse,
@@ -19,6 +20,7 @@ import { TASK_REPOSITORY_SYMBOL, TaskRepository } from '../../DAL/repositories/t
 import { ITaskEntity } from '../../DAL/models/tasks';
 import { WEBHOOKS_REPOSITORY_SYMBOL, WebhooksRepository } from '../../DAL/repositories/webhooksRepository';
 import { omit } from '../../common/utils';
+import { IArtifactEntity } from '../../DAL/models/artifact';
 
 export type TaskResponse = Omit<ITaskEntity, 'jobId' | 'taskGeometries' | 'customerName'>;
 
@@ -126,41 +128,59 @@ export class TasksManager {
     customerName: string
   ): Promise<ITaskEntity> {
     const jobId = domainResponse.jobId;
-    this.logger.info({
-      msg: `querying for similar task by job id ${jobId} and customer name: ${customerName}`,
-      jobId: domainResponse.jobId,
+
+    if (!domainResponse.status) {
+      const res = await this.createNewTask(exportManagerInstance, req, domainResponse, customerName);
+      this.logger.info({
+        msg: `created new task, id: ${res.id}`,
+        jobId,
+        customerName,
+      });
+      return res;
+    }
+
+    this.logger.debug({
+      msg: `querying for similar '${domainResponse.status}' task by job id ${jobId} and customer name: ${customerName}`,
+      jobId,
       customerName,
     });
     const task = await this.taskRepository.getCustomerTaskByJobId(jobId, customerName);
-    // returns the completed task if exists with the artifacts
-    if (task?.status === TaskStatus.COMPLETED) {
-      this.logger.info({
-        msg: `found similar task id ${task.id} with job id ${jobId} and customer name: ${customerName}`,
+
+    if (!task) {
+      const errMessage = `task with job id ${jobId} and customer name: ${customerName} was not found`;
+      this.logger.error({
+        msg: errMessage,
         jobId,
         customerName,
       });
-      return task;
-    }
-    // return the pending/in-progress task if exists & register the reqested webhooks with the relevant task id
-    if (task && (task.status === TaskStatus.PENDING || task.status === TaskStatus.IN_PROGRESS)) {
-      this.logger.info({
-        msg: `found similar task id ${task.id} with job id ${jobId} and customer name: ${customerName}, updating task webhooks request`,
-        jobId,
-        customerName,
-        webhooks: req.webhooks,
-      });
-      this.webhooksRepository.upsertWebhooks(req.webhooks, task.id);
-      return task;
+      throw new NotFoundError(errMessage);
     }
 
-    this.logger.info(
-      { msg: `was not found similar task with job id: ${jobId} and customer name: ${customerName}, creating new task` },
+    this.logger.info({
+      msg: `found similar '${task.status}' task id ${task.id} with job id ${jobId} and customer name: ${customerName}`,
+      taskId: task.id,
       jobId,
-      customerName
-    );
-    // create new task if not exists with the same job id and customer name
-    const res = await this.createNewTask(exportManagerInstance, req, domainResponse, customerName);
-    return res;
+      customerName,
+    });
+
+    if (task.status === TaskStatus.COMPLETED) {
+      this.logger.debug({
+        msg: `response with completed task, task id: ${task.id}`,
+        taskId: task.id,
+        jobId,
+        customerName,
+      });
+      task.artifacts = domainResponse.artifacts;
+    }
+    else if (task.status === TaskStatus.PENDING || task.status === TaskStatus.IN_PROGRESS) {
+      this.logger.debug({
+        msg: `updating webhooks for task id: ${task.id}`,
+        taskId: task.id,
+        webhooks: req.webhooks
+      });
+      this.webhooksRepository.upsertWebhooks(req.webhooks, task.id);
+    }
+    return task;
   }
 
   private async getEstimations(

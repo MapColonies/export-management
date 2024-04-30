@@ -2,9 +2,7 @@
 import { Artifact, TaskStatus, Webhook } from '@map-colonies/export-interfaces';
 import { Domain, EpsgCode } from '@map-colonies/types';
 import { FeatureCollection } from '@turf/turf';
-import { IArtifactEntity } from './artifact';
 import { ITaskGeometriesEntity } from './taskGeometries';
-import { IWebhookEntity } from './webhooks';
 
 export interface ITaskEntity {
   /** The auto-generated ID of the task. */

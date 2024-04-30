@@ -15,11 +15,11 @@ import {
 import { TaskStatus } from '@map-colonies/export-interfaces';
 import { FeatureCollection } from '@turf/turf';
 import { ITaskEntity } from '../models/tasks';
+import { IArtifactEntity } from '../models/artifact';
+import { IWebhookEntity } from '../models/webhooks';
 import { TaskGeometryEntity } from './taskGeometries';
 import { ArtifactEntity } from './artifacts';
 import { WebhookEntity } from './webhooks';
-import { IArtifactEntity } from '../models/artifact';
-import { IWebhookEntity } from '../models/webhooks';
 
 @Entity('Tasks')
 export class TaskEntity extends BaseEntity implements ITaskEntity {

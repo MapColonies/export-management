@@ -1,9 +1,9 @@
 import { WebhooksRepository } from '../../../src/DAL/repositories/webhooksRepository';
 
-const upsertWebhookMock = jest.fn();
+const upsertWebhooksMock = jest.fn();
 
 const webhooksRepositoryMock = {
-  upsertWebhook: upsertWebhookMock,
+  upsertWebhooks: upsertWebhooksMock,
 } as unknown as WebhooksRepository;
 
-export { upsertWebhookMock, webhooksRepositoryMock };
+export { upsertWebhooksMock, webhooksRepositoryMock };

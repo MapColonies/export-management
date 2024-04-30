@@ -1,30 +1,127 @@
 import jsLogger from '@map-colonies/js-logger';
-import { Domain } from '@map-colonies/types';
+import { ArtifactRasterType, Domain } from '@map-colonies/types';
 import { BadRequestError, NotFoundError } from '@map-colonies/error-types';
-import { CreateExportTaskResponse, GetEstimationsResponse } from '@map-colonies/export-interfaces';
+import { CreateExportTaskResponse, GetEstimationsResponse, TaskStatus } from '@map-colonies/export-interfaces/';
 import { mockExportTaskRequest } from '../helpers/helpers';
 import { geo1 } from '../../../src/exportManager/geoMocks';
 import { ExportManagerRaster } from '../../../src/exportManager/exportManagerRaster';
 import { TasksManager } from '../../../src/task/models/tasksManager';
-import { createTaskMock, getLatestTasksByLimitMock, getTaskByIdMock, taskRepositoryMock } from '../../mocks/repositories/taskRepository.spec';
-import { webhooksRepositoryMock } from '../../mocks/repositories/webhooksRepository.spec';
+import { createTaskMock, getLatestTasksByLimitMock, getTaskByIdMock, taskRepositoryMock, getCustomerTaskByJobIdMock, saveTaskMock } from '../../mocks/repositories/taskRepository.spec';
+import { webhooksRepositoryMock, upsertWebhooksMock} from '../../mocks/repositories/webhooksRepository.spec';
+import { mockTask } from '../../utils/task';
+import * as utils from '../../../src/exportManager/utils';
 
 let taskManager: TasksManager;
+let exportManagerInstanceStub: jest.SpyInstance;
+let createNewTaskStub: jest.SpyInstance;
 describe('taskManager', () => {
   beforeEach(() => {
-    jest.resetAllMocks();
+    exportManagerInstanceStub = jest.spyOn(ExportManagerRaster.prototype, 'createExportTask');
+    createNewTaskStub = jest.spyOn(TasksManager.prototype as unknown as { createNewTask: jest.Mock }, 'createNewTask');
     taskManager = new TasksManager(jsLogger({ enabled: false }), taskRepositoryMock, webhooksRepositoryMock);
   });
 
+  afterEach(() => {
+    jest.resetAllMocks();
+  })
+
   describe('#createTask', () => {
-    it('resolves without errors', async () => {
+    it('resolves without errors and create new task', async () => {
+
       const request = mockExportTaskRequest();
+      const domainResponseMock: CreateExportTaskResponse = {
+        jobId: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
+        taskGeometries: []
+      };
 
-      createTaskMock.mockResolvedValue(request);
+      saveTaskMock.mockResolvedValue({ id: 1 });
+      exportManagerInstanceStub.mockResolvedValue(domainResponseMock);
 
-      const createPromise = taskManager.createTask(request);
+      const action = async() => taskManager.createTask(request);
 
-      await expect(createPromise).resolves.not.toThrow();
+      await expect(action()).resolves.not.toThrow();
+      expect(createNewTaskStub).toHaveBeenCalledTimes(1);
+      
+    });
+
+    it('resolves without errors and return completed task with artifacts', async () => {
+      const request = mockExportTaskRequest();
+      const domainResponseMock: CreateExportTaskResponse = {
+        jobId: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
+        taskGeometries: [],
+        status: TaskStatus.COMPLETED,
+        expiredAt: new Date('2024-04-07T10:54:52.188Z'),
+        progress: 100,
+        artifacts: [
+          { name: 'GPKG_TEST.gpkg', size: 343334, url: 'http://localhost:8080', type: ArtifactRasterType.GPKG, sha256: 'sdfsdfasdfasfasdf' },
+        ],
+      };
+
+      getCustomerTaskByJobIdMock.mockResolvedValue(mockTask);
+      exportManagerInstanceStub.mockResolvedValue(domainResponseMock);
+
+      const res = await taskManager.createTask(request);
+
+      expect(res).toHaveProperty("artifacts");
+      expect(res.artifacts).toStrictEqual(domainResponseMock.artifacts);
+      expect(res.status).toEqual(TaskStatus.COMPLETED);
+      expect(res.progress).toBe(100)
+      expect(createNewTaskStub).not.toHaveBeenCalled();
+    });
+
+    it('resolves without errors and update pending task with the relevant webhooks', async () => {
+      const request = mockExportTaskRequest();
+      const domainResponseMock: CreateExportTaskResponse = {
+        jobId: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
+        taskGeometries: [],
+        status: TaskStatus.PENDING,
+        expiredAt: new Date('2024-04-07T10:54:52.188Z'),
+      };
+
+      getCustomerTaskByJobIdMock.mockResolvedValue({...mockTask, status: TaskStatus.PENDING});
+      exportManagerInstanceStub.mockResolvedValue(domainResponseMock);
+
+      const res = await taskManager.createTask(request);
+
+      expect(res.status).toEqual(TaskStatus.PENDING);
+      expect(upsertWebhooksMock).toHaveBeenCalledTimes(1);
+      expect(createNewTaskStub).not.toHaveBeenCalled();
+    });
+
+    it('resolves without errors and update in-progress task with the relevant webhooks', async () => {
+      const request = mockExportTaskRequest();
+      const domainResponseMock: CreateExportTaskResponse = {
+        jobId: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
+        taskGeometries: [],
+        status: TaskStatus.IN_PROGRESS,
+        expiredAt: new Date('2024-04-07T10:54:52.188Z'),
+      };
+
+      getCustomerTaskByJobIdMock.mockResolvedValue({...mockTask, status: TaskStatus.IN_PROGRESS});
+      exportManagerInstanceStub.mockResolvedValue(domainResponseMock);
+
+      const res = await taskManager.createTask(request);
+
+      expect(res.status).toEqual(TaskStatus.IN_PROGRESS);
+      expect(upsertWebhooksMock).toHaveBeenCalledTimes(1);
+      expect(createNewTaskStub).not.toHaveBeenCalled();
+    });
+
+    it('throw not found error due to not exists task', async () => {
+      const request = mockExportTaskRequest();
+      const domainResponseMock: CreateExportTaskResponse = {
+        jobId: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
+        taskGeometries: [],
+        status: TaskStatus.PENDING,
+      };
+
+      saveTaskMock.mockResolvedValue({ id: 1 });
+      getCustomerTaskByJobIdMock.mockResolvedValue(undefined);
+      exportManagerInstanceStub.mockResolvedValue(domainResponseMock);
+
+      const action = async() => taskManager.createTask(request);
+
+      await expect(action()).rejects.toThrow(NotFoundError);
     });
 
     it('rejects with bad request error due to unsupported domain "DEM"', async () => {
@@ -72,6 +169,7 @@ describe('taskManager', () => {
       const response: CreateExportTaskResponse = { taskGeometries: [geo1], jobId: 'de0dab85-6bc5-4b9f-9a64-9e61627d82c2' };
       const estimationsResponse: GetEstimationsResponse = { estimatedTime: 53230, estimatedFileSize: 52365 };
 
+      saveTaskMock.mockResolvedValue({ id: 1 });
       createExportTaskResponseSpy.mockResolvedValue(response);
       getEstimationsSpy.mockResolvedValue(estimationsResponse);
       getTaskByIdMock.mockResolvedValue(undefined);

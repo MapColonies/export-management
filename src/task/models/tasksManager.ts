@@ -19,6 +19,7 @@ import { TASK_REPOSITORY_SYMBOL, TaskRepository } from '../../DAL/repositories/t
 import { ITaskEntity } from '../../DAL/models/tasks';
 import { WEBHOOKS_REPOSITORY_SYMBOL, WebhooksRepository } from '../../DAL/repositories/webhooksRepository';
 import { omit } from '../../common/utils';
+import { getExportManagerInstance } from '../../exportManager/utils';
 
 export type TaskResponse = Omit<ITaskEntity, 'jobId' | 'taskGeometries' | 'customerName'>;
 
@@ -39,7 +40,7 @@ export class TasksManager {
       const domain = req.domain;
       const customerName = jwtPayloadSub ?? 'unknown';
       const catalogRecordID = req.catalogRecordID;
-      const exportManagerInstance = this.getExportManagerInstance(domain);
+      const exportManagerInstance = getExportManagerInstance(domain);
 
       // TODO: Call Domain SDK
       this.logger.info({ msg: `create export task request for ${domain} domain`, catalogRecordID, domain });
@@ -94,31 +95,6 @@ export class TasksManager {
     }
   }
 
-  private getExportManagerInstance(domain: Domain): IExportManager {
-    let exportManagerInstance: IExportManager;
-    const unsupportedDomainErrorMsg = `unsupported domain requested: "${domain}" - currently only "${Domain.RASTER}" domain is supported`;
-    try {
-      this.logger.debug({ msg: `get export manager instance by domain: ${domain}`, domain });
-
-      switch (domain) {
-        case Domain.RASTER:
-          exportManagerInstance = new ExportManagerRaster(this.logger);
-          break;
-        case Domain.DEM:
-          throw new BadRequestError(unsupportedDomainErrorMsg);
-        case Domain._3D:
-          throw new BadRequestError(unsupportedDomainErrorMsg);
-        default:
-          throw new BadRequestError(unsupportedDomainErrorMsg);
-      }
-      return exportManagerInstance;
-    } catch (error) {
-      const errMessage = `failed to get export manager instance by domain, ${(error as Error).message}`;
-      this.logger.error({ err: error, domain: domain, msg: errMessage });
-      throw error;
-    }
-  }
-
   private async upsertTask(
     exportManagerInstance: IExportManager,
     req: CreateExportTaskRequest<TaskParameters>,
@@ -126,7 +102,6 @@ export class TasksManager {
     customerName: string
   ): Promise<ITaskEntity> {
     const jobId = domainResponse.jobId;
-
     if (!domainResponse.status) {
       const res = await this.createNewTask(exportManagerInstance, req, domainResponse, customerName);
       this.logger.info({
@@ -168,6 +143,7 @@ export class TasksManager {
         jobId,
         customerName,
       });
+      
       task.artifacts = domainResponse.artifacts;
     } else if (task.status === TaskStatus.PENDING || task.status === TaskStatus.IN_PROGRESS) {
       this.logger.debug({

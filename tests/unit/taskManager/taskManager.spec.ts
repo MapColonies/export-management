@@ -7,13 +7,13 @@ import { geo1 } from '../../../src/exportManager/geoMocks';
 import { ExportManagerRaster } from '../../../src/exportManager/exportManagerRaster';
 import { TasksManager } from '../../../src/task/models/tasksManager';
 import { createTaskMock, getLatestTasksByLimitMock, getTaskByIdMock, taskRepositoryMock } from '../../mocks/repositories/taskRepository.spec';
-import { webhooksRepositoryFactory } from '../../../src/DAL/repositories/webhooksRepository';
+import { webhooksRepositoryMock } from '../../mocks/repositories/webhooksRepository.spec';
 
 let taskManager: TasksManager;
 describe('taskManager', () => {
   beforeEach(() => {
     jest.resetAllMocks();
-    taskManager = new TasksManager(jsLogger({ enabled: false }), taskRepositoryMock, webhooksRepositoryFactory);
+    taskManager = new TasksManager(jsLogger({ enabled: false }), taskRepositoryMock, webhooksRepositoryMock);
   });
 
   describe('#createTask', () => {

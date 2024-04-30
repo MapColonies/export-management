@@ -132,11 +132,10 @@ export class TasksManager {
       customerName,
     });
     const task = await this.taskRepository.getCustomerTaskByJobId(jobId, customerName);
-    const taskStatus = task?.status.toLowerCase();
     // returns the completed task if exists with the artifacts
     if (task?.status === TaskStatus.COMPLETED) {
       this.logger.info({
-        msg: `found similar ${taskStatus} task id ${task.id} with job id ${jobId} and customer name: ${customerName}`,
+        msg: `found similar task id ${task.id} with job id ${jobId} and customer name: ${customerName}`,
         jobId,
         customerName,
       });
@@ -145,7 +144,7 @@ export class TasksManager {
     // return the pending/in-progress task if exists & register the reqested webhooks with the relevant task id
     if (task && (task.status === TaskStatus.PENDING || task.status === TaskStatus.IN_PROGRESS)) {
       this.logger.info({
-        msg: `found similar ${taskStatus} task id ${task.id} with job id ${jobId} and customer name: ${customerName}, updating task webhooks request`,
+        msg: `found similar task id ${task.id} with job id ${jobId} and customer name: ${customerName}, updating task webhooks request`,
         jobId,
         customerName,
         webhooks: req.webhooks,

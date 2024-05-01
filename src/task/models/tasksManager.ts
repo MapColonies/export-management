@@ -45,10 +45,9 @@ export class TasksManager {
       // TODO: Call Domain SDK
       this.logger.info({ msg: `create export task request for ${domain} domain`, catalogRecordID, domain });
       const domainResponse = await exportManagerInstance.createExportTask(req);
-
       const task = await this.upsertTask(exportManagerInstance, req, domainResponse, customerName);
-      const taskResponse: TaskResponse = omit(task, ['jobId', 'taskGeometries', 'customerName']);
 
+      const taskResponse: TaskResponse = omit(task, ['jobId', 'taskGeometries', 'customerName']);
       return taskResponse;
     } catch (error) {
       const errMessage = `failed to create export task: ${(error as Error).message}`;
@@ -83,6 +82,7 @@ export class TasksManager {
       }
       const tasksResponse: TaskResponse[] = [];
       const tasks = await this.taskRepository.getLatestTasksByLimit(limit);
+      console.log("####, tasks", tasks)
       tasks.forEach((task) => {
         const taskResponse: TaskResponse = omit(task, ['jobId', 'taskGeometries', 'customerName']);
         tasksResponse.push(taskResponse);
@@ -103,6 +103,7 @@ export class TasksManager {
   ): Promise<ITaskEntity> {
     const jobId = domainResponse.jobId;
     if (!domainResponse.status) {
+      console.log("###########################33")
       const res = await this.createNewTask(exportManagerInstance, req, domainResponse, customerName);
       this.logger.info({
         msg: `created new task, id: ${res.id}`,

@@ -23,6 +23,7 @@ describe('taskManager', () => {
 
   afterEach(() => {
     jest.resetAllMocks();
+    jest.restoreAllMocks();
   })
 
   describe('#createTask', () => {
@@ -41,7 +42,6 @@ describe('taskManager', () => {
 
       await expect(action()).resolves.not.toThrow();
       expect(createNewTaskStub).toHaveBeenCalledTimes(1);
-      
     });
 
     it('resolves without errors and return completed task with artifacts', async () => {
@@ -162,83 +162,69 @@ describe('taskManager', () => {
 
     it('resolves and call with the received task geometries and estimations', async () => {
       const request = mockExportTaskRequest();
+      const domainResponseMock: CreateExportTaskResponse = {
+        jobId: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
+        taskGeometries: [],
+        expiredAt: new Date('2024-04-07T10:54:52.188Z'),
+      };
+
       request.domain = Domain.RASTER;
 
-      const createExportTaskResponseSpy = jest.spyOn(ExportManagerRaster.prototype, 'createExportTask');
       const getEstimationsSpy = jest.spyOn(ExportManagerRaster.prototype, 'getEstimations');
-      const response: CreateExportTaskResponse = { taskGeometries: [geo1], jobId: 'de0dab85-6bc5-4b9f-9a64-9e61627d82c2' };
-      const estimationsResponse: GetEstimationsResponse = { estimatedTime: 53230, estimatedFileSize: 52365 };
 
       saveTaskMock.mockResolvedValue({ id: 1 });
-      createExportTaskResponseSpy.mockResolvedValue(response);
-      getEstimationsSpy.mockResolvedValue(estimationsResponse);
-      getTaskByIdMock.mockResolvedValue(undefined);
-      createTaskMock.mockResolvedValue(request);
+      exportManagerInstanceStub.mockResolvedValue(domainResponseMock);
 
-      const createPromise = taskManager.createTask(request);
+      const action = async() => taskManager.createTask(request);
 
-      await expect(createPromise).resolves.not.toThrow();
+      await expect(action()).resolves.not.toThrow();
       expect(getEstimationsSpy).toHaveBeenCalledTimes(1);
-      expect(createTaskMock).toHaveBeenCalledTimes(1);
-      expect(createTaskMock).toHaveBeenCalledWith({
-        ...request,
-        taskGeometries: response.taskGeometries,
-        jobId: response.jobId,
-        estimatedSize: estimationsResponse.estimatedFileSize,
-        estimatedTime: estimationsResponse.estimatedTime,
-      });
+      expect(createNewTaskStub).toHaveBeenCalledTimes(1);
+      expect(createNewTaskStub.mock.calls[0][2]).toStrictEqual(domainResponseMock);
     });
 
     it('resolves and call with the received customer name', async () => {
       const request = mockExportTaskRequest();
+      const domainResponseMock: CreateExportTaskResponse = {
+        jobId: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
+        taskGeometries: [],
+        expiredAt: new Date('2024-04-07T10:54:52.188Z'),
+      };
       request.domain = Domain.RASTER;
 
-      const createExportTaskResponseSpy = jest.spyOn(ExportManagerRaster.prototype, 'createExportTask');
-      const getEstimationsSpy = jest.spyOn(ExportManagerRaster.prototype, 'getEstimations');
-      const response: CreateExportTaskResponse = { taskGeometries: [geo1], jobId: 'de0dab85-6bc5-4b9f-9a64-9e61627d82c2' };
-      const estimationsResponse: GetEstimationsResponse = { estimatedTime: 53230, estimatedFileSize: 52365 };
+      const exportManagerInstanceStub = jest.spyOn(ExportManagerRaster.prototype, 'createExportTask');
       const customerName = 'customer_name';
 
-      createExportTaskResponseSpy.mockResolvedValue(response);
-      getEstimationsSpy.mockResolvedValue(estimationsResponse);
-      getTaskByIdMock.mockResolvedValue(undefined);
-      createTaskMock.mockResolvedValue(request);
+      saveTaskMock.mockResolvedValue({ id: 1 });
+      exportManagerInstanceStub.mockResolvedValue(domainResponseMock);
+      createNewTaskStub.mockResolvedValue(request);
 
-      const createPromise = taskManager.createTask(request, customerName);
+      const action = async() => taskManager.createTask(request, customerName);
 
-      await expect(createPromise).resolves.not.toThrow();
-      expect(getEstimationsSpy).toHaveBeenCalledTimes(1);
-      expect(createTaskMock).toHaveBeenCalledTimes(1);
-      expect(createTaskMock).toHaveBeenCalledWith({
-        ...request,
-        customerName: customerName,
-      });
+      await expect(action()).resolves.not.toThrow();
+      expect(createNewTaskStub.mock.calls[0][3]).toStrictEqual(customerName)
     });
 
-    it('resolves and call with the customer name as undefined', async () => {
+    it('resolves and call with the default customer name if not given', async () => {
       const request = mockExportTaskRequest();
+      const domainResponseMock: CreateExportTaskResponse = {
+        jobId: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
+        taskGeometries: [],
+        expiredAt: new Date('2024-04-07T10:54:52.188Z'),
+      };
       request.domain = Domain.RASTER;
+      const defaultCustomerName = 'unknown';
 
-      const createExportTaskResponseSpy = jest.spyOn(ExportManagerRaster.prototype, 'createExportTask');
-      const getEstimationsSpy = jest.spyOn(ExportManagerRaster.prototype, 'getEstimations');
-      const response: CreateExportTaskResponse = { taskGeometries: [geo1], jobId: 'de0dab85-6bc5-4b9f-9a64-9e61627d82c2' };
-      const estimationsResponse: GetEstimationsResponse = { estimatedTime: 53230, estimatedFileSize: 52365 };
-      const customerName = undefined;
+      const exportManagerInstanceStub = jest.spyOn(ExportManagerRaster.prototype, 'createExportTask');
 
-      createExportTaskResponseSpy.mockResolvedValue(response);
-      getEstimationsSpy.mockResolvedValue(estimationsResponse);
-      getTaskByIdMock.mockResolvedValue(undefined);
-      createTaskMock.mockResolvedValue(request);
+      saveTaskMock.mockResolvedValue({ id: 1 });
+      exportManagerInstanceStub.mockResolvedValue(domainResponseMock);
+      createNewTaskStub.mockResolvedValue(request);
 
-      const createPromise = taskManager.createTask(request, customerName);
+      const action = async() => taskManager.createTask(request);
 
-      await expect(createPromise).resolves.not.toThrow();
-      expect(getEstimationsSpy).toHaveBeenCalledTimes(1);
-      expect(createTaskMock).toHaveBeenCalledTimes(1);
-      expect(createTaskMock).toHaveBeenCalledWith({
-        ...request,
-        customerName: customerName,
-      });
+      await expect(action()).resolves.not.toThrow();
+      expect(createNewTaskStub.mock.calls[0][3]).toStrictEqual(defaultCustomerName);
     });
   });
 
@@ -266,13 +252,14 @@ describe('taskManager', () => {
   describe('#getLatestTasksByLimit', () => {
     it('resolves and returns all task amount by requested limit if its not higher than the max configured limit', async () => {
       const request = mockExportTaskRequest();
+      const tasks = [request];
 
-      getLatestTasksByLimitMock.mockResolvedValue(request);
+      getLatestTasksByLimitMock.mockResolvedValue(tasks);
 
-      const findPromise = taskManager.getLatestTasksByLimit(10);
+      const action = async() => taskManager.getLatestTasksByLimit(10);
 
-      await expect(findPromise).resolves.not.toThrow();
-      await expect(findPromise).resolves.toStrictEqual(request);
+      await expect(action()).resolves.not.toThrow();
+      await expect(action()).resolves.toStrictEqual(tasks);
     });
 
     it('rejects and throws bad requests error if requested limit is higher than the max configured limit', async () => {
@@ -280,9 +267,9 @@ describe('taskManager', () => {
 
       getLatestTasksByLimitMock.mockResolvedValue(request);
 
-      const findPromise = taskManager.getLatestTasksByLimit(11);
+      const action = async() => taskManager.getLatestTasksByLimit(11);
 
-      await expect(findPromise).rejects.toThrow(BadRequestError);
+      await expect(action()).rejects.toThrow(BadRequestError);
     });
   });
 });

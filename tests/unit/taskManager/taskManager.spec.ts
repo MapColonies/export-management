@@ -6,17 +6,24 @@ import { mockExportTaskRequest } from '../helpers/helpers';
 import { geo1 } from '../../../src/exportManager/geoMocks';
 import { ExportManagerRaster } from '../../../src/exportManager/exportManagerRaster';
 import { TasksManager } from '../../../src/task/models/tasksManager';
-import { createTaskMock, getLatestTasksByLimitMock, getTaskByIdMock, taskRepositoryMock, getCustomerTaskByJobIdMock, saveTaskMock } from '../../mocks/repositories/taskRepository.spec';
-import { webhooksRepositoryMock, upsertWebhooksMock} from '../../mocks/repositories/webhooksRepository.spec';
+import {
+  createTaskMock,
+  getLatestTasksByLimitMock,
+  getTaskByIdMock,
+  taskRepositoryMock,
+  getCustomerTaskByJobIdMock,
+  saveTaskMock,
+} from '../../mocks/repositories/taskRepository.spec';
+import { webhooksRepositoryMock, upsertWebhooksMock } from '../../mocks/repositories/webhooksRepository.spec';
 import { mockTask } from '../../utils/task';
 import * as utils from '../../../src/exportManager/utils';
 
 let taskManager: TasksManager;
-let exportManagerInstanceStub: jest.SpyInstance;
+let createExportTaskStub: jest.SpyInstance;
 let createNewTaskStub: jest.SpyInstance;
 describe('taskManager', () => {
   beforeEach(() => {
-    exportManagerInstanceStub = jest.spyOn(ExportManagerRaster.prototype, 'createExportTask');
+    createExportTaskStub = jest.spyOn(ExportManagerRaster.prototype, 'createExportTask');
     createNewTaskStub = jest.spyOn(TasksManager.prototype as unknown as { createNewTask: jest.Mock }, 'createNewTask');
     taskManager = new TasksManager(jsLogger({ enabled: false }), taskRepositoryMock, webhooksRepositoryMock);
   });
@@ -24,21 +31,20 @@ describe('taskManager', () => {
   afterEach(() => {
     jest.resetAllMocks();
     jest.restoreAllMocks();
-  })
+  });
 
   describe('#createTask', () => {
     it('resolves without errors and create new task', async () => {
-
       const request = mockExportTaskRequest();
       const domainResponseMock: CreateExportTaskResponse = {
         jobId: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
-        taskGeometries: []
+        taskGeometries: [],
       };
 
       saveTaskMock.mockResolvedValue({ id: 1 });
-      exportManagerInstanceStub.mockResolvedValue(domainResponseMock);
+      createExportTaskStub.mockResolvedValue(domainResponseMock);
 
-      const action = async() => taskManager.createTask(request);
+      const action = async () => taskManager.createTask(request);
 
       await expect(action()).resolves.not.toThrow();
       expect(createNewTaskStub).toHaveBeenCalledTimes(1);
@@ -58,14 +64,14 @@ describe('taskManager', () => {
       };
 
       getCustomerTaskByJobIdMock.mockResolvedValue(mockTask);
-      exportManagerInstanceStub.mockResolvedValue(domainResponseMock);
+      createExportTaskStub.mockResolvedValue(domainResponseMock);
 
       const res = await taskManager.createTask(request);
 
-      expect(res).toHaveProperty("artifacts");
+      expect(res).toHaveProperty('artifacts');
       expect(res.artifacts).toStrictEqual(domainResponseMock.artifacts);
       expect(res.status).toEqual(TaskStatus.COMPLETED);
-      expect(res.progress).toBe(100)
+      expect(res.progress).toBe(100);
       expect(createNewTaskStub).not.toHaveBeenCalled();
     });
 
@@ -78,8 +84,9 @@ describe('taskManager', () => {
         expiredAt: new Date('2024-04-07T10:54:52.188Z'),
       };
 
-      getCustomerTaskByJobIdMock.mockResolvedValue({...mockTask, status: TaskStatus.PENDING});
-      exportManagerInstanceStub.mockResolvedValue(domainResponseMock);
+      getCustomerTaskByJobIdMock.mockResolvedValue({ ...mockTask, status: TaskStatus.PENDING });
+      5;
+      createExportTaskStub.mockResolvedValue(domainResponseMock);
 
       const res = await taskManager.createTask(request);
 
@@ -97,8 +104,8 @@ describe('taskManager', () => {
         expiredAt: new Date('2024-04-07T10:54:52.188Z'),
       };
 
-      getCustomerTaskByJobIdMock.mockResolvedValue({...mockTask, status: TaskStatus.IN_PROGRESS});
-      exportManagerInstanceStub.mockResolvedValue(domainResponseMock);
+      getCustomerTaskByJobIdMock.mockResolvedValue({ ...mockTask, status: TaskStatus.IN_PROGRESS });
+      createExportTaskStub.mockResolvedValue(domainResponseMock);
 
       const res = await taskManager.createTask(request);
 
@@ -117,9 +124,9 @@ describe('taskManager', () => {
 
       saveTaskMock.mockResolvedValue({ id: 1 });
       getCustomerTaskByJobIdMock.mockResolvedValue(undefined);
-      exportManagerInstanceStub.mockResolvedValue(domainResponseMock);
+      createExportTaskStub.mockResolvedValue(domainResponseMock);
 
-      const action = async() => taskManager.createTask(request);
+      const action = async () => taskManager.createTask(request);
 
       await expect(action()).rejects.toThrow(NotFoundError);
     });
@@ -173,9 +180,9 @@ describe('taskManager', () => {
       const getEstimationsSpy = jest.spyOn(ExportManagerRaster.prototype, 'getEstimations');
 
       saveTaskMock.mockResolvedValue({ id: 1 });
-      exportManagerInstanceStub.mockResolvedValue(domainResponseMock);
+      createExportTaskStub.mockResolvedValue(domainResponseMock);
 
-      const action = async() => taskManager.createTask(request);
+      const action = async () => taskManager.createTask(request);
 
       await expect(action()).resolves.not.toThrow();
       expect(getEstimationsSpy).toHaveBeenCalledTimes(1);
@@ -192,17 +199,17 @@ describe('taskManager', () => {
       };
       request.domain = Domain.RASTER;
 
-      const exportManagerInstanceStub = jest.spyOn(ExportManagerRaster.prototype, 'createExportTask');
+      const createExportTaskStub = jest.spyOn(ExportManagerRaster.prototype, 'createExportTask');
       const customerName = 'customer_name';
 
       saveTaskMock.mockResolvedValue({ id: 1 });
-      exportManagerInstanceStub.mockResolvedValue(domainResponseMock);
+      createExportTaskStub.mockResolvedValue(domainResponseMock);
       createNewTaskStub.mockResolvedValue(request);
 
-      const action = async() => taskManager.createTask(request, customerName);
+      const action = async () => taskManager.createTask(request, customerName);
 
       await expect(action()).resolves.not.toThrow();
-      expect(createNewTaskStub.mock.calls[0][3]).toStrictEqual(customerName)
+      expect(createNewTaskStub.mock.calls[0][3]).toStrictEqual(customerName);
     });
 
     it('resolves and call with the default customer name if not given', async () => {
@@ -215,13 +222,13 @@ describe('taskManager', () => {
       request.domain = Domain.RASTER;
       const defaultCustomerName = 'unknown';
 
-      const exportManagerInstanceStub = jest.spyOn(ExportManagerRaster.prototype, 'createExportTask');
+      const createExportTaskStub = jest.spyOn(ExportManagerRaster.prototype, 'createExportTask');
 
       saveTaskMock.mockResolvedValue({ id: 1 });
-      exportManagerInstanceStub.mockResolvedValue(domainResponseMock);
+      createExportTaskStub.mockResolvedValue(domainResponseMock);
       createNewTaskStub.mockResolvedValue(request);
 
-      const action = async() => taskManager.createTask(request);
+      const action = async () => taskManager.createTask(request);
 
       await expect(action()).resolves.not.toThrow();
       expect(createNewTaskStub.mock.calls[0][3]).toStrictEqual(defaultCustomerName);
@@ -256,7 +263,7 @@ describe('taskManager', () => {
 
       getLatestTasksByLimitMock.mockResolvedValue(tasks);
 
-      const action = async() => taskManager.getLatestTasksByLimit(10);
+      const action = async () => taskManager.getLatestTasksByLimit(10);
 
       await expect(action()).resolves.not.toThrow();
       await expect(action()).resolves.toStrictEqual(tasks);
@@ -267,7 +274,7 @@ describe('taskManager', () => {
 
       getLatestTasksByLimitMock.mockResolvedValue(request);
 
-      const action = async() => taskManager.getLatestTasksByLimit(11);
+      const action = async () => taskManager.getLatestTasksByLimit(11);
 
       await expect(action()).rejects.toThrow(BadRequestError);
     });

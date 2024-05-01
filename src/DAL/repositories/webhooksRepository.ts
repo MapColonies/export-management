@@ -7,15 +7,15 @@ import { unionArrays } from '../../common/utils';
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const createWebhooksRepository = (dataSource: DataSource) => {
   return dataSource.getRepository(WebhookEntity).extend({
-    upsertWebhooks(webhooks: Webhook[], taskId: number): void {
-      webhooks.map(async (webhook): Promise<void> => {
+    async upsertWebhooks(webhooks: Webhook[], taskId: number): Promise<void> {
+      const promises = webhooks.map(async (webhook): Promise<any> => {
         const existsWebhookUrl = await this.findOneBy({ url: webhook.url, task: { id: taskId } });
         if (existsWebhookUrl) {
           const unionWebhookEvents = unionArrays<TaskEvent>(existsWebhookUrl.events, webhook.events);
           await this.update(existsWebhookUrl.id, { events: unionWebhookEvents });
           return;
         }
-
+        else {
         const newWebhook = this.create({
           task: { id: taskId },
           url: webhook.url,
@@ -24,6 +24,7 @@ const createWebhooksRepository = (dataSource: DataSource) => {
         newWebhook.url = webhook.url;
         newWebhook.events = webhook.events;
         await this.save(newWebhook);
+      }
       });
     },
   });

@@ -20,5 +20,5 @@ export const mockTask: ITaskEntity = {
   },
   progress: 100,
   taskGeometries: [],
-  createdAt: new Date()
+  createdAt: new Date(),
 };

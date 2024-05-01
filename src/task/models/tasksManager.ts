@@ -46,7 +46,7 @@ export class TasksManager {
       this.logger.info({ msg: `create export task request for ${domain} domain`, catalogRecordID, domain });
       const domainResponse = await exportManagerInstance.createExportTask(req);
       const task = await this.upsertTask(exportManagerInstance, req, domainResponse, customerName);
-
+      console.log('#$#$#$#$#$#$#$#$#$#$#$#$#$#$$');
       const taskResponse: TaskResponse = omit(task, ['jobId', 'taskGeometries', 'customerName']);
       return taskResponse;
     } catch (error) {
@@ -82,7 +82,6 @@ export class TasksManager {
       }
       const tasksResponse: TaskResponse[] = [];
       const tasks = await this.taskRepository.getLatestTasksByLimit(limit);
-      console.log("####, tasks", tasks)
       tasks.forEach((task) => {
         const taskResponse: TaskResponse = omit(task, ['jobId', 'taskGeometries', 'customerName']);
         tasksResponse.push(taskResponse);
@@ -103,7 +102,6 @@ export class TasksManager {
   ): Promise<ITaskEntity> {
     const jobId = domainResponse.jobId;
     if (!domainResponse.status) {
-      console.log("###########################33")
       const res = await this.createNewTask(exportManagerInstance, req, domainResponse, customerName);
       this.logger.info({
         msg: `created new task, id: ${res.id}`,
@@ -144,7 +142,7 @@ export class TasksManager {
         jobId,
         customerName,
       });
-      
+
       task.artifacts = domainResponse.artifacts;
     } else if (task.status === TaskStatus.PENDING || task.status === TaskStatus.IN_PROGRESS) {
       this.logger.debug({
@@ -152,7 +150,9 @@ export class TasksManager {
         taskId: task.id,
         webhooks: req.webhooks,
       });
-      this.webhooksRepository.upsertWebhooks(req.webhooks, task.id);
+      console.log('#######################################');
+      await this.webhooksRepository.upsertWebhooks(req.webhooks, task.id);
+      console.log('$%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
     }
     return task;
   }

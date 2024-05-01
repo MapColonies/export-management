@@ -1,16 +1,22 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import config from 'config';
 import jsLogger from '@map-colonies/js-logger';
-import { DependencyContainer } from 'tsyringe';
-import { Domain } from '@map-colonies/types';
+import { container, DependencyContainer } from 'tsyringe';
+import { ArtifactRasterType, Domain } from '@map-colonies/types';
 import { trace } from '@opentelemetry/api';
 import { DataSource } from 'typeorm';
 import httpStatusCodes from 'http-status-codes';
+import { CreateExportTaskResponse, TaskStatus } from '@map-colonies/export-interfaces';
 import { getApp } from '../../../src/app';
 import { exportRequest } from '../../utils/exportRequest';
 import { SERVICES } from '../../../src/common/constants';
-import { TASK_REPOSITORY_SYMBOL, TaskRepository } from '../../../src/DAL/repositories/taskRepository';
+import { TASK_REPOSITORY_SYMBOL, TaskRepository, taskRepositoryFactory } from '../../../src/DAL/repositories/taskRepository';
 import { TaskEntity } from '../../../src/DAL/entity';
+import { registerContainerValues } from '../../configurations/integration/containerConfig';
+import { mockExportTaskRequest } from '../../unit/helpers/helpers';
+import { ExportManagerRaster } from '../../../src/exportManager/exportManagerRaster';
+import { TasksManager } from '../../../src/task/models/tasksManager';
+import { insertMockCompletedTask, insertMockInProgressTask } from './helpers/mockData';
 import { TasksRequestSender } from './helpers/requestSender';
 
 describe('tasks', function () {
@@ -20,14 +26,10 @@ describe('tasks', function () {
   let saveSpy: jest.SpyInstance;
   let findOneSpy: jest.SpyInstance;
   let findSpy: jest.SpyInstance;
+  let createExportTaskStub: jest.SpyInstance;
+  let createNewTaskStub: jest.SpyInstance;
   beforeAll(async function () {
-    const [app, container] = await getApp({
-      override: [
-        { token: SERVICES.LOGGER, provider: { useValue: jsLogger({ enabled: false }) } },
-        { token: SERVICES.TRACER, provider: { useValue: trace.getTracer('testTracer') } },
-      ],
-      useChild: true,
-    });
+    const [app, container] = await registerContainerValues();
     requestSender = new TasksRequestSender(app);
     depContainer = container;
     repo = depContainer.resolve(TASK_REPOSITORY_SYMBOL);
@@ -37,6 +39,8 @@ describe('tasks', function () {
     saveSpy = jest.spyOn(repo, 'save');
     findOneSpy = jest.spyOn(repo, 'findOne');
     findSpy = jest.spyOn(repo, 'find');
+    createExportTaskStub = jest.spyOn(ExportManagerRaster.prototype, 'createExportTask');
+    createNewTaskStub = jest.spyOn(TasksManager.prototype as unknown as { createNewTask: jest.Mock }, 'createNewTask');
   });
 
   afterAll(async function () {
@@ -50,25 +54,66 @@ describe('tasks', function () {
 
   describe('Happy Path', function () {
     describe('POST /export-tasks', function () {
-      it('should return 201 status code and the resource', async function () {
-        const req = { ...exportRequest };
+      it('should return 201 status code & create new task with the resource', async function () {
+        const request = mockExportTaskRequest();
+        const domainResponseMock: CreateExportTaskResponse = {
+          jobId: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
+          taskGeometries: [],
+        };
 
-        const response = await requestSender.createTask(req);
+        createExportTaskStub.mockResolvedValue(domainResponseMock);
+
+        const response = await requestSender.createTask(request);
 
         expect(response).toSatisfyApiSpec();
         expect(response.status).toBe(httpStatusCodes.CREATED);
-        expect(saveSpy).toHaveBeenCalledTimes(1);
+        expect(createNewTaskStub).toHaveBeenCalledTimes(1);
       });
 
-      it('should return 201 status code and the cached resource', async function () {
-        saveSpy = jest.spyOn(repo, 'save');
-        const req = { ...exportRequest };
+      it.only('should return 201 status code & return the matched completed task by job id and customer name', async function () {
+        const request = mockExportTaskRequest();
+        await insertMockCompletedTask(repo);
 
-        const response = await requestSender.createTask(req);
+        const domainResponseMock: CreateExportTaskResponse = {
+          jobId: 'fd6bd061-0a31-4c2b-a074-81fe37d1831e',
+          taskGeometries: [],
+          status: TaskStatus.COMPLETED,
+          expiredAt: new Date('2024-04-07T10:54:52.188Z'),
+          progress: 100,
+          artifacts: [
+            { name: 'GPKG_TEST.gpkg', size: 343334, url: 'http://localhost:8080', type: ArtifactRasterType.GPKG, sha256: 'ft56hku7v5uijk6' },
+          ],
+        };
+
+        createExportTaskStub.mockResolvedValue(domainResponseMock);
+
+        const response = await requestSender.createTask(request);
+        console.log('%%^', response);
 
         expect(response).toSatisfyApiSpec();
         expect(response.status).toBe(httpStatusCodes.CREATED);
-        expect(saveSpy).toHaveBeenCalledTimes(1);
+        expect(createNewTaskStub).toHaveBeenCalledTimes(0);
+      });
+
+      it.only('should return 201 status code & upadate the matched in-progress task webhooks by job id and customer name', async function () {
+        const request = mockExportTaskRequest();
+        await insertMockInProgressTask(repo);
+
+        const domainResponseMock: CreateExportTaskResponse = {
+          jobId: 'fd6bd061-0a31-4c2b-a074-81fe37d1831d',
+          taskGeometries: [],
+          status: TaskStatus.IN_PROGRESS,
+          expiredAt: new Date('2024-04-07T10:54:52.188Z'),
+        };
+
+        createExportTaskStub.mockResolvedValue(domainResponseMock);
+
+        const response = await requestSender.createTask(request);
+        console.log('WTF?', response);
+
+        expect(response).toSatisfyApiSpec();
+        expect(response.status).toBe(httpStatusCodes.CREATED);
+        expect(createNewTaskStub).toHaveBeenCalledTimes(0);
       });
     });
 
@@ -114,7 +159,6 @@ describe('tasks', function () {
           const req = { ...exportRequest };
           req.domain = Domain.DEM;
           const errMessage = `unsupported domain requested: "${req.domain}" - currently only "${Domain.RASTER}" domain is supported`;
-
           const response = await requestSender.createTask(req);
 
           expect(response).toSatisfyApiSpec();

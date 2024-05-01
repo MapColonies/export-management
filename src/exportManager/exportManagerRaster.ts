@@ -24,16 +24,12 @@ export class ExportManagerRaster implements IExportManager {
     try {
       // TODO: Call Raster SDK here to get geometries & jobId
       const taskGeometries: TaskGeometry[] = [geo1, geo2];
-      const jobId = 'de0dab85-6bc5-4b9f-9a64-9e61627d82d7';
+      const jobId = 'fd6bd061-0a31-4c2b-a074-81fe37d1831d';
       return {
         jobId,
         taskGeometries,
         expiredAt: new Date('2024-04-07T10:54:52.188Z'),
-        progress: 100,
-        status: TaskStatus.COMPLETED,
-        artifacts: [
-          { name: 'GPKG_TEST.gpkg', size: 343334, url: 'http://localhost:8080', type: ArtifactRasterType.METADATA, sha256: 'sdfsdfasdfasfasdf' },
-        ],
+        status: TaskStatus.IN_PROGRESS,
       };
     } catch (error) {
       throw error;

@@ -24,6 +24,7 @@ export class TasksController {
     try {
       const jwtPayloadSub = req.get('jwt-payload-sub'); // header name should match the header that has been defined on default.conf (nginx conf file).
       const entity = await this.taskManager.createTask(req.body, jwtPayloadSub);
+      console.log('entity', entity);
       return res.status(httpStatus.CREATED).json(entity);
     } catch (error) {
       next(error);

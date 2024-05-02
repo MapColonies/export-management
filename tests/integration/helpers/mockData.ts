@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
+/* eslint-disable @typescript-eslint/naming-convention */
 import { TaskEvent, TaskStatus } from '@map-colonies/export-interfaces';
 import { ArtifactRasterType, Domain } from '@map-colonies/types';
-import { ITaskEntity } from '../../../../src/DAL/models/tasks';
-import { TaskRepository } from '../../../../src/DAL/repositories/taskRepository';
+import { ITaskEntity } from '../../../src/DAL/models/tasks';
+import { TaskRepository } from '../../../src/DAL/repositories/taskRepository';
 
 export const insertMockPendingTask = async (repo: TaskRepository): Promise<ITaskEntity> => {
   const task = repo.create({

@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/require-await */
-import { Logger } from '@map-colonies/js-logger';
 import {
   CreateExportTaskRequest,
   CreateExportTaskResponse,
@@ -9,17 +8,14 @@ import {
   TaskParameters,
   TaskStatus,
 } from '@map-colonies/export-interfaces';
-import { inject, injectable } from 'tsyringe';
+import { injectable } from 'tsyringe';
 import { FeatureCollection } from '@turf/turf';
-import { ArtifactDEMType, ArtifactRasterType } from '@map-colonies/types';
-import { SERVICES } from '../common/constants';
+import { ArtifactDEMType } from '@map-colonies/types';
 // TODO: removed when SDKis provided
 import { geo1, geo2 } from './geoMocks';
 
 @injectable()
 export class ExportManagerRaster implements IExportManager {
-  public constructor() {}
-
   public async createExportTask(req: CreateExportTaskRequest<TaskParameters>): Promise<CreateExportTaskResponse> {
     try {
       // TODO: Call Raster SDK here to get geometries & jobId
@@ -30,7 +26,7 @@ export class ExportManagerRaster implements IExportManager {
         taskGeometries,
         expiredAt: new Date('2024-04-07T10:54:52.188Z'),
         status: TaskStatus.COMPLETED,
-        artifacts: [{name: "ee", size: 4, type: ArtifactDEMType.LEGEND, url: "TTT:/gfad", sha256: 'sdf234'}]
+        artifacts: [{ name: 'ee', size: 4, type: ArtifactDEMType.LEGEND, url: 'TTT:/gfad', sha256: 'sdf234' }],
       };
     } catch (error) {
       throw error;

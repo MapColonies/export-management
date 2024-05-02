@@ -6,11 +6,6 @@ import { ITaskEntity } from '../models/tasks';
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const createTaskRepository = (dataSource: DataSource) => {
   return dataSource.getRepository(TaskEntity).extend({
-    async createTask(entity: TaskEntity): Promise<TaskEntity> {
-      const res = await this.save(entity);
-      return res;
-    },
-
     async getTaskById(param: FindTaskParams): Promise<ITaskEntity | undefined> {
       const taskEntity = await this.findOne({ where: param, relations: ['artifacts', 'webhooks', 'taskGeometries'] });
       if (taskEntity === null) {

@@ -10,11 +10,9 @@ import {
   TaskStatus,
 } from '@map-colonies/export-interfaces';
 import { inject, injectable } from 'tsyringe';
-import { Domain } from '@map-colonies/types';
 import { BadRequestError, NotFoundError } from '@map-colonies/error-types';
 import { FeatureCollection } from '@turf/turf';
 import { SERVICES } from '../../common/constants';
-import { ExportManagerRaster } from '../../exportManager/exportManagerRaster';
 import { TASK_REPOSITORY_SYMBOL, TaskRepository } from '../../DAL/repositories/taskRepository';
 import { ITaskEntity } from '../../DAL/models/tasks';
 import { WEBHOOKS_REPOSITORY_SYMBOL, WebhooksRepository } from '../../DAL/repositories/webhooksRepository';
@@ -46,7 +44,7 @@ export class TasksManager {
       this.logger.info({ msg: `create export task request for ${domain} domain`, catalogRecordID, domain });
       const domainResponse = await exportManagerInstance.createExportTask(req);
       const task = await this.upsertTask(exportManagerInstance, req, domainResponse, customerName);
-      
+
       const taskResponse: TaskResponse = omit(task, ['jobId', 'taskGeometries', 'customerName']);
       return taskResponse;
     } catch (error) {

@@ -1,9 +1,8 @@
 import jsLogger from '@map-colonies/js-logger';
 import { ArtifactRasterType, Domain } from '@map-colonies/types';
 import { BadRequestError, NotFoundError } from '@map-colonies/error-types';
-import { CreateExportTaskResponse, GetEstimationsResponse, TaskStatus } from '@map-colonies/export-interfaces/';
+import { CreateExportTaskResponse, TaskStatus } from '@map-colonies/export-interfaces/';
 import { mockExportTaskRequest } from '../helpers/helpers';
-import { geo1 } from '../../../src/exportManager/geoMocks';
 import { ExportManagerRaster } from '../../../src/exportManager/exportManagerRaster';
 import { TasksManager } from '../../../src/task/models/tasksManager';
 import {
@@ -16,7 +15,6 @@ import {
 } from '../../mocks/repositories/taskRepository.spec';
 import { webhooksRepositoryMock, upsertWebhooksMock } from '../../mocks/repositories/webhooksRepository.spec';
 import { mockTask } from '../../utils/task';
-import * as utils from '../../../src/exportManager/utils';
 
 let taskManager: TasksManager;
 let createExportTaskStub: jest.SpyInstance;
@@ -85,7 +83,7 @@ describe('taskManager', () => {
       };
 
       getCustomerTaskByJobIdMock.mockResolvedValue({ ...mockTask, status: TaskStatus.PENDING });
-      5;
+
       createExportTaskStub.mockResolvedValue(domainResponseMock);
 
       const res = await taskManager.createTask(request);
@@ -187,6 +185,7 @@ describe('taskManager', () => {
       await expect(action()).resolves.not.toThrow();
       expect(getEstimationsSpy).toHaveBeenCalledTimes(1);
       expect(createNewTaskStub).toHaveBeenCalledTimes(1);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect(createNewTaskStub.mock.calls[0][2]).toStrictEqual(domainResponseMock);
     });
 
@@ -209,6 +208,7 @@ describe('taskManager', () => {
       const action = async () => taskManager.createTask(request, customerName);
 
       await expect(action()).resolves.not.toThrow();
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect(createNewTaskStub.mock.calls[0][3]).toStrictEqual(customerName);
     });
 
@@ -231,6 +231,7 @@ describe('taskManager', () => {
       const action = async () => taskManager.createTask(request);
 
       await expect(action()).resolves.not.toThrow();
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect(createNewTaskStub.mock.calls[0][3]).toStrictEqual(defaultCustomerName);
     });
   });
@@ -257,7 +258,7 @@ describe('taskManager', () => {
   });
 
   describe('#getLatestTasksByLimit', () => {
-    it('resolves and returns all task amount by requested limit if its not higher than the max configured limit', async () => {
+    it('resolves and returns all task amount by requested limit if its lower than the max configured limit', async () => {
       const request = mockExportTaskRequest();
       const tasks = [request];
 

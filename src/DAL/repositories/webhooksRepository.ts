@@ -25,24 +25,6 @@ const createWebhooksRepository = (dataSource: DataSource) => {
           await this.save(newWebhook);
         }
       }
-      // webhooks.map(async (webhook): Promise<any> => {
-      //   const existsWebhookUrl = await this.findOneBy({ url: webhook.url, task: { id: taskId } });
-      //   if (existsWebhookUrl) {
-      //     const unionWebhookEvents = unionArrays<TaskEvent>(existsWebhookUrl.events, webhook.events);
-      //     await this.update(existsWebhookUrl.id, { events: unionWebhookEvents });
-      //     return;
-      //   }
-      //   else {
-      //   const newWebhook = this.create({
-      //     task: { id: taskId },
-      //     url: webhook.url,
-      //     events: webhook.events,
-      //   });
-      //   newWebhook.url = webhook.url;
-      //   newWebhook.events = webhook.events;
-      //   await this.save(newWebhook);
-      // }
-      // });
     },
   });
 };

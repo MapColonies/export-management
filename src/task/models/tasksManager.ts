@@ -46,7 +46,7 @@ export class TasksManager {
       this.logger.info({ msg: `create export task request for ${domain} domain`, catalogRecordID, domain });
       const domainResponse = await exportManagerInstance.createExportTask(req);
       const task = await this.upsertTask(exportManagerInstance, req, domainResponse, customerName);
-      console.log('#$#$#$#$#$#$#$#$#$#$#$#$#$#$$');
+      
       const taskResponse: TaskResponse = omit(task, ['jobId', 'taskGeometries', 'customerName']);
       return taskResponse;
     } catch (error) {
@@ -150,9 +150,7 @@ export class TasksManager {
         taskId: task.id,
         webhooks: req.webhooks,
       });
-      console.log('#######################################');
       await this.webhooksRepository.upsertWebhooks(req.webhooks, task.id);
-      console.log('$%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
     }
     return task;
   }

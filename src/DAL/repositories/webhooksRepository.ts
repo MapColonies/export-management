@@ -8,24 +8,41 @@ import { unionArrays } from '../../common/utils';
 const createWebhooksRepository = (dataSource: DataSource) => {
   return dataSource.getRepository(WebhookEntity).extend({
     async upsertWebhooks(webhooks: Webhook[], taskId: number): Promise<void> {
-      const promises = webhooks.map(async (webhook): Promise<any> => {
+      for await (const webhook of webhooks) {
         const existsWebhookUrl = await this.findOneBy({ url: webhook.url, task: { id: taskId } });
         if (existsWebhookUrl) {
           const unionWebhookEvents = unionArrays<TaskEvent>(existsWebhookUrl.events, webhook.events);
           await this.update(existsWebhookUrl.id, { events: unionWebhookEvents });
           return;
+        } else {
+          const newWebhook = this.create({
+            task: { id: taskId },
+            url: webhook.url,
+            events: webhook.events,
+          });
+          newWebhook.url = webhook.url;
+          newWebhook.events = webhook.events;
+          await this.save(newWebhook);
         }
-        else {
-        const newWebhook = this.create({
-          task: { id: taskId },
-          url: webhook.url,
-          events: webhook.events,
-        });
-        newWebhook.url = webhook.url;
-        newWebhook.events = webhook.events;
-        await this.save(newWebhook);
       }
-      });
+      // webhooks.map(async (webhook): Promise<any> => {
+      //   const existsWebhookUrl = await this.findOneBy({ url: webhook.url, task: { id: taskId } });
+      //   if (existsWebhookUrl) {
+      //     const unionWebhookEvents = unionArrays<TaskEvent>(existsWebhookUrl.events, webhook.events);
+      //     await this.update(existsWebhookUrl.id, { events: unionWebhookEvents });
+      //     return;
+      //   }
+      //   else {
+      //   const newWebhook = this.create({
+      //     task: { id: taskId },
+      //     url: webhook.url,
+      //     events: webhook.events,
+      //   });
+      //   newWebhook.url = webhook.url;
+      //   newWebhook.events = webhook.events;
+      //   await this.save(newWebhook);
+      // }
+      // });
     },
   });
 };

@@ -15,7 +15,6 @@ import { tasksRouterFactory, TASKS_ROUTER_SYMBOL } from './task/routes/tasksRout
 import { initConnection } from './DAL/utils/createConnection';
 import { IDbConfig } from './common/interfaces';
 import { promiseTimeout } from './common/utils';
-import { ARTIFACT_REPOSITORY_SYMBOL, artifactRepositoryFactory } from './DAL/repositories/artifactRepository';
 import { WEBHOOKS_REPOSITORY_SYMBOL, webhooksRepositoryFactory } from './DAL/repositories/webhooksRepository';
 
 const healthCheck = (connection: DataSource): HealthCheck => {
@@ -72,7 +71,6 @@ export const registerExternalValues = async (options?: RegisterOptions): Promise
       },
     },
     { token: TASK_REPOSITORY_SYMBOL, provider: { useFactory: instanceCachingFactory((c) => taskRepositoryFactory(c)) } },
-    { token: ARTIFACT_REPOSITORY_SYMBOL, provider: { useFactory: instanceCachingFactory((c) => artifactRepositoryFactory(c)) } },
     { token: WEBHOOKS_REPOSITORY_SYMBOL, provider: { useFactory: instanceCachingFactory((c) => webhooksRepositoryFactory(c)) } },
   ];
 

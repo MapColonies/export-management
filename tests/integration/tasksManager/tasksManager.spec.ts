@@ -1,27 +1,24 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import config from 'config';
-import jsLogger from '@map-colonies/js-logger';
-import { container, DependencyContainer } from 'tsyringe';
+import { DependencyContainer } from 'tsyringe';
 import { ArtifactRasterType, Domain } from '@map-colonies/types';
-import { trace } from '@opentelemetry/api';
 import { DataSource } from 'typeorm';
 import httpStatusCodes from 'http-status-codes';
 import { CreateExportTaskResponse, TaskStatus } from '@map-colonies/export-interfaces';
-import { getApp } from '../../../src/app';
-import { exportRequest } from '../../utils/exportRequest';
-import { SERVICES } from '../../../src/common/constants';
-import { TASK_REPOSITORY_SYMBOL, TaskRepository, taskRepositoryFactory } from '../../../src/DAL/repositories/taskRepository';
+import { TASK_REPOSITORY_SYMBOL, TaskRepository } from '../../../src/DAL/repositories/taskRepository';
 import { TaskEntity } from '../../../src/DAL/entity';
 import { registerContainerValues } from '../../configurations/integration/containerConfig';
 import { mockExportTaskRequest } from '../../unit/helpers/helpers';
 import { ExportManagerRaster } from '../../../src/exportManager/exportManagerRaster';
 import { TasksManager } from '../../../src/task/models/tasksManager';
-import { insertMockCompletedTask, insertMockInProgressTask } from './helpers/mockData';
+import { insertMockCompletedTask, insertMockInProgressTask, insertMockPendingTask } from './helpers/mockData';
 import { TasksRequestSender } from './helpers/requestSender';
+import { WebhooksRepository, WEBHOOKS_REPOSITORY_SYMBOL } from '../../../src/DAL/repositories/webhooksRepository';
 
 describe('tasks', function () {
   let requestSender: TasksRequestSender;
-  let repo: TaskRepository;
+  let taskRepository: TaskRepository;
+  let webhookRepository: WebhooksRepository;
   let depContainer: DependencyContainer;
   let saveSpy: jest.SpyInstance;
   let findOneSpy: jest.SpyInstance;
@@ -32,13 +29,11 @@ describe('tasks', function () {
     const [app, container] = await registerContainerValues();
     requestSender = new TasksRequestSender(app);
     depContainer = container;
-    repo = depContainer.resolve(TASK_REPOSITORY_SYMBOL);
+    taskRepository = depContainer.resolve(TASK_REPOSITORY_SYMBOL);
+    webhookRepository = depContainer.resolve(WEBHOOKS_REPOSITORY_SYMBOL);
   });
 
   beforeEach(function () {
-    saveSpy = jest.spyOn(repo, 'save');
-    findOneSpy = jest.spyOn(repo, 'findOne');
-    findSpy = jest.spyOn(repo, 'find');
     createExportTaskStub = jest.spyOn(ExportManagerRaster.prototype, 'createExportTask');
     createNewTaskStub = jest.spyOn(TasksManager.prototype as unknown as { createNewTask: jest.Mock }, 'createNewTask');
   });
@@ -70,9 +65,9 @@ describe('tasks', function () {
         expect(createNewTaskStub).toHaveBeenCalledTimes(1);
       });
 
-      it.only('should return 201 status code & return the matched completed task by job id and customer name', async function () {
+      it('should return 201 status code & return the matched completed task by job id and customer name', async function () {
         const request = mockExportTaskRequest();
-        await insertMockCompletedTask(repo);
+        await insertMockCompletedTask(taskRepository);
 
         const domainResponseMock: CreateExportTaskResponse = {
           jobId: 'fd6bd061-0a31-4c2b-a074-81fe37d1831e',
@@ -88,16 +83,15 @@ describe('tasks', function () {
         createExportTaskStub.mockResolvedValue(domainResponseMock);
 
         const response = await requestSender.createTask(request);
-        console.log('%%^', response);
 
         expect(response).toSatisfyApiSpec();
         expect(response.status).toBe(httpStatusCodes.CREATED);
         expect(createNewTaskStub).toHaveBeenCalledTimes(0);
       });
 
-      it.only('should return 201 status code & upadate the matched in-progress task webhooks by job id and customer name', async function () {
+      it('should return 201 status code & upadate the matched in-progress task webhooks by job id and customer name', async function () {
         const request = mockExportTaskRequest();
-        await insertMockInProgressTask(repo);
+        await insertMockInProgressTask(taskRepository);
 
         const domainResponseMock: CreateExportTaskResponse = {
           jobId: 'fd6bd061-0a31-4c2b-a074-81fe37d1831d',
@@ -118,20 +112,22 @@ describe('tasks', function () {
     });
 
     describe('GET /export-tasks', function () {
-      it('should return 200 status code and the resource', async function () {
+      it('should return 200 status code and the resources by the limit number given', async function () {
+        await insertMockPendingTask(taskRepository);
+        
         const response = await requestSender.getLatestTasksByLimit(1);
-
+        
         expect(response).toSatisfyApiSpec();
         expect(response.status).toBe(httpStatusCodes.OK);
         expect(response.body).toHaveLength(1);
       });
-
-      it('should return 200 status code and an empty array', async function () {
-        findSpy.mockResolvedValue([]);
+      
+      it('should return 200 status code and an empty array of results', async function () {
+        await webhookRepository.delete({});
+        await taskRepository.delete({});
         const response = await requestSender.getLatestTasksByLimit(1);
 
         expect(response).toSatisfyApiSpec();
-        expect(findSpy).toHaveBeenCalledTimes(1);
         expect(response.status).toBe(httpStatusCodes.OK);
         expect(response.body).toHaveLength(0);
       });
@@ -140,15 +136,13 @@ describe('tasks', function () {
     describe('GET /export-tasks/:taskId', function () {
       describe('Happy Path', function () {
         it('should return 200 status code and the resource', async function () {
-          // task entity setup for get by id test
-          const req = { ...exportRequest };
-          const createTaskResponse = await requestSender.createTask(req);
-          const entity = createTaskResponse.body as TaskEntity;
-          const response = await requestSender.getTaskById(entity.id);
+          const task = await insertMockPendingTask(taskRepository);
+          
+          const response = await requestSender.getTaskById(task.id);
 
           expect(response).toSatisfyApiSpec();
           expect(response.status).toBe(httpStatusCodes.OK);
-          expect((response.body as unknown as TaskEntity).id).toBe(entity.id);
+          expect((response.body as unknown as TaskEntity).id).toBe(task.id);
         });
       });
     });
@@ -156,10 +150,10 @@ describe('tasks', function () {
     describe('Bad Path', function () {
       describe('POST /export-tasks', function () {
         it('should return 400 status code due to unsupported domain', async function () {
-          const req = { ...exportRequest };
-          req.domain = Domain.DEM;
-          const errMessage = `unsupported domain requested: "${req.domain}" - currently only "${Domain.RASTER}" domain is supported`;
-          const response = await requestSender.createTask(req);
+          const request = mockExportTaskRequest();
+          request.domain = Domain.DEM;
+          const errMessage = `unsupported domain requested: "${request.domain}" - currently only "${Domain.RASTER}" domain is supported`;
+          const response = await requestSender.createTask(request);
 
           expect(response).toSatisfyApiSpec();
           expect(response.status).toBe(httpStatusCodes.BAD_REQUEST);
@@ -192,10 +186,18 @@ describe('tasks', function () {
     describe('Sad Path', function () {
       describe('POST /export-tasks', function () {
         it('should return 500 status code if db throws an error', async function () {
-          const req = { ...exportRequest };
-          saveSpy.mockRejectedValue(new Error());
+          saveSpy = jest.spyOn(taskRepository, "save");
+          const request = mockExportTaskRequest();
+          const domainResponseMock: CreateExportTaskResponse = {
+            jobId: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
+            taskGeometries: [],
+          };
 
-          const response = await requestSender.createTask(req);
+          createExportTaskStub.mockResolvedValue(domainResponseMock);
+          saveSpy.mockRejectedValue(new Error());
+          
+
+          const response = await requestSender.createTask(request);
 
           expect(response).toSatisfyApiSpec();
           expect(response.status).toBe(httpStatusCodes.INTERNAL_SERVER_ERROR);
@@ -204,6 +206,7 @@ describe('tasks', function () {
 
       describe('GET /export-tasks/:taskId', function () {
         it('should return 500 status code if db throws an error', async function () {
+          findOneSpy = jest.spyOn(taskRepository, 'findOne')
           findOneSpy.mockRejectedValue(new Error());
 
           const response = await requestSender.getTaskById(1);
@@ -216,6 +219,7 @@ describe('tasks', function () {
 
       describe('GET /export-tasks', function () {
         it('should return 500 status code if db throws an error', async function () {
+          findSpy = jest.spyOn(taskRepository, 'find');
           findSpy.mockRejectedValue(new Error());
 
           const response = await requestSender.getLatestTasksByLimit(1);

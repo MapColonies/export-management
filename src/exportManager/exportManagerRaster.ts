@@ -11,7 +11,7 @@ import {
 } from '@map-colonies/export-interfaces';
 import { inject, injectable } from 'tsyringe';
 import { FeatureCollection } from '@turf/turf';
-import { ArtifactRasterType } from '@map-colonies/types';
+import { ArtifactDEMType, ArtifactRasterType } from '@map-colonies/types';
 import { SERVICES } from '../common/constants';
 // TODO: removed when SDKis provided
 import { geo1, geo2 } from './geoMocks';
@@ -29,7 +29,8 @@ export class ExportManagerRaster implements IExportManager {
         jobId,
         taskGeometries,
         expiredAt: new Date('2024-04-07T10:54:52.188Z'),
-        status: TaskStatus.IN_PROGRESS,
+        status: TaskStatus.COMPLETED,
+        artifacts: [{name: "ee", size: 4, type: ArtifactDEMType.LEGEND, url: "TTT:/gfad", sha256: 'sdf234'}]
       };
     } catch (error) {
       throw error;

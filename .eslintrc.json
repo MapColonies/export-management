@@ -1,5 +1,5 @@
 {
-  "ignorePatterns": ["**/*.js", "dist", "helm", "src/DAL/migrations/**", "src/exportManager/exportManagerRaster.ts"],
+  "ignorePatterns": ["**/*.js", "dist", "helm", "src/DAL/migrations/**", "src/DAL/entity/**", "src/exportManager/**"],
   "extends": ["@map-colonies/eslint-config/jest", "@map-colonies/eslint-config/ts-base"],
   "parserOptions": {
     "project": "./tsconfig.lint.json"

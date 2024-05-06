@@ -74,16 +74,13 @@ export class TasksManager {
 
   public async getLatestTasksByLimit(limit: number): Promise<TaskResponse[]> {
     try {
-      this.logger.info({ msg: `get task by limit ${limit}`, limit });
+      this.logger.info({ msg: `get latest tasks by limit ${limit}`, limit });
       if (limit > this.maxTasksNumber) {
         throw new BadRequestError(`requested limit ${limit} is higher than the maximum possible limit tasks number ${this.maxTasksNumber}`);
       }
-      const tasksResponse: TaskResponse[] = [];
+      // const tasksResponse: TaskResponse[] = [];
       const tasks = await this.taskRepository.getLatestTasksByLimit(limit);
-      tasks.forEach((task) => {
-        const taskResponse: TaskResponse = omit(task, ['jobId', 'taskGeometries', 'customerName']);
-        tasksResponse.push(taskResponse);
-      });
+      const tasksResponse = tasks.map<TaskResponse>((task) => omit(task, ['jobId', 'taskGeometries', 'customerName']));
       return tasksResponse;
     } catch (error) {
       const errMessage = `failed to get tasks by limit: ${(error as Error).message}`;
@@ -117,7 +114,7 @@ export class TasksManager {
     const task = await this.taskRepository.getCustomerTaskByJobId(jobId, customerName);
 
     if (!task) {
-      const errMessage = `task with job id ${jobId} and customer name: ${customerName} was not found`;
+      const errMessage = `task with job id ${jobId} and customer name: ${customerName} was not found, even though the domain response declared its available`;
       this.logger.error({
         msg: errMessage,
         jobId,

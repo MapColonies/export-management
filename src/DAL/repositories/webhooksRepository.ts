@@ -8,7 +8,7 @@ import { unionArrays } from '../../common/utils';
 const createWebhooksRepository = (dataSource: DataSource) => {
   return dataSource.getRepository(WebhookEntity).extend({
     async upsertWebhooks(webhooks: Webhook[], taskId: number): Promise<void> {
-      for await (const webhook of webhooks) {
+      for (const webhook of webhooks) {
         const existsWebhookUrl = await this.findOneBy({ url: webhook.url, task: { id: taskId } });
         if (existsWebhookUrl) {
           const unionWebhookEvents = unionArrays<TaskEvent>(existsWebhookUrl.events, webhook.events);

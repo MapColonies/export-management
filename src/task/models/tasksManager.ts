@@ -78,7 +78,6 @@ export class TasksManager {
       if (limit > this.maxTasksNumber) {
         throw new BadRequestError(`requested limit ${limit} is higher than the maximum possible limit tasks number ${this.maxTasksNumber}`);
       }
-      // const tasksResponse: TaskResponse[] = [];
       const tasks = await this.taskRepository.getLatestTasksByLimit(limit);
       const tasksResponse = tasks.map<TaskResponse>((task) => omit(task, ['jobId', 'taskGeometries', 'customerName']));
       return tasksResponse;

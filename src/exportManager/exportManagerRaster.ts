@@ -25,8 +25,6 @@ export class ExportManagerRaster implements IExportManager {
         jobId,
         taskGeometries,
         expiredAt: new Date('2024-04-07T10:54:52.188Z'),
-        status: TaskStatus.IN_PROGRESS,
-        artifacts: [{ name: 'ee', size: 4, type: ArtifactDEMType.LEGEND, url: 'TTT:/gfad', sha256: 'sdf234' }],
       };
     } catch (error) {
       throw error;

@@ -67,6 +67,69 @@ describe('tasks', function () {
         expect(createNewTaskStub).toHaveBeenCalledTimes(1);
       });
 
+      it('should return 201 status & create new COMPLETED task with the resource even if its not already exists in db', async function () {
+        const request = mockExportTaskRequest();
+
+        const domainResponseMock: CreateExportTaskResponse = {
+          jobId: 'fd6bd061-0a31-4c2b-a074-81fe37d1831e',
+          taskGeometries: [],
+          status: TaskStatus.COMPLETED,
+          expiredAt: new Date('2024-04-07T10:54:52.188Z'),
+          progress: 100,
+          artifacts: [
+            { name: 'GPKG_TEST.gpkg', size: 343334, url: 'http://localhost:8080', type: ArtifactRasterType.GPKG, sha256: 'ft56hku7v5uijk6' },
+          ],
+        };
+
+        createExportTaskStub.mockResolvedValue(domainResponseMock);
+
+        const response = await requestSender.createTask(request);
+
+        expect(response).toSatisfyApiSpec();
+        expect(response.status).toBe(httpStatusCodes.CREATED);
+        expect(createNewTaskStub).toHaveBeenCalledTimes(1);
+      });
+
+      it('should return 201 status & create new IN_PROGRESS task with the resource even if its not already exists in db', async function () {
+        const request = mockExportTaskRequest();
+
+        const domainResponseMock: CreateExportTaskResponse = {
+          jobId: '5f3c9e10-e6ed-4190-a08f-0bbf50d992bc',
+          taskGeometries: [],
+          status: TaskStatus.IN_PROGRESS,
+          expiredAt: new Date('2024-04-07T10:54:52.188Z'),
+          progress: 55,
+        };
+
+        createExportTaskStub.mockResolvedValue(domainResponseMock);
+
+        const response = await requestSender.createTask(request);
+
+        expect(response).toSatisfyApiSpec();
+        expect(response.status).toBe(httpStatusCodes.CREATED);
+        expect(createNewTaskStub).toHaveBeenCalledTimes(1);
+      });
+
+      it('should return 201 status & create new PENDING task with the resource even if its not already exists in db', async function () {
+        const request = mockExportTaskRequest();
+
+        const domainResponseMock: CreateExportTaskResponse = {
+          jobId: '5619880b-6386-4d6b-8675-f3969cb93d3e',
+          taskGeometries: [],
+          status: TaskStatus.PENDING,
+          expiredAt: new Date('2024-04-07T10:54:52.188Z'),
+          progress: 55,
+        };
+
+        createExportTaskStub.mockResolvedValue(domainResponseMock);
+
+        const response = await requestSender.createTask(request);
+
+        expect(response).toSatisfyApiSpec();
+        expect(response.status).toBe(httpStatusCodes.CREATED);
+        expect(createNewTaskStub).toHaveBeenCalledTimes(1);
+      });
+
       it('should return 201 status code & return the matched completed task by job id and customer name', async function () {
         const request = mockExportTaskRequest();
         await insertMockCompletedTask(taskRepository);
@@ -214,28 +277,6 @@ describe('tasks', function () {
 
     describe('Bad Path', function () {
       describe('POST /export-tasks', function () {
-        it('should return 400 status with not found error if task is not exists with similar job id and customer nname', async function () {
-          const request = mockExportTaskRequest();
-
-          const domainResponseMock: CreateExportTaskResponse = {
-            jobId: 'fd6bd061-0a31-4c2b-a074-81fe37d1831e',
-            taskGeometries: [],
-            status: TaskStatus.COMPLETED,
-            expiredAt: new Date('2024-04-07T10:54:52.188Z'),
-            progress: 100,
-            artifacts: [
-              { name: 'GPKG_TEST.gpkg', size: 343334, url: 'http://localhost:8080', type: ArtifactRasterType.GPKG, sha256: 'ft56hku7v5uijk6' },
-            ],
-          };
-
-          createExportTaskStub.mockResolvedValue(domainResponseMock);
-
-          const response = await requestSender.createTask(request);
-
-          expect(response).toSatisfyApiSpec();
-          expect(response.status).toBe(httpStatusCodes.NOT_FOUND);
-          expect(createNewTaskStub).toHaveBeenCalledTimes(0);
-        });
         it('should return 400 status code due to unsupported domain', async function () {
           const request = mockExportTaskRequest();
           request.domain = Domain.DEM;

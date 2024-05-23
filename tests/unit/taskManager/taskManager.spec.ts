@@ -112,7 +112,7 @@ describe('taskManager', () => {
       expect(createNewTaskStub).not.toHaveBeenCalled();
     });
 
-    it('throw not found error due to not exists task', async () => {
+    it('resolves without errors and save task even if get customer task by job id returns as undefined', async () => {
       const request = mockExportTaskRequest();
       const domainResponseMock: CreateExportTaskResponse = {
         jobId: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
@@ -126,7 +126,8 @@ describe('taskManager', () => {
 
       const action = async () => taskManager.createTask(request);
 
-      await expect(action()).rejects.toThrow(NotFoundError);
+      await expect(action()).resolves.not.toThrow();
+      expect(createNewTaskStub).toHaveBeenCalledTimes(1);
     });
 
     it('rejects with bad request error due to unsupported domain "DEM"', async () => {

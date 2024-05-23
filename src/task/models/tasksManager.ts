@@ -95,7 +95,15 @@ export class TasksManager {
     customerName: string
   ): Promise<ITaskEntity> {
     const jobId = domainResponse.jobId;
-    if (!domainResponse.status) {
+
+    this.logger.debug({
+      msg: `querying for similar task by job id ${jobId} and customer name: ${customerName}`,
+      jobId,
+      customerName,
+    });
+    const task = await this.taskRepository.getCustomerTaskByJobId(jobId, customerName);
+
+    if (!task) {
       const res = await this.createNewTask(exportManagerInstance, req, domainResponse, customerName);
       this.logger.info({
         msg: `created new task, id: ${res.id}`,
@@ -103,23 +111,6 @@ export class TasksManager {
         customerName,
       });
       return res;
-    }
-
-    this.logger.debug({
-      msg: `querying for similar '${domainResponse.status}' task by job id ${jobId} and customer name: ${customerName}`,
-      jobId,
-      customerName,
-    });
-    const task = await this.taskRepository.getCustomerTaskByJobId(jobId, customerName);
-
-    if (!task) {
-      const errMessage = `task with job id ${jobId} and customer name: ${customerName} was not found, even though the domain response declared its available`;
-      this.logger.error({
-        msg: errMessage,
-        jobId,
-        customerName,
-      });
-      throw new NotFoundError(errMessage);
     }
 
     this.logger.info({

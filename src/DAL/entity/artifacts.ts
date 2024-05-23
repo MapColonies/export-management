@@ -22,7 +22,7 @@ export class ArtifactEntity implements IArtifactEntity {
   @Column('varchar', { nullable: false })
   public url: string;
 
-  @Column('numeric', { nullable: false, default: 0 })
+  @Column('integer', { nullable: false, default: 0 })
   public size: number;
 
   @Column('varchar', { nullable: true })

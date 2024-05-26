@@ -1,8 +1,8 @@
-import { TaskStatus } from '@map-colonies/export-interfaces';
+/* eslint-disable @typescript-eslint/naming-convention */
+import { Artifact, TaskStatus, Webhook } from '@map-colonies/export-interfaces';
 import { Domain, EpsgCode } from '@map-colonies/types';
-import { IArtifactEntity } from './artifact';
-import { ITaskGeometriesEntity } from './taskGeometry';
-import { IWebhookEntity } from './webhook';
+import { FeatureCollection } from '@turf/turf';
+import { ITaskGeometriesEntity } from './taskGeometries';
 
 export interface ITaskEntity {
   /** The auto-generated ID of the task. */
@@ -16,13 +16,15 @@ export interface ITaskEntity {
   /** The artifacts CRS of the requested source. */
   artifactCRS: EpsgCode;
   /** The artifacts relation of the task. */
-  artifacts?: IArtifactEntity[];
-  /** The costumer that send the task. */
-  customerName?: string;
+  artifacts?: Artifact[];
   /** The domain that the task belongs to. */
   domain: Domain;
+  /** The domain that the task belongs to. */
+  ROI?: FeatureCollection;
+  /** The requested cutomer name that the task belongs to. */
+  customerName: string;
   /** list of requested webhooks actions of the task. */
-  webhook: IWebhookEntity[];
+  webhooks: Webhook[];
   /** Status of the task. */
   status: TaskStatus;
   /** The Description of the task. */

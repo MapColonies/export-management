@@ -1,17 +1,9 @@
-import { IArtifactTypeEntity } from './artifactType';
-import { ITaskEntity } from './task';
+import { Artifact } from '@map-colonies/export-interfaces';
+import { ITaskEntity } from './tasks';
 
-export interface IArtifactEntity {
+export interface IArtifactEntity extends Artifact {
   /** The auto-generated ID of the artifact. */
   id: number;
-  /** The artifact type relation of the artifact. */
-  type: IArtifactTypeEntity;
-  /** The name of the artifact. */
-  name: string;
   /**The tasks relation of the tasks. */
-  tasks?: ITaskEntity[];
-  /** Url of the artifact. */
-  url: string;
-  /** The size of the artifact data. */
-  size?: number;
+  tasks: ITaskEntity[];
 }

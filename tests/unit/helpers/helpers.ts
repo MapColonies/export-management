@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Domain } from '@map-colonies/types';
-import { CreateExportTaskRequest, TaskEvent, TaskParameters } from '@map-colonies/export-interfaces';
+import { CreateExportTaskRequest, GetEstimationsResponse, TaskEvent, TaskParameters } from '@map-colonies/export-interfaces';
 
-export const createFakeEntity: () => CreateExportTaskRequest<TaskParameters> = () => {
+export const mockExportTaskRequest: () => CreateExportTaskRequest<TaskParameters> = () => {
   return {
     ROI: {
       type: 'FeatureCollection',
@@ -31,6 +31,11 @@ export const createFakeEntity: () => CreateExportTaskRequest<TaskParameters> = (
     artifactCRS: '4326',
     catalogRecordID: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
     domain: Domain.RASTER,
-    webhook: [{ url: 'http://localhost:8080/', events: [TaskEvent.TASK_COMPLETED] }],
+    webhooks: [{ url: 'http://localhost:8080/', events: [TaskEvent.TASK_COMPLETED] }],
   };
+};
+
+export const getEstimationsResponse: GetEstimationsResponse = {
+  estimatedFileSize: 20000,
+  estimatedTime: 50000,
 };

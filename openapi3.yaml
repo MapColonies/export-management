@@ -71,7 +71,7 @@ paths:
       parameters:
         - name: limit
           in: query
-          required: true
+          required: false
           schema:
             type: number
       responses:
@@ -181,7 +181,7 @@ components:
         - catalogRecordID
         - domain
         - artifactCRS
-        - webhook
+        - webhooks
       properties:
         catalogRecordID:
           type: string
@@ -215,7 +215,7 @@ components:
           description: task parameters in key-value pair
           example:
             foo: kuku
-        webhook:
+        webhooks:
           description: >-
             describe one or more relevant events to receive the data once event
             has been occurred
@@ -223,22 +223,22 @@ components:
           items:
             type: object
             required:
-              - events
               - url
+              - events
             properties:
+              url:
+                type: string
+                example: https://webhook.com
               events:
                 type: array
-                uniqueItems: true
                 minItems: 1
+                uniqueItems: true
                 items:
                   type: string
                   enum:
                     - TASK_COMPLETED
                     - TASK_FAILED
                   example: TASK_COMPLETED
-              url:
-                type: string
-                example: https://webhook.com
       additionalProperties: false
 
     TaskResponse:
@@ -283,7 +283,7 @@ components:
           description: task parameters in key-value pair
           example:
             foo: kuku
-        webhook:
+        webhooks:
           description: >-
             describe one or more relevant events to receive the data once event
             has been occurred
@@ -356,6 +356,7 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/TaskResponse'
+
     Artifact:
       type: object
       description: GeoJson Feature Collection

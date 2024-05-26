@@ -2,7 +2,9 @@ global:
   cloudProvider: {}
   tracing: {}
   metrics: {}
-  environment: {}
+  environment: ''
+  ingress:
+    domain: ""
 
 enabled: true
 environment: development
@@ -25,19 +27,6 @@ image:
   repository: export-management
   tag: 'latest'
 
-serviceUrls:
-  exporterTrigger: "http://job-manager-service-url"
-  jobManager: "http://job-manager-service-url"
-jobManagement:
-    exporter:
-      jobType: tilesExport
-authentication:
-    opa:
-      enabled: false
-      customHeaderName: ""
-    jwtPublicKeySecretName: map-colonies-jwks
-
-
 env:
   port: 8080
   internalPort: 80
@@ -48,7 +37,6 @@ env:
   responseCompressionEnabled: true
   disableHttpClientLogs: false
   requestPayloadLimit: 1mb
-  serviceWebhookEndpoint: https://export-management-test-integration.apps.j1lk3njp.eastus.aroapp.io/export-tasks/webhook/
   tracing:
     enabled: false
     url: http://localhost:55681/v1/trace
@@ -61,7 +49,7 @@ env:
     shouldResetTimeout: true
   maxTasksNumber: 10
 
-dbConfig:
+db:
   host: localhost
   username: postgres
   password: postgres
@@ -76,11 +64,21 @@ dbConfig:
     keyFileName: postgresql.key
     caFileName: root.crt
 
-opa:
-  image: openpolicyagent/opa
-  imageTag: 0.29.4-envoy-3
-  port: 9191
-  enableLogging: false
+nginx:
+  fullnameOverride: ""
+
+  caSecretName: ''
+  caPath: '/usr/local/share/ca-certificates'
+  caKey: 'ca.crt'
+
+  image:
+    repository: nginx
+    tag: 'latest' 
+  port: 8080
+  internalServicePort: 80
+  targetPort: 8080
+  siteStatusPort: 8081
+  nodePort: 30001
   resources:
     enabled: true
     value:
@@ -90,22 +88,61 @@ opa:
       requests:
         cpu: 100m
         memory: 128Mi
-        
-envoy:
-  image: envoyproxy/envoy
-  imageTag: v1.20.7
-  port: 8000
-  maxRequestBytes: 8192
-  requestedDomain: rasterExport
-  resources:
+
+  env:
+    opentelemetry:
+      serviceName: nginx
+      exporterEndpoint: localhost:4317
+      samplerMethod: "AlwaysOff" # AlwaysOn, AlwaysOff, TraceIdRatioBased
+      ratio: 0.1 # between 0 and 1
+      parentBased: "false" # true, false
+
+  prometheusExporter:
+    enabled: false
+    image:
+      repository: nginx/nginx-prometheus-exporter
+      tag: latest
+      pullPolicy: IfNotPresent
+    resources:
+      enabled: true
+      value:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi  
+
+  authorization:
     enabled: true
-    value:
-      limits:
-        cpu: 100m
-        memory: 128Mi
-      requests:
-        cpu: 100m
-        memory: 128Mi
+    domain: 'export'
+    url: 'http://localhost:8181/v1/data/http/authz/decision'
+
+  route:
+    enabled: true
+    path: /api/v1
+    host: 
+    timeout:
+      enabled: false # defaults to 30s by openshift
+      duration: 60s # supported units (us, ms, s, m, h, d)
+    rewriteTarget: ''
+    tls:
+      enabled: true
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect
+      useCerts: false
+      certificate: ''
+      key: ''
+      caCertificate: ''
+
+  ingress:
+    enabled: false
+    path: /api/v1
+    host: 'localhost'
+    domain: ""
+    tls: 
+      enabled: true
+      secretName: ''
 
 resources:
   enabled: true
@@ -116,25 +153,3 @@ resources:
     requests:
       cpu: 25m
       memory: 128Mi
-
-route:
-  enabled: true
-  host:
-  path:
-  https: true
-  useCert: false
-  timeout:
-    enabled: false # defaults to 30s by openshift
-    duration: 60s # supported units (us, ms, s, m, h, d)
-
-ingress:
-  enabled: false
-  type: 'nginx-org' # supported values: 'nginx-org' | 'nginx-kubernetes
-  tls:
-    enabled: false
-    useExternal: ''
-  path: /api/raster/v1
-  host: 'localhost'
-  cors:
-    enabled: true
-    origin: '*'

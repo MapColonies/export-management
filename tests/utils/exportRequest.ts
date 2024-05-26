@@ -28,5 +28,5 @@ export const exportRequest: CreateExportTaskRequest<TaskParameters> = {
   catalogRecordID: 'de0dab85-6bc5-4b9f-9a64-9e61627d82d9',
   artifactCRS: '4326',
   domain: Domain.RASTER,
-  webhook: [{ url: 'http://localhost:8080', events: [TaskEvent.TASK_COMPLETED] }],
+  webhooks: [{ url: 'http://localhost:8080', events: [TaskEvent.TASK_COMPLETED] }],
 };

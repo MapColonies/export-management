@@ -6,12 +6,11 @@ import { injectable, inject } from 'tsyringe';
 import { CreateExportTaskRequest, TaskParameters } from '@map-colonies/export-interfaces';
 import { SERVICES } from '../../common/constants';
 import { TaskResponse, TasksManager } from '../models/tasksManager';
-import { ITaskEntity } from '../../DAL/models/task';
 import { FindTaskById } from '../../DAL/repositories/taskRepository';
 
 type CreateTaskHandler = RequestHandler<undefined, TaskResponse, CreateExportTaskRequest<TaskParameters>>;
-type GetTaskByIdHandler = RequestHandler<FindTaskById, ITaskEntity | undefined, undefined, undefined>;
-type GetLatestTasksByLimitHandler = RequestHandler<undefined, ITaskEntity[], undefined, { limit: number }>;
+type GetTaskByIdHandler = RequestHandler<FindTaskById, TaskResponse | undefined, undefined, undefined>;
+type GetLatestTasksByLimitHandler = RequestHandler<undefined, TaskResponse[], undefined, { limit: number }>;
 
 @injectable()
 export class TasksController {
@@ -23,7 +22,8 @@ export class TasksController {
 
   public createTask: CreateTaskHandler = async (req, res, next) => {
     try {
-      const entity = await this.taskManager.createTask(req.body);
+      const jwtPayloadSub = req.get('jwt-payload-sub'); // header name should match the header that has been defined on default.conf (nginx conf file).
+      const entity = await this.taskManager.createTask(req.body, jwtPayloadSub);
       return res.status(httpStatus.CREATED).json(entity);
     } catch (error) {
       next(error);

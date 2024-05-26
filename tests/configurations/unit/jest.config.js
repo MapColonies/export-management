@@ -14,6 +14,7 @@ module.exports = {
     '!**/routes/**',
     '!<rootDir>/src/*',
     '!<rootDir>/src/DAL/**',
+    '!<rootDir>/src/exportManager/**',
   ],
   coverageDirectory: '<rootDir>/coverage',
   reporters: [
@@ -26,10 +27,10 @@ module.exports = {
   testEnvironment: 'node',
   coverageThreshold: {
     global: {
-      branches: 50,
-      functions: 50,
-      lines: 50,
-      statements: 50,
+      branches: 95,
+      functions: 95,
+      lines: 95,
+      statements: 95,
     },
   },
 };

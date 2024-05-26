@@ -2,7 +2,7 @@ import { hostname } from 'os';
 import { readFileSync } from 'fs';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { IDbConfig } from '../../common/interfaces';
-import { ArtifactEntity, TaskGeometryEntity, TaskEntity, ArtifactTypeEntity, WebhookEntity } from '../entity';
+import { ArtifactEntity, TaskGeometryEntity, TaskEntity, WebhookEntity } from '../entity';
 
 export const createConnectionOptions = (dbConfig: IDbConfig): DataSourceOptions => {
   const { enableSslAuth, sslPaths, ...dataSourceOptions } = dbConfig;
@@ -13,7 +13,7 @@ export const createConnectionOptions = (dbConfig: IDbConfig): DataSourceOptions 
     dataSourceOptions.ssl = { key: readFileSync(sslPaths.key), cert: readFileSync(sslPaths.cert), ca: readFileSync(sslPaths.ca) };
   }
   return {
-    entities: [TaskEntity, ArtifactEntity, ArtifactTypeEntity, TaskGeometryEntity, WebhookEntity],
+    entities: [TaskEntity, ArtifactEntity, TaskGeometryEntity, WebhookEntity],
     migrationsTableName: 'custom_migration_table',
     ...dataSourceOptions,
     type: 'postgres',

@@ -1,8 +1,8 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, OneToMany, JoinColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, JoinColumn, ManyToOne } from 'typeorm';
 import { TaskEvent } from '@map-colonies/export-interfaces';
 import { IWebhookEntity } from '../models/webhooks';
-import { TaskEntity } from './tasks';
 import { ITaskEntity } from '../models/tasks';
+import { TaskEntity } from './tasks';
 
 @Entity('Webhooks')
 export class WebhookEntity implements IWebhookEntity {
@@ -16,6 +16,6 @@ export class WebhookEntity implements IWebhookEntity {
   public events: TaskEvent[];
 
   @ManyToOne(() => TaskEntity, (task) => task.webhooks)
-  @JoinColumn({name: 'task_id'})
+  @JoinColumn({ name: 'task_id' })
   public task: ITaskEntity;
 }

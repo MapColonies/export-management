@@ -6,12 +6,11 @@ import { injectable, inject } from 'tsyringe';
 import { CreateExportTaskRequest, TaskParameters } from '@map-colonies/export-interfaces';
 import { SERVICES } from '../../common/constants';
 import { TaskResponse, TasksManager } from '../models/tasksManager';
-import { ITaskEntity } from '../../DAL/models/tasks';
 import { FindTaskById } from '../../DAL/repositories/taskRepository';
 
 type CreateTaskHandler = RequestHandler<undefined, TaskResponse, CreateExportTaskRequest<TaskParameters>>;
-type GetTaskByIdHandler = RequestHandler<FindTaskById, ITaskEntity | undefined, undefined, undefined>;
-type GetLatestTasksByLimitHandler = RequestHandler<undefined, ITaskEntity[], undefined, { limit: number }>;
+type GetTaskByIdHandler = RequestHandler<FindTaskById, TaskResponse | undefined, undefined, undefined>;
+type GetLatestTasksByLimitHandler = RequestHandler<undefined, TaskResponse[], undefined, { limit: number }>;
 
 @injectable()
 export class TasksController {

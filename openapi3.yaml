@@ -356,7 +356,7 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/TaskResponse'
-        
+
     Artifact:
       type: object
       description: GeoJson Feature Collection

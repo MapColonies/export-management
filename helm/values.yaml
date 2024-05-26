@@ -1,5 +1,8 @@
 global:
-  cloudProvider: {}
+  cloudProvider:
+    dockerRegistryUrl: acrarolibotnonprod.azurecr.io
+    imagePullSecretName: acr-registry
+    flavor: openshift
   tracing: {}
   metrics: {}
   environment: ''
@@ -15,8 +18,8 @@ resetOnConfigChange: true
 imagePullPolicy: Always
 
 cloudProvider:
-  dockerRegistryUrl: my-registry-url.io
-  imagePullSecretName: 'my-registry-secret'
+  dockerRegistryUrl: acrarolibotnonprod.azurecr.io
+  imagePullSecretName: acr-registry
   flavor: openshift
 
 caSecretName: ''
@@ -25,7 +28,7 @@ caKey: 'ca.crt'
 
 image:
   repository: export-management
-  tag: 'latest'
+  tag: 'v1.7.0'
 
 env:
   port: 8080
@@ -50,14 +53,14 @@ env:
   maxTasksNumber: 10
 
 db:
-  host: localhost
+  host: "10.0.0.4"
   username: postgres
-  password: postgres
-  database: libot
+  password: Libot4allnonprod
+  database: common-dev
   schema: export_manager
   port: 5432
-  externalSecretName: ''
-  useExternalSecret: false  
+  externalSecretName: 'raster-dev-postgres-secret'
+  useExternalSecret: true  
   sslAuth:
     enabled: false
     certFileName: postgresql.crt
@@ -65,15 +68,15 @@ db:
     caFileName: root.crt
 
 nginx:
-  fullnameOverride: ""
+  fullnameOverride: "export-management-export-management-nginx"
 
   caSecretName: ''
   caPath: '/usr/local/share/ca-certificates'
   caKey: 'ca.crt'
 
   image:
-    repository: nginx
-    tag: 'latest' 
+    repository: nginx-otel-unprivileged
+    tag: "v1.0.0"
   port: 8080
   internalServicePort: 80
   targetPort: 8080
@@ -88,6 +91,19 @@ nginx:
       requests:
         cpu: 100m
         memory: 128Mi
+
+  extraVolumes:
+    - name: nginx-config
+      configMap:
+        name: "export-management-export-management-nginx-configmap"
+
+  extraVolumeMounts:
+    - name: nginx-config
+      mountPath: "/etc/nginx/conf.d/default.conf"
+      subPath: default.conf
+    - mountPath: "/etc/nginx/nginx.conf"
+      name: nginx-config
+      subPath: nginx.conf
 
   env:
     opentelemetry:
@@ -120,7 +136,7 @@ nginx:
 
   route:
     enabled: true
-    path: /api/v1
+    path: 
     host: 
     timeout:
       enabled: false # defaults to 30s by openshift

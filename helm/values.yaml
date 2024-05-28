@@ -29,7 +29,6 @@ image:
 
 env:
   port: 8080
-  internalPort: 80
   targetPort: 8080
   protocol: TCP
   logLevel: info
@@ -57,14 +56,25 @@ db:
   schema: export_manager
   port: 5432
   externalSecretName: ''
-  useExternalSecret: false  
+  useExternalSecret: false   
   sslAuth:
     enabled: false
     certFileName: postgresql.crt
     keyFileName: postgresql.key
     caFileName: root.crt
 
+resources:
+  enabled: false
+  value:
+    limits:
+      cpu: 300m
+      memory: 256Mi
+    requests:
+      cpu: 75m
+      memory: 256Mi
+
 nginx:
+  enabled: true
   fullnameOverride: ""
 
   caSecretName: ''
@@ -88,6 +98,19 @@ nginx:
       requests:
         cpu: 100m
         memory: 128Mi
+
+  extraVolumes:
+    - name: nginx-config
+      configMap:
+        name: "export-management-export-management-nginx-configmap"
+
+  extraVolumeMounts:
+    - name: nginx-config
+      mountPath: "/etc/nginx/conf.d/default.conf"
+      subPath: default.conf
+    - mountPath: "/etc/nginx/nginx.conf"
+      name: nginx-config
+      subPath: nginx.conf
 
   env:
     opentelemetry:
@@ -115,13 +138,14 @@ nginx:
 
   authorization:
     enabled: true
-    domain: 'export'
+    domain: ''
     url: 'http://localhost:8181/v1/data/http/authz/decision'
 
   route:
     enabled: true
-    path: /api/v1
-    host: 
+    routesMapping:
+      - host:
+        path: /
     timeout:
       enabled: false # defaults to 30s by openshift
       duration: 60s # supported units (us, ms, s, m, h, d)
@@ -143,13 +167,3 @@ nginx:
     tls: 
       enabled: true
       secretName: ''
-
-resources:
-  enabled: true
-  value:
-    limits:
-      cpu: 100m
-      memory: 128Mi
-    requests:
-      cpu: 25m
-      memory: 128Mi

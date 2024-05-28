@@ -56,7 +56,7 @@ db:
   schema: export_manager
   port: 5432
   externalSecretName: ''
-  useExternalSecret: false   
+  useExternalSecret: false
   sslAuth:
     enabled: false
     certFileName: postgresql.crt

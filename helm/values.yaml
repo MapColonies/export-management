@@ -102,7 +102,7 @@ nginx:
   extraVolumes:
     - name: nginx-config
       configMap:
-        name: "export-management-export-management-nginx-configmap"
+        name: "{{ .Release.Name }}-export-management-nginx-configmap"
 
   extraVolumeMounts:
     - name: nginx-config

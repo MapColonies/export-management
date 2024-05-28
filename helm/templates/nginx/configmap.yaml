@@ -12,5 +12,4 @@ metadata:
     release: {{ $releaseName }}
 data:
   default.conf: {{ tpl (.Files.Get "config/nginx/default.conf") . | quote }}
-  nginx.conf: {{ tpl (.Files.Get "config/nginx/nginx.conf") . | quote }}
 {{- end }}

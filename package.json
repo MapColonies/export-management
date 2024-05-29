@@ -45,6 +45,7 @@
   "dependencies": {
     "@faker-js/faker": "^8.0.2",
     "@godaddy/terminus": "^4.11.2",
+    "@map-colonies/chameleon-mq": "file:../chameleon-mq/map-colonies-chameleon-mq-1.0.4.tgz",
     "@map-colonies/error-express-handler": "^2.1.0",
     "@map-colonies/error-types": "^1.1.5",
     "@map-colonies/export-interfaces": "^1.4.0",

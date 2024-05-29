@@ -27,25 +27,18 @@
   },
   "typeOrm": {
     "type": "postgres",
-    "host": "localhost",
+    "host": "10.0.4.4",
     "port": 5432,
     "username": "postgres",
-    "password": "",
+    "password": "Libot4allnonprod",
     "enableSslAuth": false,
     "sslPaths": {
       "ca": "",
       "key": "",
       "cert": ""
     },
-    "database": "libot",
+    "database": "common-dev",
     "schema": "export_manager"
-  },
-  "queue": {
-    "connection": {
-      "host": "localhost",
-      "port": 6379
-    },
-    "topic": "topic1"
   },
   "maxTasksNumber": 10
 }

@@ -2,6 +2,7 @@ import { FactoryFunction } from 'tsyringe';
 import { DataSource } from 'typeorm';
 import { TaskEntity } from '../entity/tasks';
 import { ITaskEntity } from '../models/tasks';
+import { TaskStatus } from '@map-colonies/export-interfaces';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 const createTaskRepository = (dataSource: DataSource) => {
@@ -31,6 +32,16 @@ const createTaskRepository = (dataSource: DataSource) => {
       const res = await this.save(task);
       return res;
     },
+
+    async updateTask(params: Partial<ITaskEntity>): Promise<void> {
+      const task = await this.findOneBy({ jobId: params.jobId, customerName: params.customerName });
+      if (task?.status === TaskStatus.COMPLETED) {
+        console.log("task is completed")
+        return;
+      }
+      const update = { ...task, ...params };
+      await this.save(update);
+    }
   });
 };
 

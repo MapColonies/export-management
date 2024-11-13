@@ -35,10 +35,4 @@ export class ExporterTriggerClient extends HttpClient {
     const result = await this.post<CreateExportJobTriggerResponse | WebhookParams>('/create/roi', params);
     return result;
   }
-
-  public async getTaskStatusByJobId(jobId: string): Promise<ITaskStatusResponse> {
-    const result = await this.get<ITaskStatusResponse>(`/taskStatus/${jobId}`);
-    result.percentage = result.percentage ?? 0;
-    return result;
-  }
 }

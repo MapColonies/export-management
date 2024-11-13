@@ -116,3 +116,6 @@ reports
 
 #charts
 *Chart.lock
+
+#local configuration
+conig/local.json

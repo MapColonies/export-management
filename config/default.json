@@ -25,7 +25,7 @@
       }
     }
   },
-  "serviceWebhookEndpoint": "http://localhost:8084/export-tasks/webhook",
+  "serviceWebhookEndpoint": "http://localhost:8080/export-tasks/webhook",
   "externalClients": {
     "httpRetry": {
       "attempts": 10,
@@ -37,7 +37,7 @@
       "url": "http://localhost:8083"
     },
     "jobManager": {
-      "url": "https://common-job-manager-route-raster-dev.apps.j1lk3njp.eastus.aroapp.io",
+      "url": "http://localhost:8088",
       "exportJobType": "Export"
     }
   }

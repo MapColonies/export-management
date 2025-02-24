@@ -34,7 +34,7 @@ export class JobManagerClient extends HttpClient {
 
   public async getJobByExportId(id: number): Promise<IGetJobResponse> {
     this.logger.info({ msg: `get job by export id request`, id });
-    const result: FindJobsResponse = await this.get(`/jobs/parameters?id=${id}`);
+    const result: FindJobsResponse = await this.get(`/jobs/parameters?exportId=${id}`);
     if (result.length > 0) {
       if (result.length > 1) {
         this.logger.warn({ id, msg: 'Warning: Result contains more than 1 job that matched the given id' });

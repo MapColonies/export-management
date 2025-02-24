@@ -3,7 +3,7 @@ import { FeatureCollection } from '@turf/turf';
 import { Domain } from '@map-colonies/types';
 import { Artifact, TaskEvent, TaskStatus, Webhook } from '@map-colonies/export-interfaces';
 
-export interface ITaskCreate<T> {
+export interface IExportTaskCreate<T> {
   catalogRecordID: string;
   domain: Domain;
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -15,7 +15,7 @@ export interface ITaskCreate<T> {
   webhook: Webhook[];
 }
 
-export interface ITaskResponse<T> extends ITaskCreate<T> {
+export interface IExportTaskResponse<T> extends IExportTaskCreate<T> {
   id: number;
   estimatedSize?: number;
   estimatedTime?: number;
@@ -33,7 +33,7 @@ export interface ITaskResponse<T> extends ITaskCreate<T> {
 export interface WebhookEvent<T> {
   event: TaskEvent;
   timestamp: Date;
-  data: ITaskResponse<T>;
+  data: IExportTaskResponse<T>;
 }
 
 export declare type TaskParameters = Record<string, unknown>;

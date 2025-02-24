@@ -5,15 +5,15 @@ import httpStatus from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
 import { isNumber, isString } from 'lodash';
 import { BadRequestError } from '@map-colonies/error-types';
+import { CallbackExportResponse } from '@map-colonies/raster-shared';
 import { SERVICES } from '../../common/constants';
-import { WebhookParams } from '../../exportManager/exportManagerRaster';
-import { ITaskResponse } from '../interfaces';
+import { IExportTaskResponse } from '../interfaces';
 import { CreateExportTaskExtendedRequest, TasksManager } from '../models/tasksManager';
 import { ExportJobParameters, GetJobByExportIdRequest } from '../../clients/jobManager/interfaces';
 
-type CreateTaskHandler = RequestHandler<undefined, ITaskResponse<ExportJobParameters>, CreateExportTaskExtendedRequest>;
-type GetTaskByIdHandler = RequestHandler<GetJobByExportIdRequest, ITaskResponse<ExportJobParameters>, undefined>;
-type SendWebhookHandler = RequestHandler<undefined, undefined, WebhookParams>;
+type CreateTaskHandler = RequestHandler<undefined, IExportTaskResponse<ExportJobParameters>, CreateExportTaskExtendedRequest>;
+type GetTaskByIdHandler = RequestHandler<GetJobByExportIdRequest, IExportTaskResponse<ExportJobParameters>, undefined>;
+type SendWebhookHandler = RequestHandler<undefined, undefined, CallbackExportResponse>;
 
 @injectable()
 export class TasksController {

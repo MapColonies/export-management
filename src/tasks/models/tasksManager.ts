@@ -1,15 +1,15 @@
 import { Logger } from '@map-colonies/js-logger';
-import { CreateExportTaskRequest, TaskEvent, TaskParameters } from '@map-colonies/export-interfaces';
+import { Artifact, CreateExportTaskRequest, TaskEvent, TaskParameters, Webhook } from '@map-colonies/export-interfaces';
 import { inject, injectable } from 'tsyringe';
 import { Domain, EPSGDATA } from '@map-colonies/types';
-import { FeatureCollection } from '@turf/turf';
 import { BadRequestError } from '@map-colonies/error-types';
+import { CallbackExportResponse } from '@map-colonies/raster-shared';
+import { FeatureCollection } from '@turf/turf';
 import { ExporterTriggerClient } from '../../clients/exporterTriggerClient';
 import { SERVICES } from '../../common/constants';
-import { ExportManagerRaster, WebhookParams } from '../../exportManager/exportManagerRaster';
-import { Webhook } from '../../exportManager/interfaces';
+import { ExportManagerRaster } from '../../exportManager/exportManagerRaster';
 import { IExportManager } from '../../exportManager/interfaces';
-import { ITaskResponse, WebhookEvent } from '../interfaces';
+import { IExportTaskResponse, WebhookEvent } from '../interfaces';
 import { JobManagerClient } from '../../clients/jobManager/jobManagerClient';
 import { WebhookClient } from '../../clients/webhookClient';
 import { ExportJobParameters } from '../../clients/jobManager/interfaces';
@@ -38,24 +38,24 @@ export class TasksManager {
     private readonly webhookClient: WebhookClient
   ) {}
 
-  public async createExportTask(req: CreateExportTaskExtendedRequest): Promise<ITaskResponse<ExportJobParameters>> {
+  public async createExportTask(req: CreateExportTaskExtendedRequest): Promise<IExportTaskResponse<ExportJobParameters>> {
     const domain = req.domain;
     const exportManagerInstance = this.getExportManagerInstance(domain);
     const jobCreated = await exportManagerInstance.createExportTask(req);
     return jobCreated;
   }
 
-  public async getTaskById(id: number): Promise<ITaskResponse<ExportJobParameters>> {
+  public async getTaskById(id: number): Promise<IExportTaskResponse<ExportJobParameters>> {
     const domain = Domain.RASTER;
     const exportManagerInstance = this.getExportManagerInstance(domain);
     const task = await exportManagerInstance.getTaskById(id);
     return task;
   }
 
-  public async handleWebhookEvent(params: WebhookParams): Promise<void> {
+  public async handleWebhookEvent(params: CallbackExportResponse): Promise<void> {
     const exportJob = await this.jobManagerClient.getJobById(params.jobId);
     const jobParameters = exportJob.parameters;
-    const task: ITaskResponse<ExportJobParameters> = {
+    const task: IExportTaskResponse<ExportJobParameters> = {
       id: jobParameters.id,
       catalogRecordID: params.recordCatalogId,
       domain: Domain.RASTER,
@@ -65,11 +65,11 @@ export class TasksManager {
       description: params.description,
       keywords: jobParameters.keywords,
       status: convertToUnifiedTaskStatus(params.status),
-      artifacts: params.artifacts,
+      artifacts: params.artifacts as Artifact[],
       webhook: exportJob.parameters.webhook,
       createdAt: new Date(exportJob.created),
       finishedAt: new Date(exportJob.updated),
-      expiredAt: new Date(params.expirationTime),
+      expiredAt: params.expirationTime,
       errorReason: params.errorReason,
     };
     const webhook = jobParameters.webhook;
@@ -79,7 +79,7 @@ export class TasksManager {
       timestamp: new Date(),
     };
 
-    const webhookUrls = this.getWebhookUrls(webhook, params.status);
+    const webhookUrls = this.getWebhookUrls(webhook, params.status as OperationStatus);
     await this.sendWebhookEvent(webhookUrls, webhookEvent);
   }
 

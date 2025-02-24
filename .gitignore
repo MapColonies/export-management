@@ -119,3 +119,6 @@ reports
 
 #local configuration
 conig/local.json
+
+#config
+local*.json

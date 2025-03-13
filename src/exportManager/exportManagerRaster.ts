@@ -20,7 +20,7 @@ import { OperationStatus } from '../clients/jobManager/enums';
 export type ExtendedRasterExportJobParameters = RasterExportJobParams & {
   exportId: number;
   exportManagementParams: {
-    keywords: Record<string, unknown>;
+    keywords?: Record<string, unknown>;
     webhook: Webhook[];
   };
 };
@@ -83,7 +83,7 @@ export class ExportManagerRaster implements IExportManager {
           createdAt: new Date(exportJob.created),
           finishedAt: new Date(exportJob.updated),
           expiredAt: completedExportTask.expirationTime,
-          webhook: req.webhooks,
+          webhook: req.webhook,
         };
 
         return task;
@@ -99,14 +99,14 @@ export class ExportManagerRaster implements IExportManager {
             createdAt: new Date(exportJob.created),
             status: convertToUnifiedTaskStatus(exportTask.status),
             domain: Domain.RASTER,
-            webhook: req.webhooks,
+            webhook: req.webhook,
           };
           return createExportJobResponse;
         }
 
         //There is no duplicate or completed export job, created new one and update params
         const exportId = generateUniqueId();
-        const updatedParams = { ...exportJob.parameters, exportId, exportManagementParams: { keywords: req.keywords, webhook: req.webhooks } };
+        const updatedParams = { ...exportJob.parameters, exportId, exportManagementParams: { keywords: req.keywords, webhook: req.webhook } };
 
         await this.jobManagerClient.updateJobParameters(res.jobId, updatedParams);
         createExportJobResponse = {
@@ -116,7 +116,7 @@ export class ExportManagerRaster implements IExportManager {
           createdAt: new Date(exportJob.created),
           status: TaskStatus.PENDING,
           domain: Domain.RASTER,
-          webhook: req.webhooks,
+          webhook: req.webhook,
         };
         return createExportJobResponse;
       }

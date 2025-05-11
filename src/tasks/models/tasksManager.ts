@@ -103,9 +103,9 @@ export class TasksManager {
   }
 
   // TODO: adapt this Task Events handler function when more events will be supported in future
-  private getWebhookUrls(webhook: Webhook[], jobStatus: OperationStatus): string[] {
+  private getWebhookUrls(webhooks: Webhook[], jobStatus: OperationStatus): string[] {
     const urls: string[] = [];
-    webhook.forEach((webhook) => {
+    webhooks.forEach((webhook) => {
       if (jobStatus === OperationStatus.COMPLETED) {
         if (webhook.events.includes(TaskEvent.TASK_COMPLETED)) {
           urls.push(webhook.url);

@@ -1,17 +1,17 @@
 import { inject, singleton } from 'tsyringe';
 import { HttpClient, IHttpRetryConfig } from '@map-colonies/mc-utils';
 import { Logger } from '@map-colonies/js-logger';
+import { CallbackExportResponse } from '@map-colonies/raster-shared';
 import { SERVICES } from '../common/constants';
 import { IConfig } from '../common/interfaces';
-import { CreatePackageParams } from '../tasks/models/tasksManager';
-import { WebhookParams } from '../exportManager/exportManagerRaster';
+import { CreateExportRequest } from '../exportManager/exportManagerRaster';
 import { OperationStatus } from './jobManager/enums';
 
 export interface CreateExportJobTriggerResponse {
   jobId: string;
-  taskIds: string[];
   status: OperationStatus;
-  isDuplicated: boolean;
+  isDuplicated?: boolean;
+  percentage?: number;
 }
 
 export interface ITaskStatusResponse {
@@ -31,8 +31,8 @@ export class ExporterTriggerClient extends HttpClient {
     );
   }
 
-  public async createExportTask(params: CreatePackageParams): Promise<CreateExportJobTriggerResponse | WebhookParams> {
-    const result = await this.post<CreateExportJobTriggerResponse | WebhookParams>('/create/roi', params);
+  public async createExportTask(params: CreateExportRequest): Promise<CreateExportJobTriggerResponse | CallbackExportResponse> {
+    const result = await this.post<CreateExportJobTriggerResponse | CallbackExportResponse>('/export', params);
     return result;
   }
 }

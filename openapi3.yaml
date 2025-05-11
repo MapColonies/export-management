@@ -234,6 +234,7 @@ components:
                   example: TASK_COMPLETED
               url:
                 type: string
+                pattern: '^https?:\/\/[^\s\/$.?#].[^\s]*$'
                 example: https://webhook.com
       additionalProperties: false
     task:

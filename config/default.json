@@ -38,7 +38,7 @@
     },
     "jobManager": {
       "url": "http://localhost:8088",
-      "exportJobType": "rasterTilesExporter"
+      "exportJobType": "Export"
     }
   }
 }

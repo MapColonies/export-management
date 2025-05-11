@@ -3,27 +3,40 @@ import { Artifact, TaskStatus, Webhook } from '@map-colonies/export-interfaces';
 import { inject, injectable } from 'tsyringe';
 import config from 'config';
 import { Domain, EPSGDATA } from '@map-colonies/types';
-import { FeatureCollection } from '@turf/turf';
+import { ExportJobParameters as RasterExportJobParams, roiFeatureCollectionSchema } from '@map-colonies/raster-shared';
+import { CallbackExportResponse } from '@map-colonies/raster-shared';
+import { IJobResponse } from '@map-colonies/mc-priority-queue';
+import { z } from 'zod';
 import { convertToUnifiedTaskStatus, generateUniqueId } from '../common/utils';
 import { SERVICES } from '../common/constants';
 import { CreateExportJobTriggerResponse, ExporterTriggerClient } from '../clients/exporterTriggerClient';
 import { CreateExportTaskExtendedRequest, CreatePackageParams } from '../tasks/models/tasksManager';
 import { JobManagerClient } from '../clients/jobManager/jobManagerClient';
-import { ExportJobParameters } from '../clients/jobManager/interfaces';
-import { ITaskResponse } from '../tasks/interfaces';
-import { ICallbackExportData, IExportManager } from '../exportManager/interfaces';
+import { ExportJobParameters, ExportJobResponse } from '../clients/jobManager/interfaces';
+import { IExportTaskResponse } from '../tasks/interfaces';
+import { IExportManager } from '../exportManager/interfaces';
 import { OperationStatus } from '../clients/jobManager/enums';
 
-export interface WebhookParams {
-  expirationTime: string;
-  recordCatalogId: string;
-  jobId: string;
-  description?: string;
-  artifacts: Artifact[];
-  roi: FeatureCollection;
-  status: OperationStatus;
-  errorReason?: string;
-}
+export type ExtendedRasterExportJobParameters = RasterExportJobParams & {
+  exportId: number;
+  exportManagementParams: {
+    keywords?: Record<string, unknown>;
+    webhook: Webhook[];
+  };
+};
+
+export type RasterJobExportResponse = ExportJobResponse & IJobResponse<ExtendedRasterExportJobParameters, unknown>;
+
+export const createExportRequestSchema = z.object({
+  dbId: z.string(),
+  crs: z.string().optional(),
+  priority: z.number().optional(),
+  roi: roiFeatureCollectionSchema.optional(),
+  callbackURLs: z.array(z.string()).optional(),
+  description: z.string().optional(),
+});
+
+export type CreateExportRequest = z.infer<typeof createExportRequestSchema>;
 
 @injectable()
 export class ExportManagerRaster implements IExportManager {
@@ -36,58 +49,66 @@ export class ExportManagerRaster implements IExportManager {
     this.serviceWebhookEndpoint = config.get<string>('serviceWebhookEndpoint');
   }
 
-  public async createExportTask(req: CreateExportTaskExtendedRequest): Promise<ITaskResponse<ExportJobParameters>> {
+  public async createExportTask(req: CreateExportTaskExtendedRequest): Promise<IExportTaskResponse<ExportJobParameters>> {
     try {
       this.logger.info({ msg: `Create export task request`, req: req });
       const requestedEPSG = `EPSG:${req.artifactCRS}`;
-      const createPackageParams: CreatePackageParams = {
+      const userInputRequest: CreatePackageParams = {
         roi: req.ROI,
         dbId: req.catalogRecordID,
         crs: requestedEPSG,
         description: req.description,
         callbackURLs: [this.serviceWebhookEndpoint],
       };
-      const res = await this.exporterTriggerClient.createExportTask(createPackageParams);
-      const exportJob = await this.jobManagerClient.getJobById(res.jobId);
 
-      if ((res as WebhookParams).status === OperationStatus.COMPLETED) {
-        const task: ITaskResponse<ExportJobParameters> = {
+      const exportRequest: CreateExportRequest = createExportRequestSchema.parse(userInputRequest);
+      const res = await this.exporterTriggerClient.createExportTask(exportRequest);
+      const exportJob = (await this.jobManagerClient.getJobById(res.jobId)) as RasterJobExportResponse;
+
+      //There is a completed job - return all necessary values
+      if (res.status === OperationStatus.COMPLETED) {
+        const completedExportTask = res as CallbackExportResponse;
+
+        const task: IExportTaskResponse<ExportJobParameters> = {
           id: exportJob.parameters.id,
-          catalogRecordID: (res as WebhookParams).recordCatalogId,
+          catalogRecordID: completedExportTask.recordCatalogId,
           domain: Domain.RASTER,
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          ROI: (res as WebhookParams).roi,
+          ROI: completedExportTask.roi,
           artifactCRS: EPSGDATA[4326].code,
           description: req.description,
           keywords: req.keywords,
-          status: convertToUnifiedTaskStatus((res as WebhookParams).status),
-          artifacts: (res as WebhookParams).artifacts,
+          status: convertToUnifiedTaskStatus(completedExportTask.status),
+          artifacts: completedExportTask.artifacts as Artifact[],
           createdAt: new Date(exportJob.created),
           finishedAt: new Date(exportJob.updated),
-          expiredAt: new Date((res as WebhookParams).expirationTime),
+          expiredAt: completedExportTask.expirationTime,
           webhook: req.webhook,
         };
 
         return task;
       } else {
-        let createExportJobResponse: ITaskResponse<ExportJobParameters>;
-        if ((res as CreateExportJobTriggerResponse).isDuplicated) {
+        let createExportJobResponse: IExportTaskResponse<ExportJobParameters>;
+        const exportTask = res as CreateExportJobTriggerResponse;
+        //There is a duplicate running/in-progress job already - didn't create new one
+        if (exportTask.isDuplicated === true) {
           createExportJobResponse = {
-            id: exportJob.parameters.id,
+            id: exportJob.parameters.exportId,
             catalogRecordID: req.catalogRecordID,
             artifactCRS: EPSGDATA[4326].code,
             createdAt: new Date(exportJob.created),
-            status: convertToUnifiedTaskStatus((res as WebhookParams).status),
+            status: convertToUnifiedTaskStatus(exportTask.status),
             domain: Domain.RASTER,
             webhook: req.webhook,
           };
           return createExportJobResponse;
         }
 
+        //There is no duplicate or completed export job, created new one and update params
         const exportId = generateUniqueId();
-        const updatedParams = { ...exportJob.parameters, id: exportId, keywords: req.keywords, webhook: req.webhook };
+        const updatedParams = { ...exportJob.parameters, exportId, exportManagementParams: { keywords: req.keywords, webhook: req.webhook } };
 
-        await this.jobManagerClient.updateJobParameters((res as { jobId: string }).jobId, updatedParams);
+        await this.jobManagerClient.updateJobParameters(res.jobId, updatedParams);
         createExportJobResponse = {
           id: exportId,
           catalogRecordID: req.catalogRecordID,
@@ -106,12 +127,13 @@ export class ExportManagerRaster implements IExportManager {
     }
   }
 
-  public async getTaskById(id: number): Promise<ITaskResponse<ExportJobParameters>> {
+  public async getTaskById(id: number): Promise<IExportTaskResponse<ExportJobParameters>> {
     this.logger.info({ msg: `get export task by id`, id });
     const job = await this.jobManagerClient.getJobByExportId(id);
-    const callbackParams = job.parameters.callbackParams as ICallbackExportData;
-    const webhook = job.parameters.webhook as Webhook[];
-    const task: ITaskResponse<ExportJobParameters> = {
+    const jobParameters = job.parameters as ExtendedRasterExportJobParameters;
+    const callbackParams = jobParameters.callbackParams;
+    const webhook = jobParameters.exportManagementParams.webhook;
+    const task: IExportTaskResponse<ExportJobParameters> = {
       id: id,
       catalogRecordID: job.internalId,
       domain: Domain.RASTER,
@@ -120,13 +142,13 @@ export class ExportManagerRaster implements IExportManager {
       status: job.isCleaned ? TaskStatus.EXPIRED : convertToUnifiedTaskStatus(job.status),
       progress: job.percentage,
       errorReason: job.reason,
-      estimatedSize: job.parameters.gpkgEstimatedSize as number,
-      artifacts: job.status === OperationStatus.COMPLETED && !job.isCleaned ? callbackParams.artifacts : undefined,
+      estimatedSize: jobParameters.additionalParams.gpkgEstimatedSize,
+      artifacts: job.status === OperationStatus.COMPLETED && !job.isCleaned ? (callbackParams?.artifacts as Artifact[]) : undefined,
       createdAt: job.created,
       finishedAt: job.updated,
-      expiredAt: job.status === OperationStatus.COMPLETED ? callbackParams.expirationTime : undefined,
+      expiredAt: job.status === OperationStatus.COMPLETED ? callbackParams?.expirationTime : undefined,
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      ROI: job.parameters.roi as FeatureCollection,
+      ROI: jobParameters.callbackParams?.roi,
       webhook: webhook,
     };
 

@@ -70,7 +70,7 @@ export class ExportManagerRaster implements IExportManager {
         const completedExportTask = res as CallbackExportResponse;
 
         const task: IExportTaskResponse<ExportJobParameters> = {
-          id: exportJob.parameters.id,
+          id: exportJob.parameters.exportId,
           catalogRecordID: completedExportTask.recordCatalogId,
           domain: Domain.RASTER,
           // eslint-disable-next-line @typescript-eslint/naming-convention

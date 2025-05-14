@@ -1,5 +1,6 @@
 import { Webhook } from '@map-colonies/export-interfaces';
 import { FeatureCollection } from 'geojson';
+import { ExtendedRasterExportJobParameters } from '../../exportManager/exportManagerRaster';
 import { OperationStatus } from './enums';
 
 // This interfaces file is not relevant when unifined export implementation will be ready, this file should be deleted.
@@ -13,7 +14,7 @@ export interface ExportJobParameters {
 
 // eslint-disable-next-line import/exports-last
 export interface ExportJobResponse {
-  parameters: ExportJobParameters;
+  parameters: ExtendedRasterExportJobParameters;
   created: string;
   updated: string;
 }

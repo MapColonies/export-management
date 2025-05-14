@@ -55,24 +55,25 @@ export class TasksManager {
   public async handleWebhookEvent(params: CallbackExportResponse): Promise<void> {
     const exportJob = await this.jobManagerClient.getJobById(params.jobId);
     const jobParameters = exportJob.parameters;
+    const webhook = jobParameters.exportManagementParams.webhook;
+
     const task: IExportTaskResponse<ExportJobParameters> = {
-      id: jobParameters.id,
+      id: jobParameters.exportId,
       catalogRecordID: params.recordCatalogId,
       domain: Domain.RASTER,
       // eslint-disable-next-line @typescript-eslint/naming-convention
       ROI: params.roi,
       artifactCRS: EPSGDATA[4326].code,
       description: params.description,
-      keywords: jobParameters.keywords,
+      keywords: jobParameters.exportManagementParams.keywords,
       status: convertToUnifiedTaskStatus(params.status),
       artifacts: params.artifacts as Artifact[],
-      webhook: exportJob.parameters.webhook,
+      webhook,
       createdAt: new Date(exportJob.created),
       finishedAt: new Date(exportJob.updated),
       expiredAt: params.expirationTime,
       errorReason: params.errorReason,
     };
-    const webhook = jobParameters.webhook;
     const webhookEvent: WebhookEvent<ExportJobParameters> = {
       data: task,
       event: params.status === OperationStatus.COMPLETED ? TaskEvent.TASK_COMPLETED : TaskEvent.TASK_FAILED,

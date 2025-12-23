@@ -113,12 +113,3 @@ dist
 # Jest
 jest_html_reporters.html
 reports
-
-#charts
-*Chart.lock
-
-#local configuration
-conig/local.json
-
-#config
-local*.json

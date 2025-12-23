@@ -11,6 +11,18 @@ global:
   authentication:
     jwtPublicKeySecretName: map-colonies-jwks
 
+
+mclabels:
+  #environment: development
+  component: backend
+  partOf: core
+  owner: raster
+  gisDomain: raster
+  prometheus:
+    enabled: true
+    port: 8080
+  longScraping: true
+
 enabled: true
 environment: development
 replicaCount: 1

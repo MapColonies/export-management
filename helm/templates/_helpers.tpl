@@ -37,12 +37,15 @@ Create service name as used by the service name label.
 Common labels
 */}}
 {{- define "export-management.labels" -}}
+app.kubernetes.io/name: {{ include "export-management.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
 helm.sh/chart: {{ include "export-management.chart" . }}
 {{ include "export-management.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{ include "mclabels.labels" . }}
 {{- end }}
 
 {{/*
@@ -128,3 +131,10 @@ Returns the tracing url from global if exists or from the chart's values
     {{- .Values.env.metrics.url -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Common annotations
+*/}}
+{{- define "export-management.annotations" -}}
+{{ include "mclabels.annotations" . }}
+{{- end }}

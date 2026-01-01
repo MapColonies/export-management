@@ -1,6 +1,12 @@
 # Helm-Chart
 helm/local.yaml
 
+#local configuration
+conig/local.json
+
+#config
+local*.json
+
 # Logs
 logs
 *.log
@@ -114,11 +120,6 @@ dist
 jest_html_reporters.html
 reports
 
-#charts
-*Chart.lock
+#helm
+helm/Chart.lock
 
-#local configuration
-conig/local.json
-
-#config
-local*.json

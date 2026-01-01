@@ -32,11 +32,12 @@ spec:
         app: {{ $chartName }}
         release: {{ $releaseName }}
         run: {{ $releaseName }}-{{ $chartName }}
-        {{- include "export-management.selectorLabels" . | nindent 8 }}
-      {{- if .Values.resetOnConfigChange }}
+        {{- include "mclabels.labels" . | nindent 8 }}
       annotations:
+        {{- include "export-management.annotations" . | nindent 8 }}
+        {{- if .Values.resetOnConfigChange }}
         checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
-      {{- end }}
+        {{- end }}
     spec:
     {{- if $cloudProviderImagePullSecretName }}
       imagePullSecrets:

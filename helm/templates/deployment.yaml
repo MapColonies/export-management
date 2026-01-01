@@ -32,7 +32,6 @@ spec:
         app: {{ $chartName }}
         release: {{ $releaseName }}
         run: {{ $releaseName }}-{{ $chartName }}
-        {{- include "export-management.selectorLabels" . | nindent 8 }}
         {{- include "mclabels.labels" . | nindent 8 }}
       annotations:
         {{- include "export-management.annotations" . | nindent 8 }}
